@@ -50,6 +50,7 @@ export const ProductDetail: React.FC = () => {
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchDetail = async () => {
       setIsLoading(true);
       try {
