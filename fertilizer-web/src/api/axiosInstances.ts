@@ -26,16 +26,29 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Response interceptor for apiClient
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
       toast.error("Session expired. Please log in again.");
+    } else if (error.response?.status === 429) {
+      toast.error("Rate limit exceeded! Too many requests. Please wait a minute.");
     } else if (error.response?.status === 422) {
       const msg = error.response?.data?.message || "Validation failed";
       toast.error(msg);
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for publicApi
+publicApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 429) {
+      toast.error("Too many attempts! Please wait 1 minute before trying again.");
     }
     return Promise.reject(error);
   }

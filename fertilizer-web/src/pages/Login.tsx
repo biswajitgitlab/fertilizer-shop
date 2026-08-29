@@ -31,8 +31,12 @@ export const Login: React.FC = () => {
       } else {
         navigate(from, { replace: true });
       }
-    } catch (e) {
-      toast.error("Invalid credentials. Please try again.");
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        toast.error("Too many login attempts! Please wait 1 minute before trying again.");
+      } else {
+        toast.error(err.response?.data?.message || "Invalid credentials. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
