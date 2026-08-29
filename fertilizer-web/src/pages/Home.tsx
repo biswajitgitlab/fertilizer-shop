@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Sprout, ArrowRight, ShieldCheck, Truck, Headphones, Award, Stethoscope, ChevronRight, Star, Calendar, Leaf } from 'lucide-react';
+import { Search, Sprout, ArrowRight, ShieldCheck, Truck, Headphones, Award, Stethoscope, ChevronRight, Star, Calendar, Leaf, Sparkles, Zap, Activity, Droplets } from 'lucide-react';
 
 import { ProductCard } from '../components/product/ProductCard';
 import { productApi } from '../api/productApi';
@@ -46,133 +46,225 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="space-y-0 pb-0">
+    <div className="space-y-0 pb-0 bg-slate-950 text-slate-900 font-sans selection:bg-emerald-500 selection:text-slate-950">
       
-      {/* ─── Hero Section ─── */}
+      {/* ─── 1. LIQUID GLASS HERO SECTION ─── */}
       <section
-        className="relative text-white pt-20 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden"
+        className="relative pt-24 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{
           backgroundImage: `url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=1600')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/92 via-slate-900/88 to-emerald-900/85" />
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
+        {/* Dark overlay & Ambient Liquid Glow Blobs */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-slate-950/90 to-teal-950/92" />
+        <div className="absolute top-10 left-1/4 w-96 h-96 bg-emerald-500/25 rounded-full blur-3xl glow-blob pointer-events-none" />
+        <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl glow-blob pointer-events-none" />
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]" />
         
         <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
             
-            <div className="inline-flex items-center gap-2 bg-emerald-800/60 backdrop-blur-md border border-emerald-500/30 text-emerald-300 text-xs font-bold px-4 py-1.5 rounded-full shadow-inner">
-              <Sprout className="w-4 h-4 text-emerald-400 animate-pulse" />
-              <span>Government Certified Genuine Agricultural Inputs</span>
+            {/* Top Liquid Badge */}
+            <div className="inline-flex items-center gap-2.5 bg-emerald-500/15 backdrop-blur-xl border border-emerald-400/30 text-emerald-300 text-xs font-black px-4 py-2 rounded-full shadow-lg">
+              <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <span>Next-Gen Agricultural Input Marketplace</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-white">
-              Maximize Your Harvest with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Certified Fertilizers</span> &amp; Crop Protection
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-none text-white">
+              Smarter Yields.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-emerald-200">
+                Liquid Certified Care.
+              </span>
             </h1>
 
             <p className="text-sm sm:text-base text-emerald-100/80 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
-              100% Genuine NPK Fertilizers, Insecticides, Herbicides, Fungicides, Plant Growth Vitamins, and High-Yield Seeds delivered directly to your farm.
+              100% Government-lab verified NPK Fertilizers, Organic Bio-Enhancers, Pesticides &amp; AI Disease Diagnostics delivered directly to your farm doorstep.
             </p>
 
-            {/* Search Bar in Hero */}
-            <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto lg:mx-0 flex flex-col sm:flex-row gap-2 bg-white/10 p-2 rounded-2xl backdrop-blur-md border border-white/20">
+            {/* Liquid Glass Search Bar */}
+            <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto lg:mx-0 p-2 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 shadow-2xl flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <input
                   type="text"
-                  placeholder="Search NPK, Urea, Insecticide, Pesticide..."
+                  placeholder="Search Urea, NPK 19:19:19, Bio-Vita, Saaf Fungicide..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white text-gray-900 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none placeholder-gray-400 font-medium"
+                  className="w-full bg-white/90 backdrop-blur-md text-slate-900 font-semibold rounded-2xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-500 transition-all"
                 />
-                <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <Search className="w-5 h-5 text-emerald-700 absolute left-3.5 top-4" />
               </div>
               <button
                 type="submit"
-                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-950 cursor-pointer"
+                className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 cursor-pointer transform active:scale-95"
               >
                 Search Store
               </button>
             </form>
 
+            {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 to="/products"
-                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-900/50"
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/25 transform hover:-translate-y-0.5"
               >
-                <span>Shop Fertilizers</span>
+                <span>Browse Marketplace</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 to={isAuthenticated ? "/diagnose" : "/login"}
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold px-6 py-3 rounded-xl text-sm transition-all"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/30 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all"
               >
                 <Stethoscope className="w-4 h-4 text-emerald-400" />
-                <span>Try Crop AI Diagnosis</span>
+                <span>Run AI Crop Diagnosis</span>
               </Link>
             </div>
 
           </div>
 
-          {/* Hero Banner Image */}
+          {/* Liquid Glass Feature Hero Card */}
           <div className="lg:col-span-5 relative hidden lg:block">
-            <div className="relative mx-auto max-w-sm aspect-4/5 rounded-3xl overflow-hidden shadow-2xl border-4 border-emerald-500/20">
+            <div className="relative mx-auto max-w-sm aspect-4/5 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-2 bg-white/10 backdrop-blur-2xl">
               <img
                 src="https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600"
                 alt="Fertilizer Farmer"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-2xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="text-[10px] uppercase font-black text-emerald-400">Featured Crop Care</span>
-                <p className="text-sm font-bold">KrishiGold NPK 19:19:19 Soluble</p>
-                <p className="text-xs text-emerald-200">100% Water Soluble • Rapid Absorption</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+              
+              {/* Floating Status Pill */}
+              <div className="absolute top-6 right-6 bg-slate-950/80 backdrop-blur-xl text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+                <span>AI Scanner Active</span>
+              </div>
+
+              {/* Liquid Card Bottom Detail */}
+              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 text-white space-y-1.5 shadow-2xl">
+                <div className="flex items-center justify-between text-[10px] uppercase font-black text-emerald-400">
+                  <span>Lab Certified NPK</span>
+                  <span className="bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-md font-bold">100% Water Soluble</span>
+                </div>
+                <p className="text-sm font-black">KrishiGold NPK 19:19:19</p>
+                <p className="text-xs text-emerald-100/90 font-medium">Delivered to 12,500+ Farms this month</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Trust Badges Bar ─── */}
-      <section className="bg-emerald-900 text-white py-4 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-xs font-bold">
-          {[
-            { icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />, label: '100% Genuine Products', sub: 'Govt Lab Verified' },
-            { icon: <Truck className="w-5 h-5 text-emerald-400" />, label: 'Free Farm Delivery', sub: 'Orders above ₹999' },
-            { icon: <Award className="w-5 h-5 text-emerald-400" />, label: '50,000+ Farmers', sub: 'Trust SarkarFertilizer' },
-            { icon: <Headphones className="w-5 h-5 text-emerald-400" />, label: '24/7 Agri Helpline', sub: '1800-888-FARM' },
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5">
-              {item.icon}
-              <span className="text-white">{item.label}</span>
-              <span className="text-emerald-400/80 font-medium text-[10px]">{item.sub}</span>
+      {/* ─── 2. BENTO GRID HIGHLIGHTS ─── */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 relative">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+              Why Farmers Choose Us
+            </span>
+            <h2 className="text-3xl font-black text-white">Agriculture Platform Built for High-Yield Farmers</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Bento Card 1: AI Clinic */}
+            <div className="md:col-span-2 rounded-3xl p-8 bg-gradient-to-br from-emerald-900/40 to-slate-900/60 border border-emerald-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-emerald-400/50 transition-all">
+              <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all" />
+              <div className="space-y-3 relative z-10">
+                <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-400 font-bold">
+                  <Stethoscope className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Instant AI Diagnostics</span>
+                <h3 className="text-2xl font-black text-white">Scan Crop Diseases &amp; Get Precise Fertilizer Dosages</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                  Upload leaf photos. Our neural network detects 150+ crop diseases, fungal infections, and nitrogen/phosphorus deficiencies with 98% laboratory accuracy.
+                </p>
+              </div>
+              <div className="pt-4 relative z-10">
+                <Link
+                  to={isAuthenticated ? "/diagnose" : "/login"}
+                  className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
+                >
+                  <span>Test AI Diagnosis Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-          ))}
+
+            {/* Bento Card 2: 100% Genuine Lab Guarantee */}
+            <div className="rounded-3xl p-8 bg-slate-950/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-teal-400/40 transition-all">
+              <div className="space-y-3">
+                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-400 font-bold">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">Government Verified</span>
+                <h3 className="text-xl font-black text-white">100% Lab-Tested Inputs</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Every batch of NPK, Urea, and insecticides undergoes strict NABL quality testing before dispatch.
+                </p>
+              </div>
+              <div className="pt-2">
+                <span className="text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+                  <Zap className="w-4 h-4" /> Zero Adulteration Guarantee
+                </span>
+              </div>
+            </div>
+
+            {/* Bento Card 3: Free Farm Doorstep Delivery */}
+            <div className="rounded-3xl p-8 bg-slate-950/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-amber-400/40 transition-all">
+              <div className="space-y-3">
+                <div className="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-400 font-bold">
+                  <Truck className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">Express Dispatch</span>
+                <h3 className="text-xl font-black text-white">Direct Farm Doorstep Shipping</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Free delivery across Haryana, Punjab &amp; UP for orders above ₹999. Heavy bag bulk dispatch available.
+                </p>
+              </div>
+              <div className="pt-2">
+                <span className="text-amber-400 text-xs font-bold flex items-center gap-1.5">
+                  <Activity className="w-4 h-4" /> Live GPS Order Tracking
+                </span>
+              </div>
+            </div>
+
+            {/* Bento Card 4: Farm Calendar Planner */}
+            <div className="md:col-span-2 rounded-3xl p-8 bg-gradient-to-br from-teal-900/40 to-slate-900/60 border border-teal-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-teal-400/50 transition-all">
+              <div className="space-y-3 relative z-10">
+                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-400 font-bold">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">Automated Agri Schedule</span>
+                <h3 className="text-2xl font-black text-white">Personalized Fertilizer &amp; Spray Calendar</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                  Set your sowing date for Paddy, Wheat, Cotton, or Sugarcane. Get automatic SMS reminders when it's time for basal dosage, top dressing, or Micronutrient sprays.
+                </p>
+              </div>
+              <div className="pt-4 relative z-10">
+                <Link
+                  to={isAuthenticated ? "/planner" : "/login"}
+                  className="inline-flex items-center gap-2 bg-teal-400 hover:bg-teal-300 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
+                >
+                  <span>Open Smart Planner</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
-      {/* ─── Categories Section ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        <div className="absolute inset-0 bg-slate-50/95" style={{ position: 'relative' }}>
-        </div>
-        <div className="max-w-7xl mx-auto relative space-y-6" style={{ backgroundColor: 'rgba(248,250,252,0.97)', borderRadius: '2rem', padding: '2rem' }}>
+      {/* ─── 3. CATEGORY SELECTOR ─── */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-950 text-white">
+        <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-black text-gray-900">Explore Agri Categories</h2>
-              <p className="text-xs text-gray-500">Find the right treatment, nutrient, or seed for your crop</p>
+              <span className="text-emerald-400 text-xs font-black uppercase tracking-widest">Store Categories</span>
+              <h2 className="text-2xl font-black text-white">Browse Certified Agricultural Inputs</h2>
             </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1">
-              <span>View All</span>
+            <Link to="/products" className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1">
+              <span>View All Categories</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -182,39 +274,33 @@ export const Home: React.FC = () => {
               <Link
                 key={cat.id}
                 to={`/products?category=${cat.slug}`}
-                className="group bg-white rounded-2xl border border-gray-100 p-3 text-center hover:border-emerald-500 hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between space-y-2"
+                className="group bg-slate-900/90 backdrop-blur-md rounded-3xl border border-white/10 p-4 text-center hover:border-emerald-500 hover:bg-slate-850 transition-all duration-300 flex flex-col items-center justify-between space-y-3 transform hover:-translate-y-1"
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 shrink-0 border border-gray-100 group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-800 shrink-0 border border-white/10 group-hover:scale-105 transition-transform shadow-md">
                   <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                 </div>
-                <h3 className="text-xs font-bold text-gray-800 line-clamp-2 leading-snug group-hover:text-emerald-700">
+                <h3 className="text-xs font-bold text-slate-200 line-clamp-2 leading-snug group-hover:text-emerald-400">
                   {cat.name}
                 </h3>
-                <span className="text-[10px] text-gray-400 font-semibold">{cat.count} Items</span>
+                <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  {cat.count} Products
+                </span>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Featured Products ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8 relative"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-white/96" />
-        <div className="max-w-7xl mx-auto relative space-y-6">
+      {/* ─── 4. FEATURED PRODUCTS (LIQUID CARDS) ─── */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900 relative">
+        <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-black text-gray-900">Featured High-Yield Fertilizers</h2>
-              <p className="text-xs text-gray-500">Top rated water soluble &amp; organic soil enhancers</p>
+              <span className="text-emerald-400 text-xs font-black uppercase tracking-widest">Top Rated Inputs</span>
+              <h2 className="text-2xl font-black text-white">Featured High-Yield Fertilizers</h2>
             </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1">
-              <span>Explore All</span>
+            <Link to="/products" className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1">
+              <span>View All Store Products</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -227,76 +313,16 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── AI Diagnosis CTA Banner ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8 relative"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 to-teal-950/90" />
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-white rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-4 max-w-xl text-center md:text-left">
-              <span className="bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full">
-                Free AI Crop Clinic
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-black leading-tight">
-                Unsure which fertilizer or pesticide your crop needs?
-              </h2>
-              <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed font-medium">
-                Upload leaf photos or select symptoms. Our instant AI model analyzes over 150 crop diseases and provides verified nutrient treatment recommendations.
-              </p>
-              <Link
-                to={isAuthenticated ? "/diagnose" : "/login"}
-                state={!isAuthenticated ? { from: { pathname: '/diagnose' } } : undefined}
-                className="inline-flex items-center gap-2 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black px-6 py-3 rounded-xl text-sm transition-all shadow-lg cursor-pointer"
-              >
-                <Stethoscope className="w-4 h-4" />
-                <span>{isAuthenticated ? 'Start Free Crop Diagnosis' : 'Login to Diagnose'}</span>
-              </Link>
-            </div>
-
-            <div className="relative z-10 w-full md:w-auto flex justify-center gap-4">
-              <div className="w-40 h-40 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center justify-center text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-2xl">
-                  98%
-                </div>
-                <p className="text-xs font-bold text-white">AI Accuracy</p>
-                <p className="text-[10px] text-emerald-200">Lab Verified</p>
-              </div>
-              <div className="w-40 h-40 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 p-6 flex flex-col items-center justify-center text-center space-y-2">
-                <div className="w-16 h-16 rounded-full bg-teal-500 text-slate-950 flex items-center justify-center font-black text-xl">
-                  150+
-                </div>
-                <p className="text-xs font-bold text-white">Diseases</p>
-                <p className="text-[10px] text-emerald-200">Detected</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Trending Products ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8 relative"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'top',
-        }}
-      >
-        <div className="absolute inset-0 bg-slate-50/97" />
-        <div className="max-w-7xl mx-auto relative space-y-6">
+      {/* ─── 5. TRENDING PRODUCTS ─── */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-950 relative">
+        <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-black text-gray-900">Trending Crop Care &amp; Pesticides</h2>
-              <p className="text-xs text-gray-500">Most bought products by farmers this week</p>
+              <span className="text-teal-400 text-xs font-black uppercase tracking-widest">Farmer Choices</span>
+              <h2 className="text-2xl font-black text-white">Trending Bio-Enhancers &amp; Sprays</h2>
             </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1">
-              <span>View All</span>
+            <Link to="/products" className="text-xs font-bold text-teal-400 hover:underline flex items-center gap-1">
+              <span>Explore All</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -309,62 +335,12 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Farm Planner CTA ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8 relative"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-950/92 to-orange-900/88" />
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-white rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-4 max-w-lg text-center md:text-left">
-              <span className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase px-3 py-1 rounded-full">
-                Smart Farm Planner
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black leading-tight">
-                Never miss a fertilizer schedule or planting date again
-              </h2>
-              <p className="text-xs sm:text-sm text-amber-100/80 leading-relaxed font-medium">
-                Get AI-powered personalized crop schedules, fertilizer application reminders, and seasonal planting calendars sent directly to your phone.
-              </p>
-              <Link
-                to={isAuthenticated ? "/planner" : "/login"}
-                state={!isAuthenticated ? { from: { pathname: '/planner' } } : undefined}
-                className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-6 py-3 rounded-xl text-sm transition-all shadow-lg cursor-pointer"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>{isAuthenticated ? 'Open Farm Planner' : 'Login to Plan'}</span>
-              </Link>
-            </div>
-            <div className="hidden md:flex items-center justify-center w-48 h-48 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20">
-              <div className="text-center space-y-2">
-                <Calendar className="w-12 h-12 text-amber-400 mx-auto" />
-                <p className="text-white font-black text-sm">AI Crop Calendar</p>
-                <p className="text-amber-200 text-[10px]">Personalized for your farm</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Farmer Testimonials ─── */}
-      <section
-        className="py-16 px-4 sm:px-6 lg:px-8 relative"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1543757229-8d5a1e07e3d9?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-emerald-950/90" />
-        <div className="max-w-7xl mx-auto relative space-y-8">
-          <div className="text-center space-y-1">
-            <h2 className="text-2xl font-black text-white">Farmer Success Stories</h2>
-            <p className="text-xs text-emerald-300/80">Trusted by over 50,000 farmers across Haryana, Punjab &amp; UP</p>
+      {/* ─── 6. FARMER TESTIMONIALS ─── */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900 text-white relative">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="text-center space-y-2">
+            <span className="text-emerald-400 text-xs font-black uppercase tracking-widest">Verified Success</span>
+            <h2 className="text-3xl font-black">Trusted by Over 50,000 Farmers</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -391,14 +367,14 @@ export const Home: React.FC = () => {
                 rating: 5
               }
             ].map((rev, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-6 space-y-4">
+              <div key={i} className="bg-slate-950/80 backdrop-blur-xl rounded-3xl border border-white/10 p-7 space-y-4 shadow-xl">
                 <div className="flex text-amber-400 gap-1">
                   {[...Array(rev.rating)].map((_, idx) => (
                     <Star key={idx} className="w-4 h-4 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-xs text-emerald-100/90 leading-relaxed italic">"{rev.text}"</p>
-                <div className="pt-3 border-t border-white/10">
+                <p className="text-xs text-slate-300 leading-relaxed italic font-medium">"{rev.text}"</p>
+                <div className="pt-4 border-t border-white/10">
                   <h4 className="text-xs font-bold text-white">{rev.name}</h4>
                   <p className="text-[11px] text-emerald-400">{rev.location} • <span className="text-amber-300 font-semibold">{rev.crop}</span></p>
                 </div>
@@ -408,37 +384,36 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── Final CTA ─── */}
-      <section
-        className="py-20 px-4 sm:px-6 lg:px-8 relative text-center"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=60&w=1400')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 to-teal-950/95" />
-        <div className="max-w-3xl mx-auto relative space-y-6">
-          <div className="inline-flex items-center gap-2 bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold px-4 py-1.5 rounded-full">
-            <Leaf className="w-3.5 h-3.5" />
-            Join 50,000+ Farmers
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
-            Start growing smarter today with <span className="text-emerald-400">SarkarFertilizer</span>
+      {/* ─── 7. FINAL CALLOUT ─── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 text-center relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
+        
+        <div className="max-w-3xl mx-auto relative z-10 space-y-6">
+          <span className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black px-4 py-1.5 rounded-full">
+            <Leaf className="w-4 h-4" />
+            Empowering Modern Indian Agriculture
+          </span>
+          
+          <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
+            Start Growing Smarter with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">SarkarFertilizer</span>
           </h2>
-          <p className="text-sm text-emerald-100/80">Government certified products. AI-powered diagnosis. Smart farm planning. All in one place.</p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          
+          <p className="text-sm text-emerald-100/80 font-medium">
+            Government certified fertilizers • AI-powered crop diagnosis • Smart farm calendar reminders
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <Link
               to="/products"
-              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-xl text-sm transition-all shadow-lg"
+              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/20"
             >
-              <span>Shop Fertilizers Now</span>
+              <span>Explore All Products</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             {!isAuthenticated && (
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold px-8 py-4 rounded-xl text-sm transition-all"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/20 font-bold px-8 py-4 rounded-2xl text-sm transition-all"
               >
                 <span>Create Free Account</span>
               </Link>
