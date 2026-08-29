@@ -38,40 +38,40 @@ export const Orders: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold">
           <Package className="w-6 h-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900">My Farm Orders</h1>
-          <p className="text-xs text-gray-500">Track shipments and view tax invoices</p>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white">My Farm Orders</h1>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Track shipments and view tax invoices</p>
         </div>
       </div>
 
       {/* States */}
       {isLoading ? (
         <div className="space-y-4 animate-pulse">
-          <div className="h-28 bg-gray-200 rounded-3xl" />
-          <div className="h-28 bg-gray-200 rounded-3xl" />
-          <div className="h-28 bg-gray-200 rounded-3xl" />
+          <div className="h-28 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
+          <div className="h-28 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
+          <div className="h-28 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
         </div>
       ) : error ? (
-        <div className="bg-rose-50 border border-rose-200 rounded-3xl p-8 text-center space-y-2">
-          <p className="text-sm font-bold text-rose-700">{error}</p>
+        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-3xl p-8 text-center space-y-2">
+          <p className="text-sm font-bold text-rose-700 dark:text-rose-400">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="text-xs text-rose-600 hover:underline cursor-pointer"
+            className="text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
           >
             Retry
           </button>
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center space-y-4 shadow-xs">
-          <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto">
-            <ShoppingBag className="w-8 h-8 text-emerald-400" />
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-12 text-center space-y-4 shadow-xs">
+          <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950 rounded-3xl flex items-center justify-center mx-auto">
+            <ShoppingBag className="w-8 h-8 text-emerald-500 dark:text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-gray-800">No orders placed yet</h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <h3 className="text-base font-bold text-gray-800 dark:text-white">No orders placed yet</h3>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
               Explore our certified products and place your first fertilizer order.
             </p>
           </div>

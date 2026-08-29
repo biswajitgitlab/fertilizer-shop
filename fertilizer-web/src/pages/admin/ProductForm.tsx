@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 
 const PRESET_AGRICULTURE_IMAGES = [
   { label: 'NPK Granules / Bags', url: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600' },
-  { label: 'Organic Neem Oil Bottle', url: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Organic Neem Oil Bottle', url: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80&w=600' },
   { label: 'Green Crop Growth Liquid', url: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600' },
   { label: 'Micronutrient Spray', url: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=600' },
   { label: 'Wheat Field & Fertilizer', url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=600' },
@@ -79,7 +79,7 @@ export const ProductForm: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
+    (Array.from(files) as File[]).forEach((file: File) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {

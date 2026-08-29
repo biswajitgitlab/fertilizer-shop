@@ -4,6 +4,7 @@ import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
 import { Sprout, User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Logo } from '../components/common/Logo';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -113,12 +114,7 @@ export const Login: React.FC = () => {
 
         {/* Content */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-400 rounded-2xl flex items-center justify-center shadow-lg">
-              <Sprout className="w-6 h-6 text-emerald-950" />
-            </div>
-            <span className="text-white font-black text-xl tracking-tight">SarkarFertilizer</span>
-          </div>
+          <Logo variant="hero" />
         </div>
 
         <div className="relative z-10 space-y-8">
@@ -183,11 +179,8 @@ export const Login: React.FC = () => {
           </button>
 
           {/* Mobile Logo */}
-          <div className="lg:hidden text-center space-y-2">
-            <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30 mb-2">
-              <Sprout className="w-8 h-8" />
-            </div>
-            <p className="text-sm font-black text-emerald-400">SarkarFertilizer</p>
+          <div className="lg:hidden flex justify-center py-2">
+            <Logo variant="hero" />
           </div>
 
           <div className="space-y-1">

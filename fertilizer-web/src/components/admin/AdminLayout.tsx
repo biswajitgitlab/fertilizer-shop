@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { Bell, Search, Menu, Sparkles, Shield, PanelLeftClose, PanelLeftOpen, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUIStore } from '../../store/uiStore';
+import { Logo } from '../common/Logo';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }> = ({
   children,
@@ -91,6 +92,9 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
             </button>
             
             <div className="flex items-center gap-2.5">
+              <div className="lg:hidden shrink-0">
+                <Logo variant="icon" size="sm" />
+              </div>
               <h1 className={`text-lg font-black tracking-tight flex items-center gap-2 ${
                 theme === 'dark' ? 'text-white' : 'text-slate-900'
               }`}>
@@ -170,6 +174,51 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
         <main className="p-4 sm:p-8 flex-1 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </main>
+
+        {/* Glassmorphic Admin Footer */}
+        <footer className={`mt-auto border-t px-4 sm:px-8 py-4 transition-colors duration-300 ${
+          theme === 'dark'
+            ? 'bg-slate-900/60 border-slate-800/80 text-slate-400'
+            : 'bg-white/80 border-slate-200 text-slate-600'
+        }`}>
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            {/* Left: Branding & Operational Status */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Logo variant="icon" size="xs" />
+                Fertilizer Shop Admin
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                v2.4.0 Enterprise Edition
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Systems Operational
+              </span>
+            </div>
+
+            {/* Right: Navigation Links & Copyright */}
+            <div className="flex flex-wrap items-center gap-4 text-[11px]">
+              <a href="/admin/analytics" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                Analytics
+              </a>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <a href="/admin/roles" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                Roles & Access
+              </a>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <a href="/admin/inventory" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                Stock Audit
+              </a>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="text-slate-500 dark:text-slate-400">
+                © {new Date().getFullYear()} SarkarFertilizer Inc.
+              </span>
+            </div>
+          </div>
+        </footer>
 
       </div>
     </div>

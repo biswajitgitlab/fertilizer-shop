@@ -158,12 +158,12 @@ export const OrderDetail: React.FC = () => {
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link to="/orders" className="p-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700">
+          <Link to="/orders" className="p-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl text-gray-700 dark:text-slate-300">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-gray-900">Order #{order.id}</h1>
-            <p className="text-xs text-gray-500">Placed on {formatDate(order.createdAt)}</p>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">Order #{order.id}</h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Placed on {formatDate(order.createdAt)}</p>
           </div>
         </div>
 
@@ -171,12 +171,12 @@ export const OrderDetail: React.FC = () => {
       </div>
 
       {/* Shipment Status Progress */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Shipment Tracking</h3>
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs">
+        <h3 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Shipment Tracking</h3>
         <OrderTimeline status={order.status} />
         {order.trackingNumber && (
-          <p className="text-xs text-center text-gray-600 font-medium pt-2 border-t border-gray-100">
-            Courier Tracking Number: <span className="font-bold text-emerald-800">{order.trackingNumber}</span> (Delhivery Logistics)
+          <p className="text-xs text-center text-gray-600 dark:text-slate-400 font-medium pt-2 border-t border-gray-100 dark:border-slate-800">
+            Courier Tracking Number: <span className="font-bold text-emerald-800 dark:text-emerald-400">{order.trackingNumber}</span> (Delhivery Logistics)
           </p>
         )}
       </div>
@@ -185,65 +185,65 @@ export const OrderDetail: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Purchased Items */}
-        <div className="md:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-4">
-          <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3">
+        <div className="md:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-4">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
             Ordered Items ({order.items.length})
           </h3>
 
           <div className="space-y-3">
             {order.items.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-2xl">
+              <div key={idx} className="flex items-center justify-between gap-4 p-3 bg-gray-50 dark:bg-slate-800/70 rounded-2xl">
                 <div className="flex items-center gap-3">
                   <img src={item.product.images[0]} alt={item.product.name} className="w-12 h-12 rounded-xl object-cover" />
                   <div>
-                    <h4 className="text-xs font-bold text-gray-900">{item.product.name}</h4>
-                    <p className="text-[11px] text-gray-500">Unit: {item.product.unit} • Qty: {item.quantity}</p>
+                    <h4 className="text-xs font-bold text-gray-900 dark:text-white">{item.product.name}</h4>
+                    <p className="text-[11px] text-gray-500 dark:text-slate-400">Unit: {item.product.unit} • Qty: {item.quantity}</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-gray-900">{formatCurrency(item.product.price * item.quantity)}</span>
+                <span className="text-xs font-black text-gray-900 dark:text-white">{formatCurrency(item.product.price * item.quantity)}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-gray-100 pt-3 space-y-1.5 text-xs text-gray-600 font-medium">
-            <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(order.subtotal)}</span></div>
-            {order.discount > 0 && <div className="flex justify-between text-emerald-700"><span>Discount</span><span>-{formatCurrency(order.discount)}</span></div>}
+          <div className="border-t border-gray-100 dark:border-slate-800 pt-3 space-y-1.5 text-xs text-gray-600 dark:text-slate-400 font-medium">
+            <div className="flex justify-between"><span>Subtotal</span><span className="text-gray-900 dark:text-white font-bold">{formatCurrency(order.subtotal)}</span></div>
+            {order.discount > 0 && <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-bold"><span>Discount</span><span>-{formatCurrency(order.discount)}</span></div>}
             <div className="flex justify-between"><span>Shipping Fee</span><span>₹{order.shippingFee}</span></div>
-            <div className="flex justify-between text-gray-500"><span>GST (18%)</span><span>₹{order.tax}</span></div>
-            <div className="flex justify-between text-base font-black text-gray-900 pt-2 border-t"><span>Total</span><span className="text-emerald-800">{formatCurrency(order.total)}</span></div>
+            <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>GST (18%)</span><span>₹{order.tax}</span></div>
+            <div className="flex justify-between text-base font-black text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-slate-800"><span>Total</span><span className="text-emerald-800 dark:text-emerald-400">{formatCurrency(order.total)}</span></div>
           </div>
         </div>
 
         {/* Address Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-4 h-fit">
-          <h3 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-emerald-600" />
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-4 h-fit">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             Delivery Address
           </h3>
-          <div className="text-xs text-gray-700 space-y-1">
-            <p className="font-bold text-gray-900">{order.shippingAddress.name}</p>
+          <div className="text-xs text-gray-700 dark:text-slate-300 space-y-1">
+            <p className="font-bold text-gray-900 dark:text-white">{order.shippingAddress.name}</p>
             <p>{order.shippingAddress.line1}</p>
             {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
             <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
-            <p className="font-bold text-emerald-800 pt-1">Phone: {order.shippingAddress.phone}</p>
+            <p className="font-bold text-emerald-800 dark:text-emerald-400 pt-1">Phone: {order.shippingAddress.phone}</p>
           </div>
 
-          <div className="pt-3 border-t border-gray-100 space-y-2 text-xs">
-            <span className="text-gray-400 block font-bold text-[10px] uppercase">Payment Status</span>
-            <p className="font-bold text-gray-900">{order.paymentMethod}</p>
+          <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-2 text-xs">
+            <span className="text-gray-400 dark:text-slate-500 block font-bold text-[10px] uppercase">Payment Status</span>
+            <p className="font-bold text-gray-900 dark:text-white">{order.paymentMethod}</p>
             <div className="flex items-center justify-between">
               <span className={`inline-block font-bold px-2.5 py-0.5 rounded-full text-[10px] ${
-                order.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : (order.paymentStatus === 'Failed' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                order.paymentStatus === 'Paid' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : (order.paymentStatus === 'Failed' ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-800' : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800')
               }`}>
                 {order.paymentStatus === 'Paid' ? '✓ PAID' : (order.paymentStatus === 'Failed' ? '✕ FAILED' : '⏳ PENDING')}
               </span>
             </div>
 
             {order.paymentDetails && (
-              <div className="bg-gray-50 p-2.5 rounded-xl text-[11px] space-y-1 font-mono text-gray-700">
-                <p className="text-[10px] text-gray-400 uppercase font-sans font-bold">Transaction Record</p>
-                <p><span className="font-semibold text-gray-500">Gateway:</span> {order.paymentDetails.gateway}</p>
-                <p><span className="font-semibold text-gray-500">Txn ID:</span> {order.paymentDetails.transactionId}</p>
+              <div className="bg-gray-50 dark:bg-slate-800 p-2.5 rounded-xl text-[11px] space-y-1 font-mono text-gray-700 dark:text-slate-300">
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase font-sans font-bold">Transaction Record</p>
+                <p><span className="font-semibold text-gray-500 dark:text-slate-400">Gateway:</span> {order.paymentDetails.gateway}</p>
+                <p><span className="font-semibold text-gray-500 dark:text-slate-400">Txn ID:</span> {order.paymentDetails.transactionId}</p>
               </div>
             )}
 
@@ -264,7 +264,7 @@ export const OrderDetail: React.FC = () => {
                     const data = await orderApi.getOrderById(targetId);
                     setOrder(normalizeOrder(data));
                   }}
-                  className="w-full py-2 px-3 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                  className="w-full py-2 px-3 bg-gray-900 dark:bg-slate-800 dark:hover:bg-slate-700 hover:bg-gray-800 text-white font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                 >
                   <span>Switch to Cash on Delivery</span>
                 </button>
@@ -274,7 +274,7 @@ export const OrderDetail: React.FC = () => {
                   href={`https://wa.me/919876543210?text=Namaste!%20Money%20debited%20from%20bank%20for%20Order%20%23${order.id}%20but%20status%20is%20pending.`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-2 px-3 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <span>Report Payment Complaint</span>
                 </a>

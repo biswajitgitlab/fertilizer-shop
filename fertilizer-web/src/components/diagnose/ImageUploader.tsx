@@ -46,13 +46,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       {/* Drag & Drop Area */}
       <div
         onClick={() => fileInputRef.current?.click()}
-        className="border-2 border-dashed border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50 rounded-2xl p-8 text-center cursor-pointer transition-colors space-y-2"
+        className="border-2 border-dashed border-emerald-300 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-2xl p-8 text-center cursor-pointer transition-colors space-y-2"
       >
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-xs">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mx-auto shadow-xs">
           <UploadCloud className="w-6 h-6" />
         </div>
-        <h4 className="text-sm font-bold text-gray-900">Upload Crop Leaf Photos</h4>
-        <p className="text-xs text-gray-500">
+        <h4 className="text-sm font-bold text-gray-900 dark:text-white">Upload Crop Leaf Photos</h4>
+        <p className="text-xs text-gray-500 dark:text-slate-400">
           Click or drag clear close-up photos of affected leaves or fruits (Up to {maxFiles} images)
         </p>
         <input
@@ -69,8 +69,15 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
           {images.map((img, idx) => (
-            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
-              <img src={img} alt={`Crop upload ${idx}`} className="w-full h-full object-cover" />
+            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 group">
+              <img
+                src={img}
+                alt={`Crop upload ${idx}`}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
               <button
                 type="button"
                 onClick={() => handleRemove(idx)}

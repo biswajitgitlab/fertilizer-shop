@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sprout, Phone, Mail, MapPin, ShieldCheck, Truck, Headphones, Award } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck, Truck, Headphones, Award } from 'lucide-react';
+import { Logo } from './Logo';
 
 export const Footer: React.FC = () => {
   return (
@@ -55,11 +56,8 @@ export const Footer: React.FC = () => {
           
           {/* Brand Col */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
-                <Sprout className="w-5 h-5" />
-              </div>
-              <span className="text-2xl font-black text-white">Krishi<span className="text-emerald-500">Shop</span></span>
+            <Link to="/" className="inline-block">
+              <Logo variant="footer" />
             </Link>
             <p className="text-xs leading-relaxed text-slate-400">
               India's premier digital agriculture platform for high-quality fertilizers, pesticides, seeds, plant vitamins, and AI crop disease diagnosis.

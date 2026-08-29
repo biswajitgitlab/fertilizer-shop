@@ -29,14 +29,14 @@ export const Planner: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold">
             <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-gray-900">Seasonal Fertilizer & Spray Schedules</h1>
-            <p className="text-xs text-gray-500">Calculate exact NPK doses and dates based on sowing date and acreage</p>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">Seasonal Fertilizer & Spray Schedules</h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Calculate exact NPK doses and dates based on sowing date and acreage</p>
           </div>
         </div>
 
@@ -49,14 +49,14 @@ export const Planner: React.FC = () => {
         <PlanCreator />
       ) : isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-          <div className="h-64 bg-gray-200 rounded-3xl" />
-          <div className="h-64 bg-gray-200 rounded-3xl" />
+          <div className="h-64 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
+          <div className="h-64 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-gray-100 p-12 text-center space-y-3 max-w-xl mx-auto">
-          <Sprout className="w-12 h-12 text-amber-500 mx-auto" />
-          <h3 className="text-base font-bold text-gray-800">No active seasonal schedules</h3>
-          <p className="text-xs text-gray-500">Create a customized fertilizer calendar for Paddy, Wheat, Cotton, or Sugarcane.</p>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-12 text-center space-y-3 max-w-xl mx-auto">
+          <Sprout className="w-12 h-12 text-amber-500 dark:text-amber-400 mx-auto" />
+          <h3 className="text-base font-bold text-gray-800 dark:text-white">No active seasonal schedules</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Create a customized fertilizer calendar for Paddy, Wheat, Cotton, or Sugarcane.</p>
           <Button onClick={() => setShowCreator(true)}>Create Crop Schedule</Button>
         </div>
       ) : (

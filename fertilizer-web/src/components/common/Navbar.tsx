@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, User, Globe, Menu, X,
-  LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon
+  LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon, Sprout
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
@@ -16,6 +16,7 @@ import {
   AnimatedSparkles,
   AnimatedSearch
 } from './AnimatedIcons';
+import { Logo } from './Logo';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -93,27 +94,8 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           
           {/* Logo */}
-          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="flex items-center gap-2 shrink-0 group">
-            <motion.div
-              whileHover={{ scale: 1.08, rotate: 3 }}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0"
-            >
-              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-sm" />
-            </motion.div>
-            <div className="leading-none">
-              <span className="text-lg sm:text-xl font-black tracking-tight text-gray-900 dark:text-white flex items-center">
-                Sarkar<span className="text-emerald-600 dark:text-emerald-400">Fertilizer</span>
-              </span>
-              {isAdmin ? (
-                <span className="text-[9px] sm:text-[10px] block font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider mt-0.5">
-                  Admin Portal
-                </span>
-              ) : (
-                <span className="text-[9px] sm:text-[10px] hidden sm:block font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mt-0.5">
-                  Fertilizers &amp; Agri Store
-                </span>
-              )}
-            </div>
+          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="shrink-0 transition-transform duration-200 hover:scale-[1.02]">
+            <Logo variant="navbar" isAdmin={isAdmin} />
           </Link>
 
           {/* Desktop Search — only for non-admin */}

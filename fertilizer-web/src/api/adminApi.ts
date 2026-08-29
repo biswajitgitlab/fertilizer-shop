@@ -1,6 +1,6 @@
 import { apiClient } from './axiosInstances';
 import { mapProduct } from './productApi';
-import { Order } from '../types';
+import { Order, Diagnosis } from '../types';
 
 export const normalizeAdminOrder = (o: any): Order => {
   if (!o) {
@@ -249,7 +249,7 @@ export const DEMO_FALLBACK_ORDERS: Order[] = [
           stock: 85,
           rating: 4.9,
           reviewsCount: 38,
-          images: ['https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&q=80&w=600'],
+          images: ['https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80&w=600'],
           suitableCrops: ['Cotton', 'Chilli', 'Paddy'],
           shortDescription: 'Cold pressed organic neem oil',
           description: 'Effective against sucking pests and caterpillars.',
@@ -544,7 +544,7 @@ export const adminApi = {
                 name: 'Organic Neem Oil 1L',
                 price: 450,
                 unit: '1 Litre Bottle',
-                images: ['https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc']
+                images: ['https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80&w=600']
               },
               quantity: 2
             },

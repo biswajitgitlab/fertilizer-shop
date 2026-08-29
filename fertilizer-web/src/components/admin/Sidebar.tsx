@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
+import { Logo } from '../common/Logo';
 
 export const Sidebar: React.FC<{
   onCloseMobile?: () => void;
@@ -42,22 +43,10 @@ export const Sidebar: React.FC<{
     } ${isCollapsed ? 'items-center' : ''}`}>
       <div className="space-y-4 w-full">
         {/* Admin Brand Logo Header */}
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start gap-3'} px-1 py-2 border-b ${
+        <div className={`flex items-center ${isCollapsed ? 'justify-center py-3' : 'justify-start px-2 py-3'} border-b ${
           theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'
         }`}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black bg-white p-1 shrink-0 shadow-md border border-slate-200/50">
-            <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-full h-full object-contain" />
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <h2 className={`text-sm font-black tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                Sarkar<span className="text-emerald-500">Admin</span>
-              </h2>
-              <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-wider block truncate">
-                Merchant Portal
-              </span>
-            </div>
-          )}
+          <Logo variant="sidebar" collapsed={isCollapsed} />
         </div>
 
         {/* Admin User Profile Card */}

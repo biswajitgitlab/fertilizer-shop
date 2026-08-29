@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Shield Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="40%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+
+    <!-- Primary Sprout Leaf Gradient -->
+    <linearGradient id="primaryLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="45%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Secondary Accent Leaf Gradient -->
+    <linearGradient id="accentLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <!-- Liquid Glass Shield Glow -->
+    <linearGradient id="glassBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#34d399" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#a7f3d0" stop-opacity="0.6" />
+    </linearGradient>
+    
+    <!-- Drop Shadow Filter -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+    
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- App Icon Squircle Base Container -->
+  <rect x="12" y="12" width="488" height="488" rx="136" fill="url(#bgGrad)" filter="url(#dropShadow)" />
+
+  <!-- Glassmorphic Border Ring -->
+  <rect x="16" y="16" width="480" height="480" rx="132" fill="none" stroke="url(#glassBorder)" stroke-width="12" />
+
+  <!-- Inner Subtle Hex pattern or accent ring -->
+  <circle cx="256" cy="256" r="215" fill="none" stroke="#6ee7b7" stroke-width="3" stroke-opacity="0.2" stroke-dasharray="12 12" />
+
+  <!-- GOLDEN WHEAT / SUN BURST ACCENT (RIGHT LEAF) -->
+  <path d="M256 120 C345 120 415 190 405 300 C395 385 320 435 256 435 C285 365 315 280 256 120 Z" 
+        fill="url(#accentLeafGrad)" 
+        filter="url(#glow)" />
+
+  <!-- PRIMARY VIBRANT GREEN SPROUT LEAF (LEFT & CENTER LEAF) -->
+  <path d="M256 80 C155 80 95 170 105 295 C115 390 190 435 256 435 C220 350 185 240 256 80 Z" 
+        fill="url(#primaryLeafGrad)" 
+        filter="url(#glow)" />
+
+  <!-- CENTER LEAF VEIN / STEM RIB -->
+  <path d="M256 110 L256 435" 
+        stroke="#022c22" 
+        stroke-width="14" 
+        stroke-linecap="round" 
+        opacity="0.35" />
+  
+  <path d="M256 220 C220 250 190 280 160 300" 
+        stroke="#022c22" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        opacity="0.25" />
+        
+  <path d="M256 260 C290 290 320 320 350 340" 
+        stroke="#022c22" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        opacity="0.25" />
+
+  <!-- SPROUT TOP GLOW TIP (GOLDEN SEED SPARKS) -->
+  <circle cx="256" cy="72" r="16" fill="#fef08a" filter="url(#glow)" />
+  <circle cx="256" cy="72" r="8" fill="#ffffff" />
+</svg>

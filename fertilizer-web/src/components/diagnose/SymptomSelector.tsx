@@ -21,8 +21,8 @@ export const SymptomSelector: React.FC<SymptomSelectorProps> = ({
             onClick={() => onToggleSymptom(s.label)}
             className={`p-3.5 rounded-2xl border text-left transition-all flex items-center gap-3 cursor-pointer ${
               isSelected
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm font-bold ring-2 ring-emerald-500/20'
-                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm font-bold ring-2 ring-emerald-500/20'
+                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700'
             }`}
           >
             <span className="text-2xl">{s.icon}</span>

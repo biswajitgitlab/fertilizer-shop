@@ -261,7 +261,7 @@ export const Roles: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
-                    {perms.map((perm) => {
+                    {(perms as PermissionItem[]).map((perm) => {
                       const isChecked = Array.isArray(selectedRole.permissions) && selectedRole.permissions.includes(perm.name);
                       return (
                         <label

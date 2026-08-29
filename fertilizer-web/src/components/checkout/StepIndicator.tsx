@@ -25,20 +25,20 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
                 isPassed
                   ? 'bg-emerald-600 text-white'
                   : isCurrent
-                  ? 'bg-emerald-800 text-white ring-4 ring-emerald-100 shadow-md'
-                  : 'bg-gray-200 text-gray-500'
+                  ? 'bg-emerald-800 dark:bg-emerald-600 text-white ring-4 ring-emerald-100 dark:ring-emerald-950/80 shadow-md'
+                  : 'bg-gray-200 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
               }`}>
                 {isPassed ? <Check className="w-5 h-5 stroke-[3]" /> : s.num}
               </div>
               <span className={`text-[11px] font-bold ${
-                isCurrent || isPassed ? 'text-gray-900' : 'text-gray-400'
+                isCurrent || isPassed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'
               }`}>
                 {s.label}
               </span>
             </div>
             {i < steps.length - 1 && (
               <div className={`flex-1 h-1 mx-2 rounded-full ${
-                currentStep > s.num ? 'bg-emerald-600' : 'bg-gray-200'
+                currentStep > s.num ? 'bg-emerald-600' : 'bg-gray-200 dark:bg-slate-800'
               }`} />
             )}
           </React.Fragment>

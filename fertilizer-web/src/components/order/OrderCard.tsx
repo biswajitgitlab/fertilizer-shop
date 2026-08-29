@@ -31,12 +31,12 @@ export const OrderCard: React.FC<{ order: FlexOrder }> = ({ order }) => {
   const itemCount = items.length || order.items_count || 0;
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs hover:shadow-md transition-all space-y-4">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs hover:shadow-md transition-all space-y-4">
       {/* Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-100">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-100 dark:border-slate-800">
         <div>
-          <span className="text-xs font-bold text-gray-500">Order {orderRef}</span>
-          <p className="text-[11px] text-gray-400">
+          <span className="text-xs font-bold text-gray-500 dark:text-slate-400">Order {orderRef}</span>
+          <p className="text-[11px] text-gray-400 dark:text-slate-500">
             {createdAt ? `Placed on ${formatDate(createdAt)}` : 'Date unavailable'}
           </p>
         </div>
@@ -45,7 +45,7 @@ export const OrderCard: React.FC<{ order: FlexOrder }> = ({ order }) => {
           <span className={`text-xs font-black px-3 py-1 rounded-full border ${getStatusColor(status)}`}>
             {status}
           </span>
-          <span className="text-xs font-black text-gray-900 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
+          <span className="text-xs font-black text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800 px-3 py-1 rounded-full border border-gray-200 dark:border-slate-700">
             {formatCurrency(total)}
           </span>
         </div>
@@ -69,7 +69,7 @@ export const OrderCard: React.FC<{ order: FlexOrder }> = ({ order }) => {
                   key={idx}
                   src={imgSrc}
                   alt={altText}
-                  className="w-10 h-10 rounded-xl object-cover border-2 border-white bg-gray-50"
+                  className="w-10 h-10 rounded-xl object-cover border-2 border-white dark:border-slate-900 bg-gray-50 dark:bg-slate-800"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
@@ -77,19 +77,19 @@ export const OrderCard: React.FC<{ order: FlexOrder }> = ({ order }) => {
               ) : (
                 <div
                   key={idx}
-                  className="w-10 h-10 rounded-xl bg-emerald-50 border-2 border-white flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 border-2 border-white dark:border-slate-900 flex items-center justify-center"
                 >
-                  <Package className="w-4 h-4 text-emerald-400" />
+                  <Package className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-            <ShoppingBag className="w-5 h-5 text-gray-400" />
+          <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+            <ShoppingBag className="w-5 h-5 text-gray-400 dark:text-slate-500" />
           </div>
         )}
-        <p className="text-xs text-gray-600 font-medium">
+        <p className="text-xs text-gray-600 dark:text-slate-400 font-medium">
           {itemCount > 0 ? `${itemCount} ${itemCount === 1 ? 'item' : 'items'}` : 'Items unavailable'}
           {paymentMethod !== 'N/A' && ` • Payment: ${paymentMethod}`}
         </p>
@@ -99,7 +99,7 @@ export const OrderCard: React.FC<{ order: FlexOrder }> = ({ order }) => {
       <div className="flex justify-end pt-2">
         <Link
           to={`/orders/${orderId}`}
-          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+          className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1"
         >
           <span>View Order Details &amp; Invoice</span>
           <ArrowRight className="w-3.5 h-3.5" />

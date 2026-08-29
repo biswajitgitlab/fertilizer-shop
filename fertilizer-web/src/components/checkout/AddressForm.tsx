@@ -25,8 +25,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xs space-y-4">
-      <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-4">
+      <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
         Delivery & Farm Shipping Address
       </h3>
 
@@ -85,22 +85,22 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         />
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-gray-700">State *</label>
+          <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300">State *</label>
           <select
             value={address.state}
             onChange={(e) => handleChange('state', e.target.value)}
-            className="w-full text-sm bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            className="w-full text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
             required
           >
             {INDIAN_STATES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">{s}</option>
             ))}
           </select>
         </div>
       </div>
 
-      <div className="pt-4 flex justify-end">
-        <Button type="submit" className="px-8">
+      <div className="pt-4 flex flex-col sm:flex-row justify-end">
+        <Button type="submit" className="w-full sm:w-auto px-8 justify-center">
           Continue to Order Review
         </Button>
       </div>

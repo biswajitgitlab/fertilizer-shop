@@ -92,7 +92,7 @@ export const Checkout: React.FC = () => {
       
       {/* Checkout Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-black text-gray-900">Secure Farm Checkout</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white">Secure Farm Checkout</h1>
         <StepIndicator currentStep={step} />
       </div>
 
@@ -110,15 +110,15 @@ export const Checkout: React.FC = () => {
           )}
 
           {step === 2 && (
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xs space-y-6 animate-fade-in">
-              <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 sm:p-8 shadow-xs space-y-6 animate-fade-in">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
                 Review Delivery Details
               </h3>
 
-              <div className="bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200 text-xs space-y-1">
-                <p className="font-bold text-emerald-900">Shipping To:</p>
-                <p className="font-semibold text-emerald-950">{address.name} ({address.phone})</p>
-                <p className="text-emerald-800">{address.line1}, {address.city}, {address.state} - {address.pincode}</p>
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-1">
+                <p className="font-bold text-emerald-900 dark:text-emerald-300">Shipping To:</p>
+                <p className="font-semibold text-emerald-950 dark:text-emerald-100">{address.name} ({address.phone})</p>
+                <p className="text-emerald-800 dark:text-emerald-200">{address.line1}, {address.city}, {address.state} - {address.pincode}</p>
               </div>
 
               <PaymentSelector
@@ -126,11 +126,21 @@ export const Checkout: React.FC = () => {
                 onChangeMethod={setPaymentMethod}
               />
 
-              <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(1)} icon={<ArrowLeft className="w-4 h-4" />}>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 pt-6 border-t border-gray-100 dark:border-slate-800">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setStep(1)} 
+                  icon={<ArrowLeft className="w-4 h-4" />}
+                  className="w-full sm:w-auto justify-center"
+                >
                   Back to Address
                 </Button>
-                <Button onClick={handlePlaceOrder} isLoading={isPlacingOrder} icon={<Lock className="w-4 h-4" />}>
+                <Button 
+                  onClick={handlePlaceOrder} 
+                  isLoading={isPlacingOrder} 
+                  icon={<Lock className="w-4 h-4" />}
+                  className="w-full sm:w-auto justify-center"
+                >
                   Place Order Now
                 </Button>
               </div>
@@ -140,7 +150,7 @@ export const Checkout: React.FC = () => {
         </div>
 
         {/* Right Column: Order Summary */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
           <OrderSummary />
         </div>
 
