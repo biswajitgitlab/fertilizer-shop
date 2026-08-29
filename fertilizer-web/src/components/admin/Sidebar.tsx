@@ -3,17 +3,20 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  ChevronLeft, ChevronRight
+  Sun, Moon
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useUIStore } from '../../store/uiStore';
 
 export const Sidebar: React.FC<{
   onCloseMobile?: () => void;
   collapsed?: boolean;
-  onToggleCollapse?: () => void;
-}> = ({ onCloseMobile, collapsed = false, onToggleCollapse }) => {
+}> = ({ onCloseMobile, collapsed }) => {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme, sidebarCollapsed } = useUIStore();
   const navigate = useNavigate();
+
+  const isCollapsed = collapsed !== undefined ? collapsed : sidebarCollapsed;
 
   const links = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
@@ -34,55 +37,54 @@ export const Sidebar: React.FC<{
   };
 
   return (
-    <div className={`w-full bg-slate-950/90 text-slate-300 h-full flex flex-col justify-between p-3 overflow-x-hidden transition-all duration-300 ${collapsed ? 'items-center' : ''}`}>
-      <div className="space-y-5 w-full">
-        {/* Admin Brand Logo & Collapse Toggle */}
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} px-1 py-2 border-b border-slate-800/60 pb-3`}>
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black bg-white p-1 shrink-0 shadow-md shadow-emerald-950/40">
-              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-full h-full object-contain" />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0">
-                <h2 className="text-sm font-black text-white leading-tight truncate">SarkarAdmin</h2>
-                <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider block truncate">Merchant Portal</span>
-              </div>
-            )}
+    <div className={`w-full h-full flex flex-col justify-between p-3 overflow-x-hidden transition-all duration-300 ${
+      theme === 'dark' ? 'bg-slate-950/90 text-slate-300' : 'bg-white text-slate-700'
+    } ${isCollapsed ? 'items-center' : ''}`}>
+      <div className="space-y-4 w-full">
+        {/* Admin Brand Logo Header */}
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start gap-3'} px-1 py-2 border-b ${
+          theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'
+        }`}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black bg-white p-1 shrink-0 shadow-md border border-slate-200/50">
+            <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-full h-full object-contain" />
           </div>
-          {onToggleCollapse && !collapsed && (
-            <button
-              onClick={onToggleCollapse}
-              title="Collapse Sidebar"
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-lg transition-colors cursor-pointer shrink-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          {onToggleCollapse && collapsed && (
-            <button
-              onClick={onToggleCollapse}
-              title="Expand Sidebar"
-              className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/80 rounded-lg transition-colors cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          {!isCollapsed && (
+            <div className="min-w-0 flex-1">
+              <h2 className={`text-sm font-black tracking-tight truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                Sarkar<span className="text-emerald-500">Admin</span>
+              </h2>
+              <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-wider block truncate">
+                Merchant Portal
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Admin User Info */}
-        {!collapsed ? (
-          <div className="bg-slate-900/80 rounded-xl p-2.5 flex items-center gap-2.5 border border-slate-800/60">
-            <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400 text-xs shrink-0">
+        {/* Admin User Profile Card */}
+        {!isCollapsed ? (
+          <div className={`rounded-xl p-2.5 flex items-center gap-2.5 border transition-colors ${
+            theme === 'dark'
+              ? 'bg-slate-900/80 border-slate-800 text-white'
+              : 'bg-slate-50 border-slate-200 text-slate-800'
+          }`}>
+            <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-500 text-xs shrink-0">
               {user?.name?.[0] || 'A'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-white truncate">{user?.name || 'Administrator'}</p>
-              <p className="text-[10px] text-slate-400 truncate">{user?.email || 'admin@sarkarfertilizer.com'}</p>
+              <p className={`text-xs font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                {user?.name || 'Administrator'}
+              </p>
+              <p className={`text-[10px] truncate ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                {user?.email || 'admin@sarkarfertilizer.com'}
+              </p>
             </div>
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
           </div>
         ) : (
-          <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center font-bold text-amber-400 text-xs mx-auto" title={user?.name || 'Admin'}>
+          <div
+            className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-500 text-xs mx-auto shadow-xs"
+            title={user?.name || 'Administrator'}
+          >
             {user?.name?.[0] || 'A'}
           </div>
         )}
@@ -96,19 +98,21 @@ export const Sidebar: React.FC<{
                 key={link.path}
                 to={link.path}
                 onClick={onCloseMobile}
-                title={collapsed ? link.name : undefined}
+                title={isCollapsed ? link.name : undefined}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    collapsed ? 'justify-center px-0' : ''
+                    isCollapsed ? 'justify-center px-0' : ''
                   } ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60 font-bold'
-                      : 'text-slate-400 hover:bg-slate-900/80 hover:text-white'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 font-bold'
+                      : theme === 'dark'
+                      ? 'text-slate-400 hover:bg-slate-900/80 hover:text-white'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`
                 }
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && <span className="truncate">{link.name}</span>}
+                {!isCollapsed && <span className="truncate">{link.name}</span>}
               </NavLink>
             );
           })}
@@ -116,31 +120,61 @@ export const Sidebar: React.FC<{
       </div>
 
       {/* Bottom Actions */}
-      <div className="space-y-1 pt-3 border-t border-slate-800/80 w-full">
-        {/* Theme Switch Button */}
+      <div className={`space-y-1 pt-3 border-t w-full ${
+        theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'
+      }`}>
+        {/* Quick Theme Switcher Button */}
         <button
           onClick={toggleTheme}
-          title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
-          className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-amber-300 hover:text-amber-200 hover:bg-slate-900/80 rounded-xl transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : ''}`}
+          title={isCollapsed ? (theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode') : undefined}
+          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+            isCollapsed ? 'justify-center px-0' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-amber-300 hover:text-amber-200 hover:bg-slate-900/80'
+              : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50'
+          }`}
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 shrink-0 text-amber-400" /> : <Moon className="w-4 h-4 shrink-0 text-slate-300" />}
-          {!collapsed && <span className="truncate">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 shrink-0 text-amber-400 animate-spin-slow" />
+          ) : (
+            <Moon className="w-4 h-4 shrink-0 text-amber-600" />
+          )}
+          {!isCollapsed && (
+            <span className="truncate font-bold">
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </span>
+          )}
         </button>
+
+        {/* Exit to Store */}
         <NavLink
           to="/"
-          title={collapsed ? "Exit to Customer Store" : undefined}
-          className={`flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900/80 rounded-xl transition-colors ${collapsed ? 'justify-center px-0' : ''}`}
+          title={isCollapsed ? 'Exit to Customer Store' : undefined}
+          className={`flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold rounded-xl transition-colors ${
+            isCollapsed ? 'justify-center px-0' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-slate-400 hover:text-white hover:bg-slate-900/80'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
         >
           <ArrowLeft className="w-4 h-4 shrink-0" />
-          {!collapsed && <span className="truncate">Exit to Store</span>}
+          {!isCollapsed && <span className="truncate">Exit to Store</span>}
         </NavLink>
+
+        {/* Log Out */}
         <button
           onClick={handleLogout}
-          title={collapsed ? "Log Out" : undefined}
-          className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-rose-400 hover:text-white hover:bg-rose-900/30 rounded-xl transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : ''}`}
+          title={isCollapsed ? 'Log Out' : undefined}
+          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-rose-500 hover:text-rose-600 rounded-xl transition-colors cursor-pointer ${
+            isCollapsed ? 'justify-center px-0' : ''
+          } ${
+            theme === 'dark' ? 'hover:bg-rose-950/40' : 'hover:bg-rose-50'
+          }`}
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          {!collapsed && <span className="truncate">Log Out</span>}
+          {!isCollapsed && <span className="truncate">Log Out</span>}
         </button>
       </div>
     </div>

@@ -2,11 +2,14 @@ import { create } from 'zustand';
 
 interface UIState {
   sidebarOpen: boolean;
+  sidebarCollapsed: boolean;
   theme: 'light' | 'dark';
   language: 'en' | 'hi';
   chatOpen: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (isOpen: boolean) => void;
+  toggleSidebarCollapsed: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
   toggleTheme: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
   setLanguage: (lang: 'en' | 'hi') => void;
@@ -14,49 +17,68 @@ interface UIState {
   setChatOpen: (isOpen: boolean) => void;
 }
 
-const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
-
-if (typeof document !== 'undefined') {
-  if (savedTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
+const applyTheme = (theme: 'light' | 'dark') => {
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+      root.style.colorScheme = 'light';
+    }
   }
-}
+};
+
+const getInitialTheme = (): 'light' | 'dark' => {
+  const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
+  if (saved === 'light' || saved === 'dark') return saved;
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+};
+
+const initialTheme = getInitialTheme();
+applyTheme(initialTheme);
+
+const initialCollapsed = typeof localStorage !== 'undefined' ? localStorage.getItem('sidebar_collapsed') === 'true' : false;
 
 export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: false,
-  theme: savedTheme,
+  sidebarCollapsed: initialCollapsed,
+  theme: initialTheme,
   language: (localStorage.getItem('language') as 'en' | 'hi') || 'en',
   chatOpen: false,
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setSidebarOpen: (isOpen) => set({ sidebarOpen: isOpen }),
 
+  toggleSidebarCollapsed: () => set((state) => {
+    const nextCollapsed = !state.sidebarCollapsed;
+    localStorage.setItem('sidebar_collapsed', String(nextCollapsed));
+    return { sidebarCollapsed: nextCollapsed };
+  }),
+
+  setSidebarCollapsed: (collapsed) => {
+    localStorage.setItem('sidebar_collapsed', String(collapsed));
+    set({ sidebarCollapsed: collapsed });
+  },
+
   toggleTheme: () => {
     set((state) => {
       const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
       localStorage.setItem('theme', nextTheme);
-      if (typeof document !== 'undefined') {
-        if (nextTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
+      applyTheme(nextTheme);
       return { theme: nextTheme };
     });
   },
 
   setTheme: (theme) => {
     localStorage.setItem('theme', theme);
-    if (typeof document !== 'undefined') {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
+    applyTheme(theme);
     set({ theme });
   },
 
@@ -68,3 +90,4 @@ export const useUIStore = create<UIState>((set) => ({
   toggleChat: () => set((state) => ({ chatOpen: !state.chatOpen })),
   setChatOpen: (isOpen) => set({ chatOpen: isOpen })
 }));
+
