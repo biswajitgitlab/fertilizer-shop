@@ -11,7 +11,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-emerald-500 selection:text-white flex">
+    <div className="h-screen w-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500 selection:text-white flex">
       
       {/* Dynamic Background Mesh Gradients */}
       <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -19,9 +19,9 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
       <div className="fixed top-1/3 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       {/* Desktop Fixed Sidebar */}
-      <div className="hidden lg:block shrink-0 z-20 sticky top-0 h-screen overflow-y-auto border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl">
+      <aside className="hidden lg:flex lg:flex-col shrink-0 w-64 h-full z-20 border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl overflow-y-auto">
         <Sidebar />
-      </div>
+      </aside>
 
       {/* Mobile Drawer Sidebar */}
       {mobileSidebarOpen && (
@@ -36,8 +36,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
         </div>
       )}
 
-      {/* Main Content Body */}
-      <div className="flex-1 flex flex-col min-w-0 z-10">
+      {/* Main Content Body (Independently Scrollable Right Panel) */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto z-10">
         
         {/* Glassmorphic Sticky Top Header */}
         <header className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg shadow-black/20">
