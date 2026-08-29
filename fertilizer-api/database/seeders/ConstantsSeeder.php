@@ -11,48 +11,47 @@ class ConstantsSeeder extends Seeder
 {
     public function run(): void
     {
-        // NOTE: Using only verified stable Unsplash photo IDs.
-        // Format: images.unsplash.com/photo-{ID} are permanent CDN links.
+        // NOTE: Using verified stable 200 OK Unsplash agriculture photos.
         $categories = [
             [
                 'name' => 'Chemical Fertilizers',
                 'slug' => 'chemical-fertilizers',
-                'icon' => 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&auto=format&fit=crop&q=80', // fertilizer granules in field
+                'icon' => 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Organic & Bio-Fertilizers',
                 'slug' => 'organic-bio-fertilizers',
-                'icon' => 'http://localhost:8000/storage/products/organic-bio-category.png',
+                'icon' => 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Insecticides',
                 'slug' => 'insecticides',
-                'icon' => 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400&auto=format&fit=crop&q=80', // pesticide spray
+                'icon' => 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Herbicides & Weedicides',
                 'slug' => 'herbicides',
-                'icon' => 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&auto=format&fit=crop&q=80', // crop field
+                'icon' => 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Fungicides & Pesticides',
                 'slug' => 'pesticides',
-                'icon' => 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&auto=format&fit=crop&q=80', // plant disease/leaf
+                'icon' => 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Plant Growth Vitamins & Bio-Stimulants',
                 'slug' => 'vitamins-bio-stimulants',
-                'icon' => 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&auto=format&fit=crop&q=80', // plant seedling growing
+                'icon' => 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Micronutrients & Zinc',
                 'slug' => 'micronutrients',
-                'icon' => 'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=400&auto=format&fit=crop&q=80', // mineral/soil close-up
+                'icon' => 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Seeds & Farm Tools',
                 'slug' => 'seeds-tools',
-                'icon' => 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=400&auto=format&fit=crop&q=80', // seeds
+                'icon' => 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80',
             ],
         ];
 
@@ -64,7 +63,6 @@ class ConstantsSeeder extends Seeder
             ]);
         }
 
-        // Using only stable, verified Unsplash photo IDs
         $products = [
             [
                 'name' => 'IFFCO NPK 19:19:19 Fully Water Soluble Fertilizer',
@@ -77,8 +75,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'http://localhost:8000/storage/products/npk-19-19-19.png',
-                    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 19, 'p' => 19, 'k' => 19],
                 'suitable_crops_json' => ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"],
@@ -97,8 +95,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'http://localhost:8000/storage/products/vermicompost-organic.png',
-                    'https://images.unsplash.com/photo-1576085898274-059b0b3c3720?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 3, 'p' => 2, 'k' => 2],
                 'suitable_crops_json' => ["Vegetables", "Paddy", "Wheat", "Maize", "Pulses", "Fruits"],
@@ -117,8 +115,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Cotton", "Paddy", "Chilli", "Tomato", "Okra", "Mango"],
@@ -137,8 +135,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => false,
                 'is_active' => true,
                 'images_json' => [
-                    'http://localhost:8000/storage/products/glycel-herbicide.png',
-                    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Tea", "Sugarcane", "Non-crop weed management", "Orchards"],
@@ -157,8 +155,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'http://localhost:8000/storage/products/saaf-fungicide.png',
-                    'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Potato", "Tomato", "Grape", "Paddy", "Groundnut", "Apple"],
@@ -177,8 +175,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1576085898274-059b0b3c3720?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 5, 'p' => 2, 'k' => 5],
                 'suitable_crops_json' => ["Cotton", "Chilli", "Onion", "Banana", "Wheat", "Paddy", "Vegetables"],
@@ -197,7 +195,7 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => false,
                 'is_active' => true,
                 'images_json' => [
-                    'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Rice", "Paddy", "Corn", "Citrus", "Sugarcane", "Wheat"],
@@ -216,8 +214,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'http://localhost:8000/storage/products/pusa-basmati-1121.png',
-                    'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Paddy"],

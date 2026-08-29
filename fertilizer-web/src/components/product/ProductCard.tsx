@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Heart, Sparkles, ShieldCheck } from 'lucide-react';
 import { Product } from '../../types';
@@ -11,10 +11,20 @@ interface ProductCardProps {
   product: Product;
 }
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600";
+
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, items } = useCart();
   const discount = calculateDiscount(product.price, product.originalPrice);
   const isInCart = items.some(item => item.product.id === product.id);
+
+  const [imgSrc, setImgSrc] = useState<string>(() => {
+    const raw = product.images?.[0];
+    if (!raw || raw.includes('localhost') || raw.includes('placeholder')) {
+      return FALLBACK_IMAGE;
+    }
+    return raw;
+  });
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -24,13 +34,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="group relative bg-white/80 backdrop-blur-md rounded-3xl border border-gray-100/80 shadow-sm hover:shadow-2xl hover:border-emerald-300/80 transition-all duration-500 flex flex-col overflow-hidden h-full transform hover:-translate-y-1">
+    <div className="group relative bg-white/90 backdrop-blur-md rounded-3xl border border-gray-100/80 shadow-sm hover:shadow-2xl hover:border-emerald-300/80 transition-all duration-500 flex flex-col overflow-hidden h-full transform hover:-translate-y-1">
       
       {/* Top Liquid Glass Image Container */}
-      <Link to={`/products/${product.slug}`} className="relative block aspect-4/3 sm:aspect-square overflow-hidden bg-slate-50">
+      <Link to={`/products/${product.slug}`} className="relative block aspect-4/3 sm:aspect-square overflow-hidden bg-emerald-950/20">
         <img
-          src={product.images?.[0] || "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=400"}
+          src={imgSrc}
           alt={product.name}
+          onError={() => setImgSrc(FALLBACK_IMAGE)}
           loading="lazy"
           className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700 ease-out"
         />
@@ -40,7 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          <span className="bg-slate-950/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shadow-sm flex items-center gap-1">
+          <span className="bg-slate-950/85 backdrop-blur-md text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shadow-sm flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-emerald-400" />
             {typeof product.category === 'object' ? (product.category as any).name : product.category}
           </span>
@@ -61,14 +72,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Wishlist Button */}
         <button
           onClick={(e) => { e.preventDefault(); toast.success("Added to wishlist"); }}
-          className="absolute bottom-3 right-3 p-2.5 bg-white/80 backdrop-blur-md text-gray-700 hover:text-rose-600 hover:bg-white rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer transform translate-y-2 group-hover:translate-y-0"
+          className="absolute bottom-3 right-3 p-2.5 bg-white/90 backdrop-blur-md text-gray-700 hover:text-rose-600 hover:bg-white rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 cursor-pointer transform translate-y-2 group-hover:translate-y-0"
         >
           <Heart className="w-4 h-4" />
         </button>
       </Link>
 
       {/* Info Section */}
-      <div className="p-5 flex flex-col flex-1 justify-between gap-3 bg-gradient-to-b from-white/90 via-white to-slate-50/50">
+      <div className="p-5 flex flex-col flex-1 justify-between gap-3 bg-gradient-to-b from-white via-white to-slate-50/50">
         <div>
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <RatingStars rating={product.rating} count={product.reviewsCount} />

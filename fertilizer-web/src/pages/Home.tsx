@@ -8,6 +8,14 @@ import { Product, Category } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 
+// Bright, high-resolution agriculture photos guaranteed 200 OK
+const VIBRANT_FARM_HERO = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_CROP_SPRAY = "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_FERTILIZER_SOIL = "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_ORGANIC_FARM = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_SEEDS = "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_GREEN_CROPS = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800";
+
 export const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -18,23 +26,19 @@ export const Home: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // High-res visual image fallbacks for categories so users can visually recognize items instantly
+  // High-res visual image fallbacks for categories
   const getCategoryImage = (name: string, defaultImg?: string) => {
-    if (defaultImg && !defaultImg.includes('placeholder')) return defaultImg;
+    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost')) {
+      return defaultImg;
+    }
     const lname = name.toLowerCase();
-    if (lname.includes('chemical') || lname.includes('fertilizer'))
-      return "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600";
-    if (lname.includes('pesticide') || lname.includes('insecticide'))
-      return "https://images.unsplash.com/photo-1592417817098-8f3d6eb1626f?auto=format&fit=crop&q=80&w=600";
-    if (lname.includes('fungicide'))
-      return "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=600";
-    if (lname.includes('herbicide') || lname.includes('weed'))
-      return "https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?auto=format&fit=crop&q=80&w=600";
-    if (lname.includes('organic') || lname.includes('bio'))
-      return "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600";
-    if (lname.includes('seed'))
-      return "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600";
-    return "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&q=80&w=600";
+    if (lname.includes('chemical') || lname.includes('fertilizer')) return VIBRANT_FERTILIZER_SOIL;
+    if (lname.includes('pesticide') || lname.includes('insecticide')) return VIBRANT_CROP_SPRAY;
+    if (lname.includes('fungicide')) return VIBRANT_CROP_SPRAY;
+    if (lname.includes('herbicide') || lname.includes('weed')) return VIBRANT_GREEN_CROPS;
+    if (lname.includes('organic') || lname.includes('bio')) return VIBRANT_ORGANIC_FARM;
+    if (lname.includes('seed')) return VIBRANT_SEEDS;
+    return VIBRANT_FARM_HERO;
   };
 
   useEffect(() => {
@@ -71,7 +75,7 @@ export const Home: React.FC = () => {
       <section
         className="relative pt-24 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=1600')`,
+          backgroundImage: `url('${VIBRANT_FARM_HERO}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -147,8 +151,9 @@ export const Home: React.FC = () => {
           <div className="lg:col-span-5 relative hidden lg:block">
             <div className="relative mx-auto max-w-sm aspect-4/5 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-2 bg-white/10 backdrop-blur-2xl">
               <img
-                src="https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600"
+                src={VIBRANT_GREEN_CROPS}
                 alt="Fertilizer Farmer"
+                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover rounded-2xl"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
@@ -188,8 +193,9 @@ export const Home: React.FC = () => {
             {/* Visual Card 1: Fertilizers */}
             <Link to="/products?category=chemical-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=600"
+                src={VIBRANT_FERTILIZER_SOIL}
                 alt="Fertilizers"
+                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -203,8 +209,9 @@ export const Home: React.FC = () => {
             {/* Visual Card 2: Pesticides */}
             <Link to="/products?category=pesticides-insecticides" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1592417817098-8f3d6eb1626f?auto=format&fit=crop&q=80&w=600"
+                src={VIBRANT_CROP_SPRAY}
                 alt="Pesticides"
+                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -218,8 +225,9 @@ export const Home: React.FC = () => {
             {/* Visual Card 3: Plant Growth Vitamins */}
             <Link to="/products?category=plant-growth-promoters" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600"
+                src={VIBRANT_ORGANIC_FARM}
                 alt="Growth Boosters"
+                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -233,8 +241,9 @@ export const Home: React.FC = () => {
             {/* Visual Card 4: Seeds */}
             <Link to="/products?category=high-yield-seeds" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600"
+                src={VIBRANT_SEEDS}
                 alt="High Yield Seeds"
+                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
@@ -370,7 +379,7 @@ export const Home: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {categories.map((cat) => {
-              const catImg = getCategoryImage(cat.name, cat.image);
+              const catImg = getCategoryImage(cat.name, cat.icon || cat.image);
               return (
                 <Link
                   key={cat.id}
@@ -381,6 +390,7 @@ export const Home: React.FC = () => {
                     <img
                       src={catImg}
                       alt={cat.name}
+                      onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
