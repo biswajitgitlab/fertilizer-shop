@@ -5,9 +5,11 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('/auth/register', [AuthController::class, 'register']);
+    Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/auth/login', [AuthController::class, 'login']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
@@ -34,8 +36,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [App\Http\Controllers\OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [App\Http\Controllers\OrderController::class, 'cancel']);
     Route::get('/orders/{id}/invoice', [App\Http\Controllers\OrderController::class, 'invoice']);
-    // Diagnosis Routes
-    Route::post('/diagnose', [\App\Http\Controllers\DiagnosisController::class, 'store']);
+
+    // Diagnosis Routes (Throttled with Redis to 5 requests/min)
+    Route::middleware('throttle:diagnosis')->group(function () {
+        Route::post('/diagnose', [\App\Http\Controllers\DiagnosisController::class, 'store']);
+    });
     Route::get('/diagnose/history', [\App\Http\Controllers\DiagnosisController::class, 'index']);
     Route::get('/diagnose/{id}', [\App\Http\Controllers\DiagnosisController::class, 'show']);
 
@@ -69,9 +74,11 @@ Route::post('/webhooks/n8n/chat-reply', [\App\Http\Controllers\Webhook\N8nWebhoo
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
-// Public Routes
-Route::post('/chat/start', [\App\Http\Controllers\API\ChatController::class, 'start']);
-Route::post('/chat/message', [\App\Http\Controllers\API\ChatController::class, 'message']);
+// Public Routes (AI Chat throttled to 20 requests/min)
+Route::middleware('throttle:chat')->group(function () {
+    Route::post('/chat/start', [\App\Http\Controllers\API\ChatController::class, 'start']);
+    Route::post('/chat/message', [\App\Http\Controllers\API\ChatController::class, 'message']);
+});
 Route::get('/chat/history/{token}', [\App\Http\Controllers\API\ChatController::class, 'history']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
