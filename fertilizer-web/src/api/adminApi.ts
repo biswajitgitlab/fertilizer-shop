@@ -272,6 +272,63 @@ export const DEMO_FALLBACK_ORDERS: Order[] = [
   }
 ];
 
+export const DEMO_FALLBACK_DIAGNOSES: Diagnosis[] = [
+  {
+    id: 'diag-101',
+    userId: 'u-1',
+    crop: 'Wheat',
+    growthStage: 'Tillering Stage',
+    symptoms: ['Yellow stripes on leaves', 'Fungal powder pustules'],
+    images: ['https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=600'],
+    status: 'COMPLETED',
+    title: 'Yellow Stripe Rust (Puccinia striiformis)',
+    confidence: 94,
+    severity: 'High',
+    description: 'Fungal leaf rust outbreak showing characteristic yellow linear spore pustules across upper foliage.',
+    causes: ['High humidity', 'Cool temperatures (10-15°C)', 'Susceptible cultivar'],
+    recommendedProductIds: ['1', '2'],
+    preventiveMeasures: ['Apply Propiconazole 25% EC foliar spray', 'Avoid excess nitrogen fertilization'],
+    adminReviewed: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'diag-102',
+    userId: 'u-2',
+    crop: 'Paddy / Rice',
+    growthStage: 'Panicle Initiation',
+    symptoms: ['Spindle-shaped lesions', 'Grey centers on leaves'],
+    images: ['https://images.unsplash.com/photo-1530507629858-e4977d30e9e0?auto=format&fit=crop&q=80&w=600'],
+    status: 'COMPLETED',
+    title: 'Rice Leaf Blast (Magnaporthe oryzae)',
+    confidence: 89,
+    severity: 'Medium',
+    description: 'Classic diamond-shaped blast lesions visible on middle canopy leaves.',
+    causes: ['Intermittent rain', 'High humidity (>90%)', 'Dense planting'],
+    recommendedProductIds: ['2', '14'],
+    preventiveMeasures: ['Spray Tricyclazole 75% WP @ 0.6g/L', 'Ensure proper field drainage'],
+    adminReviewed: true,
+    createdAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: 'diag-103',
+    userId: 'u-3',
+    crop: 'Cotton',
+    growthStage: 'Flowering & Bolling',
+    symptoms: ['Leaf curling upwards', 'Stunted growth'],
+    images: ['https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80&w=600'],
+    status: 'COMPLETED',
+    title: 'Cotton Leaf Curl Virus (CLCuV)',
+    confidence: 92,
+    severity: 'High',
+    description: 'Upward leaf curling and thickened vein enations vector-transmitted by whiteflies.',
+    causes: ['Whitefly infestation (Bemisia tabaci)', 'Hot dry weather'],
+    recommendedProductIds: ['2'],
+    preventiveMeasures: ['Spray Imidacloprid 17.8% SL for whitefly vector control', 'Remove infected crop remnants'],
+    adminReviewed: false,
+    createdAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
+
 export const adminApi = {
   getDashboard: async () => {
     try {
@@ -418,12 +475,31 @@ export const adminApi = {
   },
   getDashboardStats: async () => adminApi.getDashboard(),
   getDiagnoses: async () => {
+    let list: any[] = [];
     try {
-      const res = await apiClient.get('/diagnose/history');
-      return res.data.data || res.data;
+      const res = await apiClient.get('/admin/diagnoses');
+      const raw = res.data;
+      const rawList = raw.data || (Array.isArray(raw) ? raw : []);
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        list = rawList;
+      }
     } catch (e) {
-      return [];
+      try {
+        const res2 = await apiClient.get('/diagnose/history');
+        const raw2 = res2.data;
+        const rawList2 = raw2.data || (Array.isArray(raw2) ? raw2 : []);
+        if (Array.isArray(rawList2) && rawList2.length > 0) {
+          list = rawList2;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch admin diagnoses, using fallback dataset:", err);
+      }
     }
+
+    if (list.length === 0) {
+      list = DEMO_FALLBACK_DIAGNOSES;
+    }
+    return list;
   },
   reviewDiagnosis: async (id: string, data?: any) => {
     try {
@@ -491,40 +567,50 @@ export const adminApi = {
   getRoles: async () => {
     try {
       const res = await apiClient.get('/admin/roles');
-      return res.data;
+      const raw = res.data;
+      const list = Array.isArray(raw) ? raw : (raw?.data || raw?.roles || []);
+      if (Array.isArray(list) && list.length > 0) {
+        return list;
+      }
     } catch (e) {
-      return [
-        { id: 1, name: 'Super Admin', user_count: 1, permissions: ['products.view', 'products.create', 'products.edit', 'products.delete', 'orders.view', 'orders.update_status', 'orders.cancel', 'customers.view', 'customers.manage', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage', 'roles.manage'], is_system: true },
-        { id: 2, name: 'Store Manager', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'orders.view', 'orders.update_status', 'customers.view', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage'], is_system: false },
-        { id: 3, name: 'Inventory Specialist', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'inventory.view', 'inventory.update_stock'], is_system: false },
-        { id: 4, name: 'Fulfillment Agent', user_count: 0, permissions: ['products.view', 'orders.view', 'orders.update_status', 'customers.view'], is_system: false },
-        { id: 5, name: 'Agronomist', user_count: 0, permissions: ['products.view', 'diagnoses.view', 'diagnoses.review'], is_system: false }
-      ];
+      console.warn("Failed to fetch admin roles, using fallback list:", e);
     }
+    return [
+      { id: 1, name: 'Super Admin', user_count: 1, permissions: ['products.view', 'products.create', 'products.edit', 'products.delete', 'orders.view', 'orders.update_status', 'orders.cancel', 'customers.view', 'customers.manage', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage', 'roles.manage'], is_system: true },
+      { id: 2, name: 'Store Manager', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'orders.view', 'orders.update_status', 'customers.view', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage'], is_system: false },
+      { id: 3, name: 'Inventory Specialist', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'inventory.view', 'inventory.update_stock'], is_system: false },
+      { id: 4, name: 'Fulfillment Agent', user_count: 0, permissions: ['products.view', 'orders.view', 'orders.update_status', 'customers.view'], is_system: false },
+      { id: 5, name: 'Agronomist', user_count: 0, permissions: ['products.view', 'diagnoses.view', 'diagnoses.review'], is_system: false }
+    ];
   },
   getPermissions: async () => {
     try {
       const res = await apiClient.get('/admin/permissions');
-      return res.data;
+      const raw = res.data;
+      const list = Array.isArray(raw) ? raw : (raw?.data || raw?.permissions || []);
+      if (Array.isArray(list) && list.length > 0) {
+        return list;
+      }
     } catch (e) {
-      return [
-        { id: 1, name: 'products.view', group: 'Products', label: 'View Catalog' },
-        { id: 2, name: 'products.create', group: 'Products', label: 'Add Products' },
-        { id: 3, name: 'products.edit', group: 'Products', label: 'Edit Prices & Stock' },
-        { id: 4, name: 'products.delete', group: 'Products', label: 'Delete Products' },
-        { id: 5, name: 'orders.view', group: 'Orders', label: 'View Orders' },
-        { id: 6, name: 'orders.update_status', group: 'Orders', label: 'Fulfill & Update Status' },
-        { id: 7, name: 'orders.cancel', group: 'Orders', label: 'Cancel & Refund' },
-        { id: 8, name: 'customers.view', group: 'Customers', label: 'View Farmers' },
-        { id: 9, name: 'inventory.view', group: 'Inventory', label: 'View Stock Audit' },
-        { id: 10, name: 'inventory.update_stock', group: 'Inventory', label: 'Restock Inventory' },
-        { id: 11, name: 'diagnoses.view', group: 'Diagnoses', label: 'View Crop Photos' },
-        { id: 12, name: 'diagnoses.review', group: 'Diagnoses', label: 'Write Remedies' },
-        { id: 13, name: 'analytics.view', group: 'Analytics', label: 'View Sales Revenue' },
-        { id: 14, name: 'coupons.manage', group: 'Coupons', label: 'Manage Discount Codes' },
-        { id: 15, name: 'roles.manage', group: 'Roles', label: 'Manage Team & Permissions' },
-      ];
+      console.warn("Failed to fetch admin permissions, using fallback list:", e);
     }
+    return [
+      { id: 1, name: 'products.view', group: 'Products', label: 'View Catalog' },
+      { id: 2, name: 'products.create', group: 'Products', label: 'Add Products' },
+      { id: 3, name: 'products.edit', group: 'Products', label: 'Edit Prices & Stock' },
+      { id: 4, name: 'products.delete', group: 'Products', label: 'Delete Products' },
+      { id: 5, name: 'orders.view', group: 'Orders', label: 'View Orders' },
+      { id: 6, name: 'orders.update_status', group: 'Orders', label: 'Fulfill & Update Status' },
+      { id: 7, name: 'orders.cancel', group: 'Orders', label: 'Cancel & Refund' },
+      { id: 8, name: 'customers.view', group: 'Customers', label: 'View Farmers' },
+      { id: 9, name: 'inventory.view', group: 'Inventory', label: 'View Stock Audit' },
+      { id: 10, name: 'inventory.update_stock', group: 'Inventory', label: 'Restock Inventory' },
+      { id: 11, name: 'diagnoses.view', group: 'Diagnoses', label: 'View Crop Photos' },
+      { id: 12, name: 'diagnoses.review', group: 'Diagnoses', label: 'Write Remedies' },
+      { id: 13, name: 'analytics.view', group: 'Analytics', label: 'View Sales Revenue' },
+      { id: 14, name: 'coupons.manage', group: 'Coupons', label: 'Manage Discount Codes' },
+      { id: 15, name: 'roles.manage', group: 'Roles', label: 'Manage Team & Permissions' },
+    ];
   },
   createRole: async (data: { name: string; permissions: string[] }) => {
     try {
@@ -545,12 +631,17 @@ export const adminApi = {
   getTeam: async () => {
     try {
       const res = await apiClient.get('/admin/team');
-      return res.data;
+      const raw = res.data;
+      const list = Array.isArray(raw) ? raw : (raw?.data || raw?.team || []);
+      if (Array.isArray(list) && list.length > 0) {
+        return list;
+      }
     } catch (e) {
-      return [
-        { id: 1, name: 'Admin User', email: 'admin@fertilizershop.com', role: 'Super Admin', permissions: ['*'] }
-      ];
+      console.warn("Failed to fetch admin team, using fallback list:", e);
     }
+    return [
+      { id: 1, name: 'Admin User', email: 'admin@fertilizershop.com', role: 'Super Admin', permissions: ['*'] }
+    ];
   },
   assignUserRole: async (userId: number | string, role: string) => {
     try {
