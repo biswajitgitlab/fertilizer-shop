@@ -10,24 +10,24 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'payment']);
+        $query = Order::with(['user', 'items.product', 'payment']);
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            $query->where('status', strtoupper($request->status));
         }
 
-        if ($request->has('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
+        if ($request->filled('payment_status')) {
+            $query->where('payment_status', strtoupper($request->payment_status));
         }
 
-        if ($request->has('date_range')) {
+        if ($request->filled('date_range')) {
             $dates = explode(',', $request->date_range);
             if (count($dates) == 2) {
                 $query->whereBetween('created_at', [$dates[0], $dates[1]]);
             }
         }
 
-        $orders = $query->orderBy('created_at', 'desc')->paginate(20);
+        $orders = $query->orderBy('created_at', 'desc')->paginate(50);
         return response()->json($orders);
     }
 

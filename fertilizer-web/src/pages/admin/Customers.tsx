@@ -24,8 +24,8 @@ export const Customers: React.FC = () => {
   }, []);
 
   const filtered = customers.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone.includes(search)
+    (c.name || '').toLowerCase().includes((search || '').toLowerCase()) ||
+    (c.phone || '').includes(search)
   );
 
   return (

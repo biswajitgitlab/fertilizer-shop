@@ -19,7 +19,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
       <div className="fixed top-1/3 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       {/* Desktop Fixed Sidebar */}
-      <div className="hidden lg:block shrink-0 z-20">
+      <div className="hidden lg:block shrink-0 z-20 sticky top-0 h-screen overflow-y-auto border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl">
         <Sidebar />
       </div>
 
@@ -30,7 +30,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
             className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="relative w-64 max-w-xs bg-slate-950 z-10 shadow-2xl border-r border-slate-800">
+          <div className="relative w-64 max-w-xs bg-slate-950 z-10 shadow-2xl border-r border-slate-800 h-full overflow-y-auto">
             <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} />
           </div>
         </div>

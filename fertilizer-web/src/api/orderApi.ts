@@ -6,14 +6,15 @@ export const orderApi = {
     try {
       const res = await apiClient.get('/orders');
       const data = res.data;
+      let list: any[] = [];
       if (data && Array.isArray(data.data)) {
-        return data.data;
+        list = data.data;
+      } else if (Array.isArray(data)) {
+        list = data;
       }
-      if (Array.isArray(data)) {
-        return data;
-      }
-      return [];
+      return list;
     } catch (e) {
+      console.warn("Failed to fetch customer orders from API:", e);
       return [];
     }
   },

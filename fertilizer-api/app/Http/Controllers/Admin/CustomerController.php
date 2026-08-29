@@ -11,11 +11,13 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::whereHas('roles', function($q) {
-            $q->where('name', 'User');
+        $query = User::where(function($q) {
+            $q->where('role', 'Customer')
+              ->orWhere('role', 'User')
+              ->orWhereNull('role');
         });
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -24,7 +26,7 @@ class CustomerController extends Controller
             });
         }
 
-        $customers = $query->orderBy('created_at', 'desc')->paginate(20);
+        $customers = $query->orderBy('created_at', 'desc')->paginate(50);
         return response()->json($customers);
     }
 

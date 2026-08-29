@@ -28,7 +28,7 @@ export const Sidebar: React.FC<{ onCloseMobile?: () => void }> = ({ onCloseMobil
   };
 
   return (
-    <div className="w-64 bg-slate-950 text-slate-300 min-h-screen flex flex-col justify-between p-4 border-r border-slate-800">
+    <div className="w-64 bg-slate-950/90 text-slate-300 h-full flex flex-col justify-between p-4">
       <div className="space-y-6">
         {/* Admin Brand Logo */}
         <div className="flex items-center gap-3 px-2 py-2">
