@@ -232,32 +232,36 @@ export const Home: React.FC = () => {
             </p>
           </div>
 
-          {/* Fully Responsive Non-Truncated Crop Selector Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {/* Touch-Friendly Horizontal Scroll Crop Selector Grid (Fixed trailing scroll truncation) */}
+          <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin scrollbar-thumb-emerald-500/30 scrollbar-track-transparent">
             {[
-              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400" },
-              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30 text-amber-400" },
-              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30 text-rose-400" },
-              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-400" },
-              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30 text-emerald-300" },
-              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30 text-amber-300" },
-              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30 text-rose-300" },
-              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30 text-yellow-400" },
+              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30" },
+              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30" },
+              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30" },
+              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30" },
+              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30" },
+              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30" },
+              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30" },
+              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30" },
             ].map((crop, idx) => (
               <motion.button
                 key={idx}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
-                className={`w-full flex flex-col items-center text-center bg-gradient-to-b ${crop.color} border backdrop-blur-xl p-3 rounded-2xl cursor-pointer shadow-lg transition-all group`}
+                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-lg transition-all active:scale-95`}
               >
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/20 mb-2 shadow-md group-hover:scale-105 transition-transform duration-300">
+                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/20">
                   <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
                 </div>
-                <span className="text-xs font-black text-white block leading-snug truncate w-full">{crop.name}</span>
-                <span className={`text-[10px] ${crop.color.split(' ').pop()} font-bold mt-1 block`}>View Care</span>
+                <div className="text-left">
+                  <span className="text-xs font-black text-white block leading-snug whitespace-nowrap">{crop.name}</span>
+                  <span className="text-[10px] text-emerald-400 font-bold whitespace-nowrap">View Recommended</span>
+                </div>
               </motion.button>
             ))}
+            {/* Trailing padding element so the last items are NEVER cut off when scrolled to the end */}
+            <div className="w-6 shrink-0" aria-hidden="true" />
           </div>
         </div>
       </section>
