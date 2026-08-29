@@ -65,6 +65,11 @@
     animation: blob-bounce 8s infinite ease-in-out alternate;
   }
 
+  .planner-grid-pattern {
+    background-image: radial-gradient(#10b981 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+  }
+
   .perspective-1000 {
     perspective: 1000px;
   }
@@ -81,4 +86,5 @@
     transform: translate(-15px, 20px) scale(0.95);
   }
 }
+
 
