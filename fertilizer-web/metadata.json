@@ -1,0 +1,6 @@
+{
+  "name": "SarkarFertilizer",
+  "description": "Complete e-commerce platform for fertilizers, insecticides, herbicides, pesticides, plant vitamins, crop diagnosis, and seasonal crop planning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

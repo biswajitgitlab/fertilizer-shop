@@ -1,0 +1,122 @@
+{
+  "name": "WORKFLOW 1: AI Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "chat-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [ 250, 300 ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/auth/me",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "name": "Validate User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [ 450, 300 ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/chat-history",
+        "options": {}
+      },
+      "name": "Get Chat History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [ 650, 300 ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "systemMessage": "You are KrishiMitra, an agriculture expert for a fertilizer shop.\nHelp farmers with: product recommendations, crop problems, fertilizer usage, order status.\nBe concise, practical, and friendly. If unsure, suggest consulting an expert.",
+        "options": {}
+      },
+      "name": "OpenAI / Claude Node",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [ 850, 300 ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const intent = $input.item.json.intent || 'general';\nreturn { json: { intent } };"
+      },
+      "name": "Classify Intent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [ 1050, 300 ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            { "value1": "={{$json[\"intent\"]}}", "value2": "product_query" },
+            { "value1": "={{$json[\"intent\"]}}", "value2": "order_status" }
+          ]
+        }
+      },
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [ 1250, 300 ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/webhooks/n8n/chat-reply",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "session_id", "value": "={{$node[\"Webhook\"].json[\"body\"][\"session_id\"]}}" },
+            { "name": "message", "value": "={{$node[\"OpenAI / Claude Node\"].json[\"response\"]}}" }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Save to Laravel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [ 1500, 300 ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [ { "node": "Validate User", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Validate User": {
+      "main": [
+        [ { "node": "Get Chat History", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Get Chat History": {
+      "main": [
+        [ { "node": "OpenAI / Claude Node", "type": "main", "index": 0 } ]
+      ]
+    },
+    "OpenAI / Claude Node": {
+      "main": [
+        [ { "node": "Classify Intent", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Classify Intent": {
+      "main": [
+        [ { "node": "Switch", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [ { "node": "Save to Laravel", "type": "main", "index": 0 } ],
+        [ { "node": "Save to Laravel", "type": "main", "index": 0 } ]
+      ]
+    }
+  }
+}

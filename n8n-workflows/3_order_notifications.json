@@ -1,0 +1,74 @@
+{
+  "name": "WORKFLOW 3: Order Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "order-status",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [ 250, 300 ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json[\"body\"][\"status\"]}}",
+        "rules": {
+          "rules": [
+            { "value2": "CONFIRMED" },
+            { "value2": "SHIPPED" },
+            { "value2": "DELIVERED" }
+          ]
+        }
+      },
+      "name": "Switch Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [ 500, 300 ]
+    },
+    {
+      "parameters": {
+        "message": "Order confirmed! Order #{{$node[\"Webhook\"].json[\"body\"][\"order_id\"]}}"
+      },
+      "name": "Send CONFIRMED (WhatsApp)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [ 800, 100 ]
+    },
+    {
+      "parameters": {
+        "message": "Shipped! Track: LINK"
+      },
+      "name": "Send SHIPPED (WhatsApp)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [ 800, 300 ]
+    },
+    {
+      "parameters": {
+        "message": "Delivered! Rate your experience"
+      },
+      "name": "Send DELIVERED (WhatsApp)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [ 800, 500 ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [ { "node": "Switch Status", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Switch Status": {
+      "main": [
+        [ { "node": "Send CONFIRMED (WhatsApp)", "type": "main", "index": 0 } ],
+        [ { "node": "Send SHIPPED (WhatsApp)", "type": "main", "index": 0 } ],
+        [ { "node": "Send DELIVERED (WhatsApp)", "type": "main", "index": 0 } ]
+      ]
+    }
+  }
+}
