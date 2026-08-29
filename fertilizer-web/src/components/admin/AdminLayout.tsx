@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
-import { Bell, Search, Menu, Sparkles, Shield } from 'lucide-react';
+import { Bell, Search, Menu, Sparkles, Shield, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }> = ({
@@ -9,6 +9,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
 }) => {
   const { user } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="h-screen w-screen bg-slate-950 text-slate-100 font-sans relative overflow-hidden selection:bg-emerald-500 selection:text-white flex">
@@ -19,8 +20,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
       <div className="fixed top-1/3 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col shrink-0 w-64 h-full z-20 border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl overflow-y-auto">
-        <Sidebar />
+      <aside className={`hidden lg:flex lg:flex-col shrink-0 ${isCollapsed ? 'w-20' : 'w-64'} h-full z-20 border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl overflow-x-hidden overflow-y-auto transition-all duration-300`}>
+        <Sidebar collapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(!isCollapsed)} />
       </aside>
 
       {/* Mobile Drawer Sidebar */}
@@ -30,7 +31,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
             className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="relative w-64 max-w-xs bg-slate-950 z-10 shadow-2xl border-r border-slate-800 h-full overflow-y-auto">
+          <div className="relative w-64 max-w-xs bg-slate-950 z-10 shadow-2xl border-r border-slate-800 h-full overflow-x-hidden overflow-y-auto">
             <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} />
           </div>
         </div>
@@ -47,6 +48,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
               className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all"
             >
               <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Desktop Sidebar Toggle Button */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              title={isCollapsed ? "Expand Sidebar (Show menu)" : "Collapse Sidebar (Hide menu)"}
+              className="hidden lg:flex items-center gap-1.5 p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer"
+            >
+              {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
             </button>
             
             <div className="flex items-center gap-2.5">
