@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
-import { Sprout, User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat } from 'lucide-react';
+import { Sprout, User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Login: React.FC = () => {
@@ -11,6 +11,14 @@ export const Login: React.FC = () => {
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Forgot password modal state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotStep, setForgotStep] = useState<'phone' | 'otp' | 'reset'>('phone');
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
 
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -42,8 +50,54 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleSendResetOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPhone) {
+      toast.error("Please enter your registered 10-digit mobile number.");
+      return;
+    }
+    setIsForgotLoading(true);
+    setTimeout(() => {
+      setIsForgotLoading(false);
+      setForgotStep('otp');
+      toast.success("Password reset OTP sent to your mobile!");
+    }, 800);
+  };
+
+  const handleVerifyResetOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotOtp) {
+      toast.error("Please enter the 4-digit OTP.");
+      return;
+    }
+    setIsForgotLoading(true);
+    setTimeout(() => {
+      setIsForgotLoading(false);
+      setForgotStep('reset');
+      toast.success("OTP Verified! Enter your new password.");
+    }, 800);
+  };
+
+  const handleCompleteReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters long.");
+      return;
+    }
+    setIsForgotLoading(true);
+    setTimeout(() => {
+      setIsForgotLoading(false);
+      setShowForgotModal(false);
+      setForgotStep('phone');
+      setForgotPhone('');
+      setForgotOtp('');
+      setNewPassword('');
+      toast.success("Password reset successfully! You can now log in with your new password.");
+    }, 1000);
+  };
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
       {/* Left Panel — Full Agricultural Background Image */}
       <div
         className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden"
@@ -103,67 +157,92 @@ export const Login: React.FC = () => {
         </p>
       </div>
 
-      {/* Right Panel — Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-slate-50 px-6 py-12">
-        <div className="w-full max-w-md space-y-8">
+      {/* Right Panel — Login Form with Green Agricultural Atmosphere */}
+      <div
+        className="w-full lg:w-1/2 relative flex items-center justify-center bg-slate-950 px-6 py-12 overflow-hidden"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&auto=format&fit=crop&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Atmosphere Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/94 via-slate-950/92 to-teal-950/95 backdrop-blur-xs" />
+        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px]" />
+
+        <div className="relative z-10 w-full max-w-md space-y-6">
+
+          {/* BACK TO SHOP BUTTON */}
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white bg-slate-900/80 hover:bg-emerald-900/80 px-4 py-2 rounded-xl border border-emerald-500/30 transition-all cursor-pointer backdrop-blur-md shadow-lg"
+          >
+            <ArrowLeft className="w-4 h-4 text-emerald-400" />
+            <span>Back to Store</span>
+          </button>
 
           {/* Mobile Logo */}
-          <div className="lg:hidden text-center">
-            <div className="w-14 h-14 bg-emerald-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-200 mb-3">
+          <div className="lg:hidden text-center space-y-2">
+            <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30 mb-2">
               <Sprout className="w-8 h-8" />
             </div>
-            <p className="text-xs font-bold text-emerald-700">SarkarFertilizer</p>
+            <p className="text-sm font-black text-emerald-400">SarkarFertilizer</p>
           </div>
 
-          <div className="space-y-2">
-            <h1 className="text-3xl font-black text-gray-900">Welcome back 👋</h1>
-            <p className="text-sm text-gray-500">Sign in to access your account and farm dashboard</p>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-white tracking-tight">Welcome back 👋</h1>
+            <p className="text-xs text-emerald-200/80 font-medium">Sign in to access your account and farm dashboard</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl space-y-5">
+          <form onSubmit={handleSubmit} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-emerald-500/30 p-8 shadow-2xl space-y-5">
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Email or Mobile Number</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Email or Mobile Number</label>
               <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   placeholder="Enter email or 10-digit mobile..."
                   value={credential}
                   onChange={(e) => setCredential(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Password</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   placeholder="Enter your password..."
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-xs font-semibold text-emerald-600 hover:underline cursor-pointer">
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(true)}
+                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer"
+              >
                 Forgot Password?
-              </span>
+              </button>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-200 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-60 text-slate-950 font-black py-3.5 rounded-xl text-sm transition-all shadow-xl shadow-emerald-500/30 cursor-pointer active:scale-98"
             >
               {isLoading ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="w-5 h-5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Sign In</span>
@@ -172,22 +251,160 @@ export const Login: React.FC = () => {
               )}
             </button>
 
-            <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+            <div className="pt-4 border-t border-emerald-500/20 text-center text-xs text-emerald-300/80 font-medium">
               New to SarkarFertilizer?{' '}
-              <Link to="/register" className="font-bold text-emerald-700 hover:underline">
+              <Link to="/register" className="font-black text-emerald-400 hover:underline">
                 Create Free Account
               </Link>
             </div>
           </form>
-
-          {/* Trust badges */}
-          <div className="flex items-center justify-center gap-6 text-[10px] text-gray-400 font-semibold">
-            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Secure Login</span>
-            <span className="flex items-center gap-1"><Leaf className="w-3 h-3 text-emerald-500" /> 50,000+ Farmers</span>
-            <span className="flex items-center gap-1"><Wheat className="w-3 h-3 text-emerald-500" /> Govt Certified</span>
-          </div>
         </div>
       </div>
+
+      {/* FORGOT PASSWORD MODAL */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-gray-100 relative space-y-6">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-gray-900">Reset Password</h3>
+                  <p className="text-[11px] text-gray-500">Account Recovery via Mobile OTP</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowForgotModal(false);
+                  setForgotStep('phone');
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* STEP 1: Phone */}
+            {forgotStep === 'phone' && (
+              <form onSubmit={handleSendResetOtp} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">Registered Mobile Number</label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="tel"
+                      pattern="[0-9]{10}"
+                      placeholder="Enter 10-digit registered mobile..."
+                      value={forgotPhone}
+                      onChange={(e) => setForgotPhone(e.target.value)}
+                      required
+                      className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(false)}
+                    className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-800"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    {isForgotLoading ? "Sending..." : "Send Reset OTP"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 2: OTP */}
+            {forgotStep === 'otp' && (
+              <form onSubmit={handleVerifyResetOtp} className="space-y-4">
+                <p className="text-xs text-gray-600">
+                  Enter the 4-digit verification code sent to <span className="font-bold text-gray-900">{forgotPhone}</span> (Demo Code: <span className="text-emerald-600 font-bold">1234</span>)
+                </p>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">4-Digit OTP</label>
+                  <input
+                    type="text"
+                    maxLength={4}
+                    placeholder="1 2 3 4"
+                    value={forgotOtp}
+                    onChange={(e) => setForgotOtp(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 text-center tracking-[0.5em] text-lg font-black bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep('phone')}
+                    className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-800"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    {isForgotLoading ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 3: Reset Password */}
+            {forgotStep === 'reset' && (
+              <form onSubmit={handleCompleteReset} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">New Password</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="password"
+                      placeholder="Min 8 characters..."
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep('otp')}
+                    className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-800"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isForgotLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isForgotLoading ? "Resetting..." : "Save New Password"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
     </div>
   );
 };

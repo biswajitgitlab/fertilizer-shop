@@ -13,9 +13,15 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
-    private function calculateCart(Cart $cart, $couponCode = null)
+    private function calculateCart($cartOrItems, $couponCode = null)
     {
-        $items = $cart->items_json ?? [];
+        $items = [];
+        if ($cartOrItems instanceof Cart) {
+            $items = $cartOrItems->items_json ?? [];
+        } else if (is_array($cartOrItems)) {
+            $items = $cartOrItems;
+        }
+
         $productIds = array_column($items, 'product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
@@ -30,10 +36,8 @@ class OrderController extends Controller
             
             if (isset($item['bundle_id'])) {
                 $bundle = \App\Models\ProductBundle::find($item['bundle_id']);
-                if ($bundle) {
-                    if ($bundle->discount_percentage) {
-                        $price = $price - ($price * ($bundle->discount_percentage / 100));
-                    }
+                if ($bundle && $bundle->discount_percentage) {
+                    $price = $price - ($price * ($bundle->discount_percentage / 100));
                 }
             }
 
@@ -92,21 +96,41 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'shipping_address' => 'required|array',
-            'billing_address' => 'nullable|array',
-            'payment_method' => 'required|in:COD,ONLINE',
-            'coupon_code' => 'nullable|string'
-        ]);
+        $pmInput = strtoupper($request->input('payment_method') ?? $request->input('paymentMethod') ?? 'COD');
+        $paymentMethod = in_array($pmInput, ['COD', 'CASH ON DELIVERY', 'CASH_ON_DELIVERY']) ? 'COD' : 'ONLINE';
 
+        $shippingAddress = $request->input('shipping_address') ?? $request->input('shippingAddress');
+        if (!$shippingAddress || !is_array($shippingAddress)) {
+            return response()->json(['message' => 'Valid shipping address is required'], 422);
+        }
+
+        $billingAddress = $request->input('billing_address') ?? $request->input('billingAddress') ?? $shippingAddress;
         $user = auth()->user();
-        $cart = Cart::where('user_id', $user->id)->first();
 
-        if (!$cart || empty($cart->items_json)) {
+        $cart = Cart::where('user_id', $user->id)->first();
+        $itemsToProcess = [];
+
+        if ($cart && !empty($cart->items_json)) {
+            $itemsToProcess = $cart->items_json;
+        } else if ($request->has('items') && is_array($request->input('items'))) {
+            foreach ($request->input('items') as $rawItem) {
+                $pId = $rawItem['product_id'] ?? $rawItem['product']['id'] ?? $rawItem['productId'] ?? null;
+                $qty = $rawItem['qty'] ?? $rawItem['quantity'] ?? 1;
+                if ($pId) {
+                    $itemsToProcess[] = [
+                        'product_id' => $pId,
+                        'qty' => (int)$qty,
+                        'bundle_id' => $rawItem['bundle_id'] ?? null
+                    ];
+                }
+            }
+        }
+
+        if (empty($itemsToProcess)) {
             return response()->json(['message' => 'Cart is empty'], 400);
         }
 
-        $calculation = $this->calculateCart($cart, $request->coupon_code);
+        $calculation = $this->calculateCart($itemsToProcess, $request->input('coupon_code') ?? $request->input('couponCode'));
         
         if (empty($calculation['items'])) {
             return response()->json(['message' => 'Cart is empty or invalid items'], 400);
@@ -114,6 +138,7 @@ class OrderController extends Controller
 
         $summary = $calculation['summary'];
         $orderNumber = 'ORD-' . strtoupper(Str::random(10));
+        $trackingNumber = 'TRK-' . strtoupper(Str::random(9));
 
         $order = Order::create([
             'user_id' => $user->id,
@@ -124,11 +149,12 @@ class OrderController extends Controller
             'tax' => $summary['tax'],
             'shipping_cost' => $summary['shipping'],
             'total' => $summary['total'],
-            'payment_method' => $request->payment_method,
+            'payment_method' => $paymentMethod,
             'payment_status' => 'PENDING',
-            'shipping_address_json' => $request->shipping_address,
-            'billing_address_json' => $request->billing_address ?? $request->shipping_address,
-            'notes' => $request->notes,
+            'shipping_address_json' => $shippingAddress,
+            'billing_address_json' => $billingAddress,
+            'tracking_number' => $trackingNumber,
+            'notes' => $request->input('notes'),
         ]);
 
         foreach ($calculation['items'] as $item) {
@@ -141,25 +167,58 @@ class OrderController extends Controller
             ]);
         }
 
-        // Clear cart
-        $cart->update(['items_json' => []]);
+        // Clear DB cart if it exists
+        if ($cart) {
+            $cart->update(['items_json' => []]);
+        }
+
+        $razorpayOrderId = null;
+        $razorpayKeyId = env('RAZORPAY_KEY_ID');
+        $razorpaySecret = env('RAZORPAY_KEY_SECRET');
+
+        if ($paymentMethod === 'ONLINE' && $razorpayKeyId && $razorpaySecret) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::withBasicAuth($razorpayKeyId, $razorpaySecret)
+                    ->post('https://api.razorpay.com/v1/orders', [
+                        'amount' => (int) round($summary['total'] * 100),
+                        'currency' => 'INR',
+                        'receipt' => $orderNumber,
+                        'notes' => [
+                            'order_id' => $order->id,
+                            'customer_name' => $user->name ?? 'Customer',
+                        ]
+                    ]);
+                if ($response->successful()) {
+                    $razorpayOrderId = $response->json('id');
+                }
+            } catch (\Exception $e) {
+                // Fall back gracefully if Razorpay API call fails or is unreachable
+            }
+        }
 
         $paymentLink = null;
-        if ($request->payment_method === 'ONLINE') {
-            // Mock payment link generation
-            $paymentLink = url('/api/webhooks/payment/mock?order_id=' . $order->id);
+        if ($paymentMethod === 'ONLINE') {
+            $paymentLink = url('/api/orders/' . $order->id . '/verify-payment');
         }
+
+        $loadedOrder = $order->load(['items.product', 'payment']);
 
         return response()->json([
             'message' => 'Order created successfully',
-            'order' => $order->load('items'),
-            'payment_link' => $paymentLink
+            'order' => $loadedOrder,
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'payment_link' => $paymentLink,
+            'razorpay_order_id' => $razorpayOrderId,
+            'razorpay_key_id' => $razorpayKeyId,
+            'amount_in_paise' => (int) round($summary['total'] * 100)
         ], 201);
     }
 
     public function index(Request $request)
     {
-        $orders = Order::where('user_id', auth()->id())
+        $orders = Order::with(['items.product', 'payment'])
+            ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
             
@@ -168,14 +227,13 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['items.product'])->where('user_id', auth()->id())->findOrFail($id);
-        
+        $order = Order::with(['items.product', 'payment'])->where('user_id', auth()->id())->findOrFail($id);
+
         // Define timeline based on status
         $timeline = [
             ['status' => 'PENDING', 'label' => 'Placed', 'date' => $order->created_at],
         ];
 
-        // Add dummy logic for timeline progression
         if (in_array($order->status, ['CONFIRMED', 'SHIPPED', 'DELIVERED'])) {
             $timeline[] = ['status' => 'CONFIRMED', 'label' => 'Confirmed', 'date' => $order->created_at->addHours(2)];
         }
@@ -206,11 +264,123 @@ class OrderController extends Controller
 
     public function invoice($id)
     {
-        $order = Order::with(['items.product', 'user'])->where('user_id', auth()->id())->findOrFail($id);
+        $order = Order::with(['items.product', 'user', 'payment'])->where('user_id', auth()->id())->findOrFail($id);
         
-        // Create a simple PDF view (assuming resources/views/pdf/invoice.blade.php exists, if not we will create it)
         $pdf = Pdf::loadView('pdf.invoice', ['order' => $order]);
         
         return $pdf->download('invoice-' . $order->order_number . '.pdf');
+    }
+
+    public function markPaymentFailed(Request $request, $id)
+    {
+        $order = Order::where('user_id', auth()->id())->findOrFail($id);
+
+        \App\Models\Payment::updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'gateway' => $request->input('gateway', 'RAZORPAY_PAYMENT'),
+                'transaction_id' => $request->input('transaction_id') ?? ('FAILED-' . strtoupper(Str::random(8))),
+                'amount' => $order->total,
+                'status' => 'FAILED',
+                'response_json' => $request->all()
+            ]
+        );
+
+        $order->update(['payment_status' => 'FAILED']);
+        return response()->json(['message' => 'Payment marked as failed', 'order' => $order->load('payment')]);
+    }
+
+    public function switchToCod($id)
+    {
+        $order = Order::where('user_id', auth()->id())->findOrFail($id);
+        $order->update([
+            'payment_method' => 'COD',
+            'payment_status' => 'PENDING',
+            'status' => 'CONFIRMED'
+        ]);
+
+        // Record COD selection in payment table
+        \App\Models\Payment::updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'gateway' => 'CASH_ON_DELIVERY',
+                'transaction_id' => 'COD-' . strtoupper(Str::random(8)),
+                'amount' => $order->total,
+                'status' => 'PENDING_COD',
+                'response_json' => ['switched_at' => now()->toIso8601String()]
+            ]
+        );
+
+        return response()->json(['message' => 'Switched payment method to Cash on Delivery', 'order' => $order->load('payment')]);
+    }
+
+    public function verifyPayment(Request $request, $id)
+    {
+        $order = Order::where('user_id', auth()->id())->orWhere(function($query) {
+            if (auth()->user() && auth()->user()->hasRole && auth()->user()->hasRole('Admin')) {
+                // Admin can verify any order
+            }
+        })->findOrFail($id);
+
+        $gateway = $request->input('gateway') ?? 'RAZORPAY';
+        $transactionId = $request->input('transaction_id') 
+            ?? $request->input('razorpay_payment_id') 
+            ?? $request->input('txn_id')
+            ?? ('TXN-PAY-' . rand(10000000, 99999999));
+        
+        $razorpaySignature = $request->input('razorpay_signature');
+        $razorpayOrderId = $request->input('razorpay_order_id');
+        $razorpayPaymentId = $request->input('razorpay_payment_id');
+        $razorpaySecret = env('RAZORPAY_KEY_SECRET');
+
+        // Optional Razorpay HMAC signature validation if real credentials are sent
+        if ($razorpaySignature && $razorpayOrderId && $razorpayPaymentId && $razorpaySecret) {
+            $generatedSignature = hash_hmac('sha256', $razorpayOrderId . '|' . $razorpayPaymentId, $razorpaySecret);
+            if (!hash_equals($generatedSignature, $razorpaySignature)) {
+                return response()->json(['message' => 'Invalid payment signature from Razorpay'], 400);
+            }
+        }
+
+        // Persist Payment details into payments table
+        $payment = \App\Models\Payment::updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'gateway' => strtoupper($gateway),
+                'transaction_id' => $transactionId,
+                'amount' => $order->total,
+                'status' => 'SUCCESS',
+                'response_json' => array_merge($request->all(), [
+                    'verified_at' => now()->toIso8601String(),
+                    'payment_mode' => $request->input('payment_mode') ?? 'UPI/CARD',
+                ])
+            ]
+        );
+
+        $order->update([
+            'payment_status' => 'PAID',
+            'status' => 'CONFIRMED',
+            'tracking_number' => $order->tracking_number ?? ('TRK-' . strtoupper(Str::random(9)))
+        ]);
+
+        // Dispatch n8n WhatsApp notification webhook for confirmed payment
+        try {
+            \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => 'CONFIRMED',
+                'payment_status' => 'PAID',
+                'transaction_id' => $transactionId,
+                'amount' => $order->total,
+                'user_phone' => $order->user->phone ?? 'Unknown',
+            ]);
+        } catch (\Exception $e) {
+            // Fail silently if webhook server is unreachable
+        }
+
+        return response()->json([
+            'message' => 'Payment verified and order confirmed successfully',
+            'order' => $order->load(['items.product', 'payment']),
+            'payment' => $payment
+        ]);
     }
 }

@@ -42,10 +42,20 @@ export const productApi = {
       }
       if (params?.search) {
         const q = String(params.search).toLowerCase();
-        filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(q) || 
+          p.description.toLowerCase().includes(q) ||
+          (p.shortDescription && p.shortDescription.toLowerCase().includes(q)) ||
+          (Array.isArray(p.suitableCrops) && p.suitableCrops.some((c: string) => c.toLowerCase().includes(q)))
+        );
       }
       if (params?.crop) {
-        filtered = filtered.filter(p => p.suitableCrops.some(c => c.toLowerCase() === String(params.crop).toLowerCase()));
+        const cVal = String(params.crop).toLowerCase();
+        filtered = filtered.filter(p => 
+          (Array.isArray(p.suitableCrops) && p.suitableCrops.some((c: string) => c.toLowerCase().includes(cVal))) ||
+          p.name.toLowerCase().includes(cVal) ||
+          p.description.toLowerCase().includes(cVal)
+        );
       }
       if (params?.sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
       if (params?.sort === 'price-high') filtered.sort((a, b) => b.price - a.price);

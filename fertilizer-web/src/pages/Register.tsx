@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
-import { Sprout, Phone, User, MapPin, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, Star } from 'lucide-react';
+import { Sprout, Phone, User, MapPin, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, Star, ArrowLeft } from 'lucide-react';
 import { INDIAN_STATES } from '../utils/constants';
 import toast from 'react-hot-toast';
 
@@ -92,44 +92,66 @@ export const Register: React.FC = () => {
         </p>
       </div>
 
-      {/* Right Panel — Registration Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-slate-50 px-6 py-8 overflow-y-auto">
-        <div className="w-full max-w-md space-y-6">
+      {/* Right Panel — Registration Form with Green Agricultural Atmosphere */}
+      <div
+        className="w-full lg:w-1/2 relative flex items-center justify-center bg-slate-950 px-6 py-8 overflow-y-auto"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&auto=format&fit=crop&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Atmosphere Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/94 via-slate-950/92 to-teal-950/95 backdrop-blur-xs" />
+        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px]" />
+
+        <div className="relative z-10 w-full max-w-md space-y-6">
+
+          {/* BACK TO SHOP BUTTON */}
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white bg-slate-900/80 hover:bg-emerald-900/80 px-4 py-2 rounded-xl border border-emerald-500/30 transition-all cursor-pointer backdrop-blur-md shadow-lg"
+          >
+            <ArrowLeft className="w-4 h-4 text-emerald-400" />
+            <span>Back to Store</span>
+          </button>
 
           {/* Mobile Logo */}
-          <div className="lg:hidden text-center">
-            <div className="w-14 h-14 bg-emerald-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-200 mb-3">
+          <div className="lg:hidden text-center space-y-2">
+            <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30 mb-2">
               <Sprout className="w-8 h-8" />
             </div>
+            <p className="text-sm font-black text-emerald-400">SarkarFertilizer</p>
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-3xl font-black text-gray-900">Create Account 🌱</h1>
-            <p className="text-sm text-gray-500">Register as a farmer to get exclusive wholesale prices</p>
+            <h1 className="text-3xl font-black text-white tracking-tight">Create Account 🌱</h1>
+            <p className="text-xs text-emerald-200/80 font-medium">Register as a farmer to get exclusive wholesale prices</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl space-y-4">
+          <form onSubmit={handleSubmit} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-emerald-500/30 p-8 shadow-2xl space-y-4">
             {/* Full Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Full Name *</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Full Name *</label>
               <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="text"
                   placeholder="e.g. Ramesh Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             {/* Mobile */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Mobile Number *</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Mobile Number *</label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <Phone className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="tel"
                   pattern="[0-9]{10}"
@@ -137,39 +159,39 @@ export const Register: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Email Address</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Email Address</label>
               <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   placeholder="your@email.com (optional)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
 
             {/* State */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">State *</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">State *</label>
               <div className="relative">
-                <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                <MapPin className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5 pointer-events-none" />
                 <select
                   value={state}
                   onChange={(e) => setState(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950 border border-emerald-500/30 rounded-xl text-white focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all appearance-none"
                 >
                   {INDIAN_STATES.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s} className="bg-slate-900 text-white">{s}</option>
                   ))}
                 </select>
               </div>
@@ -177,16 +199,16 @@ export const Register: React.FC = () => {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-gray-700">Create Password *</label>
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Create Password *</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   placeholder="Min 8 characters..."
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>
             </div>
@@ -194,10 +216,10 @@ export const Register: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-emerald-200 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-60 text-slate-950 font-black py-3.5 rounded-xl text-sm transition-all shadow-xl shadow-emerald-500/30 cursor-pointer active:scale-98"
             >
               {isLoading ? (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="w-5 h-5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Send SMS OTP</span>
@@ -206,19 +228,19 @@ export const Register: React.FC = () => {
               )}
             </button>
 
-            <div className="pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+            <div className="pt-4 border-t border-emerald-500/20 text-center text-xs text-emerald-300/80 font-medium">
               Already registered?{' '}
-              <Link to="/login" className="font-bold text-emerald-700 hover:underline">
+              <Link to="/login" className="font-black text-emerald-400 hover:underline">
                 Sign In Here
               </Link>
             </div>
           </form>
 
           {/* Trust badges */}
-          <div className="flex items-center justify-center gap-6 text-[10px] text-gray-400 font-semibold">
-            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-500" /> Free to Register</span>
-            <span className="flex items-center gap-1"><Leaf className="w-3 h-3 text-emerald-500" /> No Spam</span>
-            <span className="flex items-center gap-1"><Wheat className="w-3 h-3 text-emerald-500" /> Govt Verified</span>
+          <div className="flex items-center justify-center gap-6 text-[10px] text-emerald-400/70 font-semibold">
+            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-400" /> Free to Register</span>
+            <span className="flex items-center gap-1"><Leaf className="w-3 h-3 text-emerald-400" /> No Spam</span>
+            <span className="flex items-center gap-1"><Wheat className="w-3 h-3 text-emerald-400" /> Govt Verified</span>
           </div>
         </div>
       </div>

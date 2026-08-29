@@ -36,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [App\Http\Controllers\OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [App\Http\Controllers\OrderController::class, 'cancel']);
     Route::get('/orders/{id}/invoice', [App\Http\Controllers\OrderController::class, 'invoice']);
+    Route::post('/orders/{id}/payment-failed', [App\Http\Controllers\OrderController::class, 'markPaymentFailed']);
+    Route::post('/orders/{id}/switch-cod', [App\Http\Controllers\OrderController::class, 'switchToCod']);
+    Route::post('/orders/{id}/verify-payment', [App\Http\Controllers\OrderController::class, 'verifyPayment']);
 
     // Diagnosis Routes (Throttled with Redis to 5 requests/min)
     Route::middleware('throttle:diagnosis')->group(function () {

@@ -20,7 +20,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const [imgSrc, setImgSrc] = useState<string>(() => {
     const raw = product.images?.[0];
-    if (!raw || raw.includes('localhost') || raw.includes('placeholder')) {
+    if (!raw || raw.includes('placeholder')) {
       return FALLBACK_IMAGE;
     }
     return raw;

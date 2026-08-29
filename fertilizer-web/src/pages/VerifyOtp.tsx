@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
-import { Input } from '../components/common/Input';
-import { Button } from '../components/common/Button';
-import { ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, ArrowLeft, Sprout, Leaf, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const VerifyOtp: React.FC = () => {
@@ -41,34 +39,90 @@ export const VerifyOtp: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16 space-y-8">
-      <div className="text-center space-y-2">
-        <div className="w-14 h-14 bg-emerald-100 text-emerald-800 rounded-3xl flex items-center justify-center mx-auto shadow-md">
-          <ShieldCheck className="w-8 h-8" />
+    <div
+      className="min-h-screen relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-950 overflow-hidden"
+      style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&auto=format&fit=crop&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Deep Emerald Atmosphere Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/92 via-slate-950/90 to-teal-950/92 backdrop-blur-xs" />
+      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px]" />
+
+      <div className="relative z-10 w-full max-w-md space-y-6">
+
+        {/* Back Button */}
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white bg-slate-900/80 hover:bg-emerald-900/80 px-4 py-2 rounded-xl border border-emerald-500/30 transition-all cursor-pointer backdrop-blur-md shadow-lg"
+        >
+          <ArrowLeft className="w-4 h-4 text-emerald-400" />
+          <span>Back to Login</span>
+        </button>
+
+        {/* Card Header */}
+        <div className="text-center space-y-3">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 text-slate-950 rounded-3xl flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/30 border-2 border-emerald-300">
+            <Sprout className="w-9 h-9" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-white tracking-tight">Verify Mobile OTP</h1>
+            <p className="text-xs text-emerald-200/80 mt-1 font-medium">
+              Enter 4-digit verification code sent to <span className="font-bold text-emerald-400">{phone || 'your mobile'}</span>
+            </p>
+          </div>
         </div>
-        <h1 className="text-2xl font-black text-gray-900">Verify Mobile OTP</h1>
-        <p className="text-xs text-gray-500">Enter the 4-digit SMS OTP sent to <span className="font-bold text-gray-800">{phone}</span></p>
+
+        {/* Glassmorphic Emerald Form Card */}
+        <form onSubmit={handleVerify} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-emerald-500/30 p-8 shadow-2xl space-y-6">
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider text-center">
+              4-Digit Verification Code
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                maxLength={4}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                className="w-full bg-slate-950/80 border-2 border-emerald-500/40 text-emerald-300 rounded-2xl py-3.5 px-4 text-center text-3xl font-black tracking-[0.8em] focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/20 transition-all shadow-inner placeholder-emerald-800"
+              />
+            </div>
+          </div>
+
+          <div className="bg-emerald-950/60 rounded-xl p-3 border border-emerald-500/20 text-center">
+            <p className="text-xs text-emerald-300 font-semibold flex items-center justify-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              Demo OTP Code: <span className="font-black text-emerald-400 underline">1234</span>
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black py-3.5 rounded-xl text-sm transition-all shadow-xl shadow-emerald-500/30 cursor-pointer active:scale-98"
+          >
+            {isLoading ? (
+              <span className="w-5 h-5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
+            ) : (
+              <>
+                <CheckCircle2 className="w-5 h-5" />
+                <span>Verify &amp; Enter Farm Store</span>
+              </>
+            )}
+          </button>
+
+          <div className="pt-2 text-center text-[11px] text-emerald-400/80 font-medium flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Government Verified Agricultural Portal</span>
+          </div>
+        </form>
+
       </div>
-
-      <form onSubmit={handleVerify} className="bg-white rounded-3xl border border-gray-100 p-8 shadow-xl space-y-6">
-        <Input
-          label="Enter 4-Digit OTP"
-          type="text"
-          maxLength={4}
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="text-center text-2xl tracking-[1em] font-black"
-          required
-        />
-
-        <p className="text-[11px] text-gray-400 text-center font-medium">
-          Demo Verification Code: <span className="font-bold text-emerald-700">1234</span>
-        </p>
-
-        <Button type="submit" isLoading={isLoading} className="w-full py-3" icon={<CheckCircle2 className="w-4 h-4" />}>
-          Verify & Continue
-        </Button>
-      </form>
     </div>
   );
 };

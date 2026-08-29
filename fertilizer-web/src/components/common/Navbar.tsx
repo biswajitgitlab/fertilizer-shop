@@ -47,44 +47,47 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-xs">
       {/* Top Banner */}
-      <div className="bg-emerald-900 text-emerald-100 text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span className="font-medium">Government Certified Genuine Agricultural Inputs &amp; Direct Farm Delivery</span>
+      <div className="bg-emerald-900 text-emerald-100 text-xs py-1.5 px-3 sm:px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
+          <div className="flex items-center gap-1.5 truncate">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="font-medium text-[11px] sm:text-xs truncate">
+              <span className="sm:hidden">Govt. Certified Agri Store &amp; Direct Delivery</span>
+              <span className="hidden sm:inline">Government Certified Genuine Agricultural Inputs &amp; Direct Farm Delivery</span>
+            </span>
           </div>
-          <div className="hidden md:flex items-center gap-4">
-            <span>Toll Free Helpline: 1800-888-FARM</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="hidden md:inline text-xs">Toll Free: 1800-888-FARM</span>
             <button
               onClick={handleLanguageToggle}
-              className="flex items-center gap-1.5 hover:text-white font-medium cursor-pointer"
+              className="flex items-center gap-1 hover:text-white font-semibold text-[11px] sm:text-xs cursor-pointer bg-emerald-800/80 px-2 py-0.5 rounded-md border border-emerald-700/50"
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span>{language === 'en' ? 'हिंदी (Hindi)' : 'English'}</span>
+              <Globe className="w-3 h-3 text-emerald-300" />
+              <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           
           {/* Logo */}
-          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="flex items-center gap-2.5 shrink-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center">
-              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-10 h-10 object-contain" />
+          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
             </div>
-            <div>
-              <span className="text-xl font-black tracking-tight text-gray-900 flex items-center">
+            <div className="leading-none">
+              <span className="text-lg sm:text-xl font-black tracking-tight text-gray-900 flex items-center">
                 Sarkar<span className="text-emerald-600">Fertilizer</span>
               </span>
               {isAdmin ? (
-                <span className="text-[10px] block font-semibold text-amber-600 uppercase tracking-wider -mt-1">
+                <span className="text-[9px] sm:text-[10px] block font-semibold text-amber-600 uppercase tracking-wider mt-0.5">
                   Admin Portal
                 </span>
               ) : (
-                <span className="text-[10px] block font-semibold text-emerald-700 uppercase tracking-wider -mt-1">
+                <span className="text-[9px] sm:text-[10px] hidden sm:block font-semibold text-emerald-700 uppercase tracking-wider mt-0.5">
                   Fertilizers &amp; Agri Store
                 </span>
               )}
@@ -107,7 +110,7 @@ export const Navbar: React.FC = () => {
 
           {/* Admin banner in navbar */}
           {isAdmin && (
-            <div className="hidden md:flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold px-4 py-2 rounded-xl">
+            <div className="hidden md:flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-xl">
               <ShieldCheck className="w-4 h-4" />
               <span>Administrator Mode</span>
             </div>
@@ -115,7 +118,7 @@ export const Navbar: React.FC = () => {
 
           {/* Desktop Navigation — only for non-admin */}
           {!isAdmin && (
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700">
+            <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-gray-700">
               <Link
                 to="/"
                 className={`transition-colors hover:text-emerald-600 ${isActive('/') ? 'text-emerald-600 font-bold' : ''}`}
@@ -146,27 +149,18 @@ export const Navbar: React.FC = () => {
           )}
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
-            {/* Language button mobile — only for non-admin */}
-            {!isAdmin && (
-              <button
-                onClick={handleLanguageToggle}
-                className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"
-              >
-                <Globe className="w-5 h-5" />
-              </button>
-            )}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
             {/* Cart Button — only for non-admin */}
             {!isAdmin && (
               <button
                 onClick={toggleDrawer}
-                className="relative p-2.5 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-colors cursor-pointer"
+                className="relative p-2 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-colors cursor-pointer"
                 aria-label="View Cart"
               >
-                <ShoppingBag className="w-6 h-6" />
+                <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-scale-in">
+                  <span className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white animate-scale-in">
                     {itemCount}
                   </span>
                 )}
@@ -178,9 +172,9 @@ export const Navbar: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 p-1.5 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 p-1 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
                 >
-                  <div className={`w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm border ${isAdmin ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300'}`}>
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full font-bold flex items-center justify-center text-xs sm:text-sm border ${isAdmin ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300'}`}>
                     {user?.name?.[0] || 'F'}
                   </div>
                   <span className="hidden md:inline text-sm font-semibold text-gray-800 max-w-[100px] truncate">
@@ -269,7 +263,7 @@ export const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-emerald-200"
+                className="bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm shadow-emerald-200 shrink-0"
               >
                 {t('nav_login')}
               </Link>
@@ -279,7 +273,8 @@ export const Navbar: React.FC = () => {
             {!isAdmin && (
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-xl"
+                className="lg:hidden p-1.5 text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer"
+                aria-label="Toggle Menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -289,63 +284,95 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Navigation Drawer — only for non-admin */}
         {!isAdmin && mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 py-4 space-y-4 animate-fade-in">
+          <div className="lg:hidden border-t border-gray-100 py-3 space-y-3 animate-fade-in bg-white">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder={t('search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-sm placeholder-gray-400 focus:outline-none focus:border-emerald-500"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
             </form>
 
             <div className="space-y-1">
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-base font-medium text-gray-800 hover:bg-emerald-50 hover:text-emerald-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-emerald-50 hover:text-emerald-700"
               >
-                {t('nav_home')}
+                <Sprout className="w-4 h-4 text-emerald-600" />
+                <span>{t('nav_home')}</span>
               </Link>
               <Link
                 to="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-base font-medium text-gray-800 hover:bg-emerald-50 hover:text-emerald-700"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-emerald-50 hover:text-emerald-700"
               >
-                {t('nav_products')}
+                <Package className="w-4 h-4 text-emerald-600" />
+                <span>{t('nav_products')}</span>
               </Link>
               <Link
                 to="/diagnose"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-base font-medium text-emerald-700 hover:bg-emerald-50"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-emerald-700 bg-emerald-50/60"
               >
-                {t('nav_diagnose')}
+                <Stethoscope className="w-4 h-4 text-emerald-600" />
+                <span>AI Crop Doctor &amp; Diagnosis</span>
               </Link>
               <Link
                 to="/planner"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-lg text-base font-medium text-amber-700 hover:bg-amber-50"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-amber-800 bg-amber-50/60"
               >
-                {t('nav_planner')}
+                <Calendar className="w-4 h-4 text-amber-600" />
+                <span>Farm Crop Planner</span>
               </Link>
-              {isAuthenticated && (
+
+              {isAuthenticated ? (
                 <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-gray-100"
+                  >
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span>My Profile</span>
+                  </Link>
                   <Link
                     to="/orders"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 rounded-lg text-base font-medium text-gray-800 hover:bg-emerald-50 hover:text-emerald-700"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:bg-gray-100"
                   >
-                    My Orders
+                    <Package className="w-4 h-4 text-gray-500" />
+                    <span>My Orders</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left block px-3 py-2 rounded-lg text-base font-medium text-rose-600 hover:bg-rose-50"
+                    className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
                   >
-                    Log Out
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
                   </button>
                 </>
+              ) : (
+                <div className="pt-2 flex gap-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center bg-emerald-600 text-white font-semibold py-2 rounded-xl text-sm"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 text-center bg-gray-100 text-gray-800 font-semibold py-2 rounded-xl text-sm"
+                  >
+                    Register
+                  </Link>
+                </div>
               )}
             </div>
           </div>

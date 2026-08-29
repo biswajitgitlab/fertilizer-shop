@@ -21,7 +21,7 @@ class ConstantsSeeder extends Seeder
             [
                 'name' => 'Organic & Bio-Fertilizers',
                 'slug' => 'organic-bio-fertilizers',
-                'icon' => 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&auto=format&fit=crop&q=80',
+                'icon' => '/images/categories/vermicompost_soil.png',
             ],
             [
                 'name' => 'Insecticides',
@@ -41,7 +41,7 @@ class ConstantsSeeder extends Seeder
             [
                 'name' => 'Plant Growth Vitamins & Bio-Stimulants',
                 'slug' => 'vitamins-bio-stimulants',
-                'icon' => 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
+                'icon' => '/images/categories/plant_growth_vitamins.png',
             ],
             [
                 'name' => 'Micronutrients & Zinc',
@@ -75,8 +75,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/npk_19_19_19.png',
                     'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 19, 'p' => 19, 'k' => 19],
                 'suitable_crops_json' => ["Rice", "Wheat", "Tomato", "Cotton", "Sugarcane", "Potato"],
@@ -95,8 +95,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/vermicompost.png',
                     'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 3, 'p' => 2, 'k' => 2],
                 'suitable_crops_json' => ["Vegetables", "Paddy", "Wheat", "Maize", "Pulses", "Fruits"],
@@ -115,8 +115,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/confidor_insecticide.png',
                     'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Cotton", "Paddy", "Chilli", "Tomato", "Okra", "Mango"],
@@ -135,8 +135,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => false,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/glycel_herbicide.png',
                     'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Tea", "Sugarcane", "Non-crop weed management", "Orchards"],
@@ -155,8 +155,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/saaf_fungicide.png',
                     'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Potato", "Tomato", "Grape", "Paddy", "Groundnut", "Apple"],
@@ -175,8 +175,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/biovita_seaweed.png',
                     'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 5, 'p' => 2, 'k' => 5],
                 'suitable_crops_json' => ["Cotton", "Chilli", "Onion", "Banana", "Wheat", "Paddy", "Vegetables"],
@@ -195,8 +195,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => false,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/chelated_zinc.png',
                     'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Rice", "Paddy", "Corn", "Citrus", "Sugarcane", "Wheat"],
@@ -215,8 +215,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    '/images/products/pusa_basmati_seeds.png',
                     'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Paddy"],

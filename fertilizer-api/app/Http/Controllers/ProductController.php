@@ -46,7 +46,19 @@ class ProductController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('short_desc', 'like', "%{$search}%")
+                  ->orWhere('suitable_crops_json', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('crop')) {
+            $crop = $request->crop;
+            $query->where(function($q) use ($crop) {
+                $q->where('suitable_crops_json', 'like', "%{$crop}%")
+                  ->orWhere('name', 'like', "%{$crop}%")
+                  ->orWhere('description', 'like', "%{$crop}%")
+                  ->orWhere('short_desc', 'like', "%{$crop}%");
             });
         }
 

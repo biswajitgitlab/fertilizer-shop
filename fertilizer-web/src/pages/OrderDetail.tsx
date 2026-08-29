@@ -6,26 +6,138 @@ import { OrderTimeline } from '../components/order/OrderTimeline';
 import { InvoiceDownloader } from '../components/order/InvoiceDownloader';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { ArrowLeft, Package, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
+import { PaymentModal } from '../components/checkout/PaymentModal';
+
+const normalizeOrder = (raw: any): Order | null => {
+  if (!raw) return null;
+  const o = raw.order || raw;
+  const addr = o.shipping_address_json || o.shippingAddress || {};
+
+  const rawItems: any[] = o.items || [];
+  const normalizedItems = rawItems.map((item: any) => {
+    const prod = item.product || {};
+    const img = prod.images_json?.[0] || prod.images?.[0] || prod.image || item.image || '/placeholder.png';
+    return {
+      product: {
+        id: String(prod.id || item.product_id || ''),
+        name: prod.name || item.name || 'Fertilizer Product',
+        slug: prod.slug || item.slug || '',
+        category: prod.category || 'Fertilizer',
+        categorySlug: prod.category_slug || 'fertilizer',
+        price: Number(item.unit_price || item.price || prod.price || 0),
+        unit: prod.unit || item.unit || 'Pack',
+        stock: prod.stock || 100,
+        rating: prod.rating || 5,
+        reviewsCount: prod.reviews_count || 0,
+        images: [img],
+        suitableCrops: prod.suitable_crops_json || prod.suitableCrops || [],
+        shortDescription: prod.short_description || '',
+        description: prod.description || '',
+        usageInstructions: prod.usage_instructions || '',
+        sku: prod.sku || 'SKU'
+      },
+      quantity: Number(item.qty || item.quantity || 1)
+    };
+  });
+
+  const pm = o.payment_method || o.paymentMethod || 'COD';
+  const paymentMethod = (pm === 'COD' || pm === 'Cash on Delivery') ? 'Cash on Delivery' : 'Online Payment';
+  const ps = o.payment_status || o.paymentStatus || 'PENDING';
+  const paymentStatus = (ps === 'PAID' || ps === 'Paid') ? 'Paid' : (ps === 'FAILED' ? 'Failed' : 'Pending');
+
+  const pObj = o.payment || raw.payment || null;
+  const paymentDetails = pObj ? {
+    gateway: pObj.gateway || 'RAZORPAY',
+    transactionId: pObj.transaction_id || 'N/A',
+    status: pObj.status || ps,
+    date: pObj.created_at || o.updated_at
+  } : null;
+
+  return {
+    id: String(o.order_number || o.id || 'N/A'),
+    numericId: o.id,
+    userId: String(o.user_id || o.userId || ''),
+    customerName: addr.name || 'Customer',
+    phone: addr.phone || '',
+    shippingAddress: {
+      name: addr.name || 'Customer',
+      phone: addr.phone || '',
+      line1: addr.line1 || 'N/A',
+      line2: addr.line2 || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.pincode || ''
+    },
+    items: normalizedItems,
+    subtotal: Number(o.subtotal || 0),
+    shippingFee: Number(o.shipping_cost ?? o.shippingFee ?? 0),
+    tax: Number(o.tax || 0),
+    discount: Number(o.discount || 0),
+    total: Number(o.total || 0),
+    paymentMethod,
+    paymentStatus,
+    paymentDetails,
+    status: o.status || 'Pending',
+    trackingNumber: o.tracking_number || o.trackingNumber || `DEL${o.id}99`,
+    createdAt: o.created_at || o.createdAt || new Date().toISOString()
+  };
+};
 
 export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPayModal, setShowPayModal] = useState(false);
+
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const fetchOrder = async () => {
+    try {
+      if (!id) return;
+      const data = await orderApi.getOrderById(id);
+      const normalized = normalizeOrder(data);
+      setOrder(normalized);
+    } catch (e) {
+      console.error("Order detail error:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        if (!id) return;
-        const data = await orderApi.getOrderById(id);
-        setOrder(data);
-      } catch (e) {
-        console.error("Order detail error:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchOrder();
-  }, [id]);
+
+    // Auto-poll status every 4 seconds if payment is pending (for 30 seconds max)
+    let intervalId: any = null;
+    let pollCount = 0;
+
+    if (order?.paymentStatus !== 'Paid' && order?.paymentMethod === 'Online Payment') {
+      intervalId = setInterval(() => {
+        pollCount++;
+        fetchOrder();
+        if (pollCount >= 8) {
+          clearInterval(intervalId);
+        }
+      }, 4000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [id, order?.paymentStatus]);
+
+  const handleVerifyPaymentStatus = async () => {
+    if (!id) return;
+    setIsVerifying(true);
+    try {
+      await orderApi.verifyPayment(id);
+      await fetchOrder();
+    } catch (e) {
+      console.error("Verify payment error:", e);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="max-w-4xl mx-auto py-16 text-center animate-pulse">Loading order...</div>;
@@ -116,16 +228,77 @@ export const OrderDetail: React.FC = () => {
             <p className="font-bold text-emerald-800 pt-1">Phone: {order.shippingAddress.phone}</p>
           </div>
 
-          <div className="pt-3 border-t border-gray-100 space-y-1 text-xs">
-            <span className="text-gray-400 block font-bold text-[10px] uppercase">Payment</span>
+          <div className="pt-3 border-t border-gray-100 space-y-2 text-xs">
+            <span className="text-gray-400 block font-bold text-[10px] uppercase">Payment Status</span>
             <p className="font-bold text-gray-900">{order.paymentMethod}</p>
-            <span className="inline-block bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
-              {order.paymentStatus}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className={`inline-block font-bold px-2.5 py-0.5 rounded-full text-[10px] ${
+                order.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : (order.paymentStatus === 'Failed' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-800 border border-amber-300')
+              }`}>
+                {order.paymentStatus === 'Paid' ? '✓ PAID' : (order.paymentStatus === 'Failed' ? '✕ FAILED' : '⏳ PENDING')}
+              </span>
+            </div>
+
+            {order.paymentDetails && (
+              <div className="bg-gray-50 p-2.5 rounded-xl text-[11px] space-y-1 font-mono text-gray-700">
+                <p className="text-[10px] text-gray-400 uppercase font-sans font-bold">Transaction Record</p>
+                <p><span className="font-semibold text-gray-500">Gateway:</span> {order.paymentDetails.gateway}</p>
+                <p><span className="font-semibold text-gray-500">Txn ID:</span> {order.paymentDetails.transactionId}</p>
+              </div>
+            )}
+
+            {order.paymentStatus !== 'Paid' && order.paymentMethod === 'Online Payment' && (
+              <div className="space-y-1.5 pt-1">
+                <button
+                  onClick={() => setShowPayModal(true)}
+                  className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Complete Online Payment</span>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    const targetId = order.numericId || order.id;
+                    await orderApi.switchToCod(targetId);
+                    const data = await orderApi.getOrderById(targetId);
+                    setOrder(normalizeOrder(data));
+                  }}
+                  className="w-full py-2 px-3 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <span>Switch to Cash on Delivery</span>
+                </button>
+
+                {/* Complaint / Support Button */}
+                <a
+                  href={`https://wa.me/919876543210?text=Namaste!%20Money%20debited%20from%20bank%20for%20Order%20%23${order.id}%20but%20status%20is%20pending.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <span>Report Payment Complaint</span>
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
       </div>
+
+      {showPayModal && (
+        <PaymentModal
+          isOpen={showPayModal}
+          onClose={() => setShowPayModal(false)}
+          orderId={order.numericId || order.id}
+          amount={order.total}
+          onSuccess={async () => {
+            setShowPayModal(false);
+            const targetId = order.numericId || order.id;
+            const data = await orderApi.getOrderById(targetId);
+            setOrder(normalizeOrder(data));
+          }}
+        />
+      )}
 
     </div>
   );

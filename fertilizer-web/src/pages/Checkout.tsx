@@ -11,6 +11,8 @@ import { orderApi } from '../api/orderApi';
 import { ArrowLeft, CheckCircle2, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { PaymentModal } from '../components/checkout/PaymentModal';
+
 export const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { items, subtotal, discount, shippingFee, tax, total, clearCart } = useCart();
@@ -27,8 +29,9 @@ export const Checkout: React.FC = () => {
 
   const [paymentMethod, setPaymentMethod] = useState<'Cash on Delivery' | 'Online Payment'>('Cash on Delivery');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [pendingOnlineOrder, setPendingOnlineOrder] = useState<{ id: string | number; amount: number } | null>(null);
 
-  if (items.length === 0) {
+  if (items.length === 0 && !pendingOnlineOrder) {
     return (
       <div className="max-w-md mx-auto py-20 text-center space-y-4">
         <h2 className="text-xl font-bold">Your cart is empty</h2>
@@ -51,13 +54,34 @@ export const Checkout: React.FC = () => {
         total
       });
 
-      clearCart();
-      toast.success("Order Placed Successfully!");
-      navigate(`/orders/${newOrder.id}`);
-    } catch (e) {
+      const orderId = newOrder?.id || newOrder?.order?.id || newOrder?.order_number;
+      
+      if (paymentMethod === 'Online Payment' && orderId) {
+        setPendingOnlineOrder({ id: orderId, amount: total });
+      } else {
+        clearCart();
+        toast.success("Order Placed Successfully!");
+        if (orderId) {
+          navigate(`/orders/${orderId}`);
+        } else {
+          navigate('/orders');
+        }
+      }
+    } catch (e: any) {
+      console.error("Place order error:", e);
       toast.error("Failed to place order. Try again.");
     } finally {
       setIsPlacingOrder(false);
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (pendingOnlineOrder) {
+      const orderId = pendingOnlineOrder.id;
+      setPendingOnlineOrder(null);
+      clearCart();
+      toast.success("Payment Verified & Order Confirmed!");
+      navigate(`/orders/${orderId}`);
     }
   };
 
@@ -119,6 +143,17 @@ export const Checkout: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Online Payment Modal */}
+      {pendingOnlineOrder && (
+        <PaymentModal
+          isOpen={!!pendingOnlineOrder}
+          onClose={() => setPendingOnlineOrder(null)}
+          orderId={pendingOnlineOrder.id}
+          amount={pendingOnlineOrder.amount}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
 
     </div>
   );

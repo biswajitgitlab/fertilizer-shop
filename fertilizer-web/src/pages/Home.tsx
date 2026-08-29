@@ -12,10 +12,10 @@ import { useAuthStore } from '../store/authStore';
 const VIBRANT_FARM_HERO = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_CROP_SPRAY = "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_FERTILIZER_SOIL = "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_ORGANIC_COMPOST = "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_ORGANIC_COMPOST = "/images/categories/vermicompost_soil.png";
 const VIBRANT_SEEDS = "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_GREEN_CROPS = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_VITAMINS = "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_VITAMINS = "/images/categories/plant_growth_vitamins.png";
 const VIBRANT_MICRONUTRIENTS = "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=800";
 
 export const Home: React.FC = () => {
@@ -30,6 +30,10 @@ export const Home: React.FC = () => {
 
   // Accurate visual image mapper for categories
   const getCategoryImage = (name: string, defaultImg?: string) => {
+    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost') && !defaultImg.includes('1585314062340')) {
+      return defaultImg;
+    }
+
     const lname = name.toLowerCase();
     if (lname.includes('organic') || lname.includes('bio')) return VIBRANT_ORGANIC_COMPOST;
     if (lname.includes('chemical') || lname.includes('fertilizer')) return VIBRANT_FERTILIZER_SOIL;
@@ -40,9 +44,6 @@ export const Home: React.FC = () => {
     if (lname.includes('micronutrient') || lname.includes('zinc')) return VIBRANT_MICRONUTRIENTS;
     if (lname.includes('seed')) return VIBRANT_SEEDS;
 
-    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost') && !defaultImg.includes('1585314062340')) {
-      return defaultImg;
-    }
     return VIBRANT_FARM_HERO;
   };
 
@@ -179,6 +180,49 @@ export const Home: React.FC = () => {
                 <p className="text-xs text-emerald-100/90 font-medium">Delivered to 12,500+ Farms this month</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SMART CROP ADVISORY BAR ─── */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-slate-950 border-y border-white/10">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+              <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+                Select Your Crop for Customized Care &amp; Inputs
+              </h2>
+            </div>
+            <span className="text-xs text-emerald-400 font-bold hidden sm:inline">Smart Crop Advisory Grid</span>
+          </div>
+
+          {/* Touch-Friendly Horizontal Scroll Crop Selector Grid */}
+          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
+            {[
+              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30" },
+              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30" },
+              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30" },
+              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30" },
+              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30" },
+              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30" },
+              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30" },
+              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30" },
+            ].map((crop, idx) => (
+              <button
+                key={idx}
+                onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
+                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-5 rounded-2xl hover:scale-105 transition-all cursor-pointer shadow-lg active:scale-95`}
+              >
+                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/20">
+                  <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="text-left">
+                  <span className="text-xs font-black text-white block leading-snug">{crop.name}</span>
+                  <span className="text-[10px] text-emerald-400 font-bold">View Recommended</span>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </section>

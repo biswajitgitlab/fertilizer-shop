@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with('user');
+        $query = Order::with(['user', 'payment']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -33,7 +33,7 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['user', 'items.product'])->findOrFail($id);
+        $order = Order::with(['user', 'items.product', 'payment'])->findOrFail($id);
         return response()->json($order);
     }
 

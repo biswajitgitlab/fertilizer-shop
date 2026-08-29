@@ -10,6 +10,8 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { ChatWidget } from './components/chat/ChatWidget';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 
+import { MobileBottomNav } from './components/common/MobileBottomNav';
+
 // Customer Pages
 import { Home } from './pages/Home';
 import { Products } from './pages/Products';
@@ -59,12 +61,13 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 pb-16 md:pb-0">
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />
       <ChatWidget />
+      <MobileBottomNav />
     </div>
   );
 };
