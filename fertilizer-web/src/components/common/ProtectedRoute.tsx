@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { toast } from 'react-hot-toast';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -22,8 +23,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Admin trying to access an admin-only route — allowed
+  // Non-admin trying to access an admin-only route — access denied
   if (adminOnly && !isAdmin) {
+    toast.error("Access Denied: Admin privileges required.");
     return <Navigate to="/" replace />;
   }
 

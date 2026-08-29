@@ -24,6 +24,7 @@ export const Sidebar: React.FC<{
     { name: 'Sales Analytics', path: '/admin/analytics', icon: BarChart2 },
     { name: 'Inventory', path: '/admin/inventory', icon: Warehouse },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag },
+    { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck },
   ];
 
   const handleLogout = () => {

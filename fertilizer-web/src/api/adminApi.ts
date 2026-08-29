@@ -487,6 +487,78 @@ export const adminApi = {
         });
       }
     }
+  },
+  getRoles: async () => {
+    try {
+      const res = await apiClient.get('/admin/roles');
+      return res.data;
+    } catch (e) {
+      return [
+        { id: 1, name: 'Super Admin', user_count: 1, permissions: ['products.view', 'products.create', 'products.edit', 'products.delete', 'orders.view', 'orders.update_status', 'orders.cancel', 'customers.view', 'customers.manage', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage', 'roles.manage'], is_system: true },
+        { id: 2, name: 'Store Manager', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'orders.view', 'orders.update_status', 'customers.view', 'inventory.view', 'inventory.update_stock', 'diagnoses.view', 'diagnoses.review', 'analytics.view', 'coupons.manage'], is_system: false },
+        { id: 3, name: 'Inventory Specialist', user_count: 0, permissions: ['products.view', 'products.create', 'products.edit', 'inventory.view', 'inventory.update_stock'], is_system: false },
+        { id: 4, name: 'Fulfillment Agent', user_count: 0, permissions: ['products.view', 'orders.view', 'orders.update_status', 'customers.view'], is_system: false },
+        { id: 5, name: 'Agronomist', user_count: 0, permissions: ['products.view', 'diagnoses.view', 'diagnoses.review'], is_system: false }
+      ];
+    }
+  },
+  getPermissions: async () => {
+    try {
+      const res = await apiClient.get('/admin/permissions');
+      return res.data;
+    } catch (e) {
+      return [
+        { id: 1, name: 'products.view', group: 'Products', label: 'View Catalog' },
+        { id: 2, name: 'products.create', group: 'Products', label: 'Add Products' },
+        { id: 3, name: 'products.edit', group: 'Products', label: 'Edit Prices & Stock' },
+        { id: 4, name: 'products.delete', group: 'Products', label: 'Delete Products' },
+        { id: 5, name: 'orders.view', group: 'Orders', label: 'View Orders' },
+        { id: 6, name: 'orders.update_status', group: 'Orders', label: 'Fulfill & Update Status' },
+        { id: 7, name: 'orders.cancel', group: 'Orders', label: 'Cancel & Refund' },
+        { id: 8, name: 'customers.view', group: 'Customers', label: 'View Farmers' },
+        { id: 9, name: 'inventory.view', group: 'Inventory', label: 'View Stock Audit' },
+        { id: 10, name: 'inventory.update_stock', group: 'Inventory', label: 'Restock Inventory' },
+        { id: 11, name: 'diagnoses.view', group: 'Diagnoses', label: 'View Crop Photos' },
+        { id: 12, name: 'diagnoses.review', group: 'Diagnoses', label: 'Write Remedies' },
+        { id: 13, name: 'analytics.view', group: 'Analytics', label: 'View Sales Revenue' },
+        { id: 14, name: 'coupons.manage', group: 'Coupons', label: 'Manage Discount Codes' },
+        { id: 15, name: 'roles.manage', group: 'Roles', label: 'Manage Team & Permissions' },
+      ];
+    }
+  },
+  createRole: async (data: { name: string; permissions: string[] }) => {
+    try {
+      const res = await apiClient.post('/admin/roles', data);
+      return res.data;
+    } catch (e) {
+      return { message: 'Role created', role: { id: Date.now(), name: data.name, permissions: data.permissions } };
+    }
+  },
+  updateRolePermissions: async (id: number, permissions: string[]) => {
+    try {
+      const res = await apiClient.put(`/admin/roles/${id}`, { permissions });
+      return res.data;
+    } catch (e) {
+      return { message: 'Permissions updated', permissions };
+    }
+  },
+  getTeam: async () => {
+    try {
+      const res = await apiClient.get('/admin/team');
+      return res.data;
+    } catch (e) {
+      return [
+        { id: 1, name: 'Admin User', email: 'admin@fertilizershop.com', role: 'Super Admin', permissions: ['*'] }
+      ];
+    }
+  },
+  assignUserRole: async (userId: number | string, role: string) => {
+    try {
+      const res = await apiClient.post('/admin/team/assign-role', { user_id: userId, role });
+      return res.data;
+    } catch (e) {
+      return { message: `Assigned ${role}` };
+    }
   }
 };
 

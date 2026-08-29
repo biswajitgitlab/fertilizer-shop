@@ -5,8 +5,16 @@ import { adminApi } from '../../api/adminApi';
 import { productApi } from '../../api/productApi';
 import { Category } from '../../types';
 import { Button } from '../../components/common/Button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const PRESET_AGRICULTURE_IMAGES = [
+  { label: 'NPK Granules / Bags', url: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Organic Neem Oil Bottle', url: 'https://images.unsplash.com/photo-1592417817098-8f3d6eb231fc?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Green Crop Growth Liquid', url: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Micronutrient Spray', url: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Wheat Field & Fertilizer', url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=600' },
+];
 
 export const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,10 +33,11 @@ export const ProductForm: React.FC = () => {
     composition: '',
     dosage: '2-3 gm per liter of water',
     npk: { n: 0, p: 0, k: 0 },
-    images: ['https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600'],
+    images: ['https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600'] as string[],
     suitableCrops: ['Wheat', 'Paddy', 'Vegetables']
   });
 
+  const [customImageUrl, setCustomImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -48,7 +57,7 @@ export const ProductForm: React.FC = () => {
             composition: found.composition || '',
             dosage: found.dosage || '',
             npk: found.npk || { n: 0, p: 0, k: 0 },
-            images: found.images,
+            images: Array.isArray(found.images) ? found.images : [found.images || PRESET_AGRICULTURE_IMAGES[0].url],
             suitableCrops: found.suitableCrops
           });
         }
@@ -56,8 +65,65 @@ export const ProductForm: React.FC = () => {
     }
   }, [id, isEdit]);
 
+  const handleAddImageUrl = () => {
+    if (!customImageUrl.trim()) return;
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, customImageUrl.trim()]
+    }));
+    setCustomImageUrl('');
+    toast.success("Product image URL added!");
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setFormData(prev => ({
+            ...prev,
+            images: [...prev.images, reader.result as string]
+          }));
+          toast.success(`Uploaded ${file.name}`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (formData.images.length <= 1) {
+      toast.error("Product must have at least 1 image.");
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSelectPresetImage = (url: string) => {
+    if (formData.images.includes(url)) {
+      toast.error("Image already added to this product.");
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, url]
+    }));
+    toast.success("Preset image selected!");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.images.length === 0) {
+      toast.error("Please add at least one product image.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const payload = {
@@ -91,7 +157,7 @@ export const ProductForm: React.FC = () => {
           <span>Back to Product Catalog</span>
         </button>
 
-        <form onSubmit={handleSubmit} className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800/80 p-6 sm:p-8 shadow-xl space-y-5 text-slate-200">
+        <form onSubmit={handleSubmit} className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800/80 p-6 sm:p-8 shadow-xl space-y-6 text-slate-200">
           <div>
             <label className="block text-xs font-bold text-slate-300 mb-1">Product Title / Chemical Brand Name *</label>
             <input
@@ -99,6 +165,7 @@ export const ProductForm: React.FC = () => {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+              placeholder="e.g. Sarkar NPK 19:19:19 Soluble Fertilizer"
               required
             />
           </div>
@@ -125,6 +192,100 @@ export const ProductForm: React.FC = () => {
                 className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
                 required
               />
+            </div>
+          </div>
+
+          {/* Product Image Manager */}
+          <div className="p-5 bg-slate-950/80 rounded-2xl border border-slate-800/80 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-white flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-emerald-400" />
+                <span>Product Images &amp; Visual Assets *</span>
+              </label>
+              <span className="text-[10px] text-slate-400 font-bold">{formData.images.length} Image(s) Attached</span>
+            </div>
+
+            {/* Current Attached Images Gallery */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {formData.images.map((img, idx) => (
+                <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-800 bg-slate-900 aspect-square">
+                  <img src={img} alt={`Product asset ${idx + 1}`} className="w-full h-full object-cover" />
+                  {idx === 0 && (
+                    <span className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">
+                      PRIMARY
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(idx)}
+                    className="absolute top-1.5 right-1.5 p-1.5 bg-rose-600/90 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-600 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Image Options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {/* Option A: Image File Uploader */}
+              <div className="relative border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 text-center transition-all bg-slate-900/40 flex flex-col items-center justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="w-6 h-6 text-emerald-400 mb-1" />
+                <p className="text-xs font-bold text-slate-200">Upload Local File / Drag &amp; Drop</p>
+                <p className="text-[10px] text-slate-400">PNG, JPG, WebP up to 10MB</p>
+              </div>
+
+              {/* Option B: Direct URL Input */}
+              <div className="p-3 bg-slate-900/40 border border-slate-800 rounded-xl space-y-2 flex flex-col justify-center">
+                <p className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <LinkIcon className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Paste Image URL</span>
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={customImageUrl}
+                    onChange={(e) => setCustomImageUrl(e.target.value)}
+                    className="flex-1 text-xs bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImageUrl}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Option C: Preset Agriculture Images Library */}
+            <div className="pt-2 border-t border-slate-800/60">
+              <p className="text-[11px] font-bold text-slate-400 mb-2 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Quick Select High-Res Agriculture Stock Assets:</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {PRESET_AGRICULTURE_IMAGES.map((preset, pIdx) => (
+                  <button
+                    key={pIdx}
+                    type="button"
+                    onClick={() => handleSelectPresetImage(preset.url)}
+                    className="text-[10px] font-semibold bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-400 text-slate-300 px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <img src={preset.url} alt={preset.label} className="w-3.5 h-3.5 rounded object-cover" />
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

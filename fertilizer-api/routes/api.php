@@ -144,4 +144,13 @@ Route::middleware(['auth:sanctum', 'role:Admin'])->prefix('admin')->group(functi
 
     // Diagnoses
     Route::put('/diagnoses/{id}', [\App\Http\Controllers\Admin\DiagnosisController::class, 'update']);
+
+    // Roles & Team Permissions Management
+    Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index']);
+    Route::post('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store']);
+    Route::put('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'update']);
+    Route::delete('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy']);
+    Route::get('/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'permissions']);
+    Route::get('/team', [\App\Http\Controllers\Admin\RoleController::class, 'team']);
+    Route::post('/team/assign-role', [\App\Http\Controllers\Admin\RoleController::class, 'assignRole']);
 });

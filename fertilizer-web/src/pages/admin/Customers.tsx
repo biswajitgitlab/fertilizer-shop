@@ -47,30 +47,32 @@ export const Customers: React.FC = () => {
         </div>
 
         <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800/80 shadow-xl overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-950/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Farmer Name</th>
-                <th className="py-3.5 px-4">Mobile Number</th>
-                <th className="py-3.5 px-4">State</th>
-                <th className="py-3.5 px-4">Role</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50 text-xs text-slate-200 font-medium">
-              {filtered.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-white">{c.name}</td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-300">{c.phone}</td>
-                  <td className="py-3.5 px-4 text-slate-400">{c.state || 'Haryana'}</td>
-                  <td className="py-3.5 px-4">
-                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                      {c.role}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-950/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Farmer Name</th>
+                  <th className="py-3.5 px-4">Mobile Number</th>
+                  <th className="py-3.5 px-4">Location</th>
+                  <th className="py-3.5 px-4">Role</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-800/50 text-xs text-slate-200 font-medium">
+                {filtered.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-white">{c.name || 'Anonymous Farmer'}</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-300">{c.phone || 'N/A'}</td>
+                    <td className="py-3.5 px-4 text-slate-400">{(c as any).farm_location || c.state || 'Haryana'}</td>
+                    <td className="py-3.5 px-4">
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        {c.role || 'Customer'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>
