@@ -14,12 +14,15 @@ export const Orders: React.FC = () => {
       try {
         const data = await orderApi.getMyOrders();
         // Handle both array and paginated object ({ data: [...], total, ... })
+        let list: any[] = [];
         if (Array.isArray(data)) {
-          setOrders(data);
+          list = data;
         } else if (data && Array.isArray(data.data)) {
-          setOrders(data.data);
-        } else {
-          setOrders([]);
+          list = data.data;
+        }
+        setOrders(list);
+        if (list.length > 0) {
+          localStorage.setItem('krishi_has_placed_orders', 'true');
         }
       } catch (e) {
         console.error("Orders error:", e);

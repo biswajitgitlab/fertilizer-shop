@@ -100,11 +100,15 @@ export const useCartStore = create<CartState>((set, get) => ({
     const subtotal = get().getSubtotal();
 
     if (cleanCode === 'NEWFARMER') {
+      const hasPlacedOrders = localStorage.getItem('krishi_has_placed_orders') === 'true';
+      if (hasPlacedOrders) {
+        return { success: false, message: 'NEWFARMER token is valid for 1st-time ordering customers only!' };
+      }
       if (subtotal < 499) {
         return { success: false, message: 'NEWFARMER requires minimum subtotal of ₹499' };
       }
       set({ couponCode: 'NEWFARMER', discountPercent: 0, discountAmount: 150, isFreeShippingCoupon: false });
-      return { success: true, message: '🎉 NEWFARMER token applied! Flat ₹150 OFF' };
+      return { success: true, message: '🎉 NEWFARMER token applied! Flat ₹150 OFF (1st Order)' };
     } 
     
     if (cleanCode === 'WELCOME10' || cleanCode === 'KRISHI10') {

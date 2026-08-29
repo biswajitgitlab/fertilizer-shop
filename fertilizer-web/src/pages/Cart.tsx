@@ -123,7 +123,7 @@ export const Cart: React.FC = () => {
                   code: 'NEWFARMER',
                   title: 'New Customer Offer',
                   discountText: 'Flat ₹150 OFF',
-                  minOrderText: 'On orders >= ₹499',
+                  minOrderText: '1st Order Only (min ₹499)',
                   color: 'border-emerald-200 bg-emerald-50/70 text-emerald-950',
                   badge: 'NEW USER'
                 },

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShoppingBag, ArrowRight, Tag, ShieldCheck, Check } from 'lucide-react';
+import { X, ShoppingBag, ArrowRight, Tag, ShieldCheck, Check, Truck, Sparkles } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { CartItem } from './CartItem';
 import { formatCurrency } from '../../utils/formatters';
@@ -20,23 +20,48 @@ export const CartDrawer: React.FC = () => {
     discount,
     shippingFee,
     tax,
-    total
+    total,
+    freeShippingThreshold
   } = useCart();
 
   const navigate = useNavigate();
   const [couponInput, setCouponInput] = useState('');
+
+  const amountForFreeDelivery = Math.max(0, freeShippingThreshold - subtotal);
+  const freeDeliveryProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
+
+  // Lock background scroll when Cart Drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
-    const success = applyCoupon(couponInput);
-    if (success) {
-      toast.success("Coupon code applied successfully!");
+    const res = applyCoupon(couponInput);
+    if (res.success) {
+      toast.success(res.message);
       setCouponInput('');
     } else {
-      toast.error("Invalid coupon code. Try 'KRISHI10' or 'FARMER100'");
+      toast.error(res.message);
+    }
+  };
+
+  const handleQuickApplyToken = (code: string) => {
+    const res = applyCoupon(code);
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error(res.message);
     }
   };
 
@@ -73,6 +98,35 @@ export const CartDrawer: React.FC = () => {
             </button>
           </div>
 
+          {/* FREE SHIPPING PROGRESS BANNER */}
+          {items.length > 0 && (
+            <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-4 space-y-2 border-b border-emerald-800">
+              <div className="flex items-center justify-between text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
+                  <span className="text-[11px] sm:text-xs">
+                    {amountForFreeDelivery > 0 ? (
+                      <>Add <strong className="text-emerald-300 font-extrabold">{formatCurrency(amountForFreeDelivery)}</strong> more for <span className="text-emerald-300 underline">FREE Delivery</span></>
+                    ) : (
+                      <span className="text-emerald-300 font-extrabold">
+                        🎉 Unlocked FREE Delivery!
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-emerald-200 shrink-0">
+                  {freeDeliveryProgress}%
+                </span>
+              </div>
+              <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden p-0.5 backdrop-blur-xs">
+                <div
+                  className="bg-gradient-to-r from-emerald-400 to-teal-300 h-full rounded-full transition-all duration-500 shadow-sm"
+                  style={{ width: `${freeDeliveryProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Cart List */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {items.length === 0 ? (
@@ -97,30 +151,64 @@ export const CartDrawer: React.FC = () => {
           {items.length > 0 && (
             <div className="p-4 sm:p-6 bg-gray-50 border-t border-gray-100 space-y-4">
               
-              {/* Coupon Form */}
+              {/* Coupon Form & Available Offers */}
               {couponCode ? (
                 <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-emerald-600" />
-                    <span>Coupon '{couponCode}' Applied</span>
+                    <span>Token '{couponCode}' Applied</span>
                   </div>
                   <button onClick={removeCoupon} className="text-rose-600 hover:underline cursor-pointer">
                     Remove
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Coupon (e.g. KRISHI10)"
-                    value={couponInput}
-                    onChange={(e) => setCouponInput(e.target.value)}
-                    className="flex-1 text-xs bg-white border border-gray-200 rounded-xl px-3 py-2 uppercase focus:outline-none focus:border-emerald-500"
-                  />
-                  <Button type="submit" size="sm" variant="secondary">
-                    Apply
-                  </Button>
-                </form>
+                <div className="space-y-2.5">
+                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Token (e.g. NEWFARMER)"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value)}
+                      className="flex-1 text-xs bg-white border border-gray-200 rounded-xl px-3 py-2 uppercase focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                    />
+                    <Button type="submit" size="sm" variant="secondary">
+                      Apply
+                    </Button>
+                  </form>
+
+                  {/* Quick-Apply Tokens */}
+                  <div className="bg-white border border-gray-200/80 rounded-xl p-2.5 space-y-1.5 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black text-gray-800 flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Available Discount Tokens
+                      </span>
+                    </div>
+                    <div className="space-y-1.5 pt-0.5">
+                      {[
+                        { code: 'NEWFARMER', text: 'Flat ₹150 OFF (1st Order Only)' },
+                        { code: 'WELCOME10', text: '10% OFF (≥ ₹299)' },
+                        { code: 'KRISHISAVE', text: 'Flat ₹250 OFF (≥ ₹999)' }
+                      ].map((t) => (
+                        <div key={t.code} className="flex items-center justify-between text-[11px] bg-emerald-50/60 p-1.5 rounded-lg border border-emerald-100">
+                          <div>
+                            <span className="font-mono font-bold text-emerald-900 bg-white px-1.5 py-0.5 rounded border border-emerald-200 mr-1.5">
+                              {t.code}
+                            </span>
+                            <span className="text-gray-600 font-medium text-[10px]">{t.text}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickApplyToken(t.code)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Price Breakdown */}

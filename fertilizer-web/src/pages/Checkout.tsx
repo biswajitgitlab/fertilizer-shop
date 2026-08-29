@@ -55,6 +55,7 @@ export const Checkout: React.FC = () => {
       });
 
       const orderId = newOrder?.id || newOrder?.order?.id || newOrder?.order_number;
+      localStorage.setItem('krishi_has_placed_orders', 'true');
       
       if (paymentMethod === 'Online Payment' && orderId) {
         setPendingOnlineOrder({ id: orderId, amount: total });
@@ -78,6 +79,7 @@ export const Checkout: React.FC = () => {
   const handlePaymentSuccess = async () => {
     if (pendingOnlineOrder) {
       const orderId = pendingOnlineOrder.id;
+      localStorage.setItem('krishi_has_placed_orders', 'true');
       setPendingOnlineOrder(null);
       clearCart();
       toast.success("Payment Verified & Order Confirmed!");

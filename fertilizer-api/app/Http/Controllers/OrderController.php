@@ -59,18 +59,28 @@ class OrderController extends Controller
 
         $discount = 0;
         if ($couponCode) {
-            $coupon = Coupon::where('code', $couponCode)
-                            ->where('is_active', true)
-                            ->where(function($q) {
-                                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-                            })
-                            ->first();
-                            
-            if ($coupon && $subtotal >= $coupon->min_order) {
-                if ($coupon->type === 'PERCENT') {
-                    $discount = $subtotal * ($coupon->value / 100);
-                } else {
-                    $discount = $coupon->value;
+            $isFirstOrderOnly = (strtoupper($couponCode) === 'NEWFARMER');
+            $user = auth()->user();
+            $hasPreviousOrders = false;
+
+            if ($user && $isFirstOrderOnly) {
+                $hasPreviousOrders = Order::where('user_id', $user->id)->exists();
+            }
+
+            if (!$hasPreviousOrders) {
+                $coupon = Coupon::where('code', $couponCode)
+                                ->where('is_active', true)
+                                ->where(function($q) {
+                                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                                })
+                                ->first();
+                                
+                if ($coupon && $subtotal >= $coupon->min_order) {
+                    if ($coupon->type === 'PERCENT') {
+                        $discount = $subtotal * ($coupon->value / 100);
+                    } else {
+                        $discount = $coupon->value;
+                    }
                 }
             }
         }
