@@ -64,6 +64,10 @@
   .glow-blob {
     animation: blob-bounce 8s infinite ease-in-out alternate;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
 }
 
 @keyframes blob-bounce {

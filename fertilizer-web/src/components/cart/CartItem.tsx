@@ -10,8 +10,8 @@ export const CartItem: React.FC<{ item: CartItemType }> = ({ item }) => {
   const { product, quantity } = item;
 
   return (
-    <div className="flex gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-2xs items-center">
-      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+    <div className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800/90 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-2xs text-gray-900 dark:text-white">
+      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 shrink-0">
         <img
           src={product.images[0]}
           alt={product.name}
@@ -19,12 +19,24 @@ export const CartItem: React.FC<{ item: CartItemType }> = ({ item }) => {
         />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-bold text-gray-900 truncate">{product.name}</h4>
-        <p className="text-[11px] text-gray-400 font-medium">Unit: {product.unit}</p>
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-start justify-between gap-2">
+          <h4 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">
+            {product.name}
+          </h4>
+          <button
+            onClick={() => removeItem(product.id)}
+            className="p-1 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer shrink-0"
+            title="Remove Item"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-black text-emerald-800">
+        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">Unit: {product.unit}</p>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <span className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-400">
             {formatCurrency(product.price * quantity)}
           </span>
 
@@ -37,14 +49,6 @@ export const CartItem: React.FC<{ item: CartItemType }> = ({ item }) => {
           />
         </div>
       </div>
-
-      <button
-        onClick={() => removeItem(product.id)}
-        className="p-1.5 text-gray-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-        title="Remove Item"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
     </div>
   );
 };

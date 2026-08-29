@@ -68,8 +68,8 @@ export const Cart: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <h1 className="text-2xl font-black text-gray-900">Your Shopping Cart ({items.length} Products)</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-gray-900 dark:text-white">
+      <h1 className="text-2xl font-black text-gray-900 dark:text-white">Your Shopping Cart ({items.length} Products)</h1>
 
       {/* FREE SHIPPING PROGRESS BAR */}
       <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-5 rounded-3xl shadow-md space-y-3">
@@ -111,10 +111,10 @@ export const Cart: React.FC = () => {
           </div>
 
           {/* TOKEN / COUPON OFFERS FOR NEW & EXISTING CUSTOMERS */}
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-500" />
-              <h3 className="text-sm font-black text-gray-900">Available Discount Tokens & Offers</h3>
+              <h3 className="text-sm font-black text-gray-900 dark:text-white">Available Discount Tokens &amp; Offers</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -124,7 +124,7 @@ export const Cart: React.FC = () => {
                   title: 'New Customer Offer',
                   discountText: 'Flat ₹150 OFF',
                   minOrderText: '1st Order Only (min ₹499)',
-                  color: 'border-emerald-200 bg-emerald-50/70 text-emerald-950',
+                  color: 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200',
                   badge: 'NEW USER'
                 },
                 {
@@ -132,7 +132,7 @@ export const Cart: React.FC = () => {
                   title: 'Welcome Discount',
                   discountText: '10% OFF',
                   minOrderText: 'On orders >= ₹299',
-                  color: 'border-blue-200 bg-blue-50/70 text-blue-950',
+                  color: 'border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200',
                   badge: 'POPULAR'
                 },
                 {
@@ -140,7 +140,7 @@ export const Cart: React.FC = () => {
                   title: 'Farmer Mega Savings',
                   discountText: 'Flat ₹250 OFF',
                   minOrderText: 'On orders >= ₹999',
-                  color: 'border-purple-200 bg-purple-50/70 text-purple-950',
+                  color: 'border-purple-200 dark:border-purple-800 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-200',
                   badge: 'BEST VALUE'
                 }
               ].map((token) => (
@@ -148,18 +148,18 @@ export const Cart: React.FC = () => {
                   key={token.code}
                   className={`p-4 rounded-2xl border ${token.color} space-y-2 relative flex flex-col justify-between`}
                 >
-                  <span className="absolute top-2 right-2 text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-white/80 border border-gray-200 text-gray-800">
+                  <span className="absolute top-2 right-2 text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-white/80 dark:bg-slate-900/80 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200">
                     {token.badge}
                   </span>
 
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">{token.title}</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500 dark:text-slate-400">{token.title}</span>
                     <h4 className="text-base font-black">{token.discountText}</h4>
-                    <p className="text-[11px] text-gray-600 font-medium">{token.minOrderText}</p>
+                    <p className="text-[11px] text-gray-600 dark:text-slate-300 font-medium">{token.minOrderText}</p>
                   </div>
 
                   <div className="pt-2 flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider px-2 py-1 bg-white rounded-lg border border-gray-300">
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider px-2 py-1 bg-white dark:bg-slate-900 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white">
                       {token.code}
                     </span>
                     <button
@@ -168,7 +168,7 @@ export const Cart: React.FC = () => {
                       className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
                         couponCode === token.code
                           ? 'bg-emerald-600 text-white cursor-default flex items-center gap-1'
-                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-slate-800 dark:hover:bg-slate-700'
                       }`}
                     >
                       {couponCode === token.code ? (
@@ -187,19 +187,19 @@ export const Cart: React.FC = () => {
         </div>
 
         {/* Order Summary Side Card */}
-        <div className="lg:col-span-4 bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-6">
-          <h3 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-6">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
             Cart Summary
           </h3>
 
           {/* Coupon form */}
           {couponCode ? (
-            <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-800">
+            <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-xs font-bold text-emerald-800 dark:text-emerald-300">
               <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-emerald-600" />
+                <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Token '{couponCode}' Applied</span>
               </div>
-              <button onClick={removeCoupon} className="text-rose-600 hover:underline cursor-pointer">
+              <button onClick={removeCoupon} className="text-rose-600 dark:text-rose-400 hover:underline cursor-pointer">
                 Remove
               </button>
             </div>
@@ -210,7 +210,7 @@ export const Cart: React.FC = () => {
                 placeholder="Token Code (e.g. NEWFARMER)"
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 uppercase focus:outline-none focus:border-emerald-500 font-mono font-bold"
+                className="flex-1 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 uppercase focus:outline-none focus:border-emerald-500 font-mono font-bold text-gray-900 dark:text-white"
               />
               <Button type="submit" variant="secondary" size="sm">
                 Apply
@@ -219,29 +219,29 @@ export const Cart: React.FC = () => {
           )}
 
           {/* Calculations */}
-          <div className="space-y-2 text-xs text-gray-600 font-medium pt-2">
+          <div className="space-y-2 text-xs text-gray-600 dark:text-slate-400 font-medium pt-2">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span className="font-bold text-gray-900">{formatCurrency(subtotal)}</span>
+              <span className="font-bold text-gray-900 dark:text-white">{formatCurrency(subtotal)}</span>
             </div>
             {discount > 0 && (
-              <div className="flex justify-between text-emerald-700 font-bold">
+              <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-bold">
                 <span>Discount Token</span>
                 <span>-{formatCurrency(discount)}</span>
               </div>
             )}
             <div className="flex justify-between">
               <span>Delivery Charge</span>
-              <span>{shippingFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : formatCurrency(shippingFee)}</span>
+              <span>{shippingFee === 0 ? <span className="text-emerald-600 dark:text-emerald-400 font-bold">FREE</span> : formatCurrency(shippingFee)}</span>
             </div>
-            <div className="flex justify-between text-gray-500">
+            <div className="flex justify-between text-gray-500 dark:text-slate-500">
               <span>GST Tax (18%)</span>
               <span>{formatCurrency(tax)}</span>
             </div>
 
-            <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-black text-gray-900">
+            <div className="border-t border-gray-200 dark:border-slate-800 pt-3 flex justify-between text-lg font-black text-gray-900 dark:text-white">
               <span>Grand Total</span>
-              <span className="text-emerald-800">{formatCurrency(total)}</span>
+              <span className="text-emerald-800 dark:text-emerald-400">{formatCurrency(total)}</span>
             </div>
           </div>
 
@@ -249,8 +249,8 @@ export const Cart: React.FC = () => {
             Proceed to Checkout ({formatCurrency(total)})
           </Button>
 
-          <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500 dark:text-slate-400">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Guaranteed 100% Genuine Lab Tested Products</span>
           </div>
         </div>
