@@ -41,11 +41,11 @@ export const Inventory: React.FC = () => {
     <AdminLayout title="Warehouse Inventory Management">
       <div className="space-y-6">
         
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800/80 shadow-xl overflow-hidden">
+        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-950/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   <th className="py-3.5 px-4">Product Image</th>
                   <th className="py-3.5 px-4">Product Name</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -54,13 +54,13 @@ export const Inventory: React.FC = () => {
                   <th className="py-3.5 px-4 text-right">Quick Restock</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50 text-xs text-slate-200 font-medium">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200 font-medium">
                 {products.map((p) => {
                   const imgUrl = Array.isArray(p.images) && p.images[0] ? p.images[0] : (typeof p.images === 'string' ? p.images : DEFAULT_PRODUCT_IMG);
                   return (
-                    <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden shrink-0">
                           <img
                             src={imgUrl}
                             alt={p.name}
@@ -71,24 +71,24 @@ export const Inventory: React.FC = () => {
                           />
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-white">{p.name}</td>
-                      <td className="py-3.5 px-4 text-slate-300">{p.category}</td>
-                      <td className="py-3.5 px-4 text-slate-400">{p.unit}</td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{p.name}</td>
+                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">{p.category}</td>
+                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">{p.unit}</td>
                       <td className="py-3.5 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-black border ${
                           p.stock > 10
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20 inline-flex items-center gap-1'
+                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+                            : 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 inline-flex items-center gap-1'
                         }`}>
-                          {p.stock <= 10 && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
+                          {p.stock <= 10 && <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />}
                           {p.stock} Units
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right space-x-2">
-                        <button onClick={() => handleUpdateStock(p.id, p.stock, 10)} className="px-3 py-1.5 bg-slate-950 border border-slate-700 text-emerald-400 font-bold rounded-xl hover:border-emerald-500 transition-all cursor-pointer">
+                        <button onClick={() => handleUpdateStock(p.id, p.stock, 10)} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-emerald-700 dark:text-emerald-400 font-bold rounded-xl hover:border-emerald-500 transition-all cursor-pointer">
                           +10 Bags
                         </button>
-                        <button onClick={() => handleUpdateStock(p.id, p.stock, 50)} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md shadow-emerald-950/50 transition-all cursor-pointer">
+                        <button onClick={() => handleUpdateStock(p.id, p.stock, 50)} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer">
                           +50 Bags
                         </button>
                       </td>

@@ -36,26 +36,26 @@ export const Diagnoses: React.FC = () => {
   return (
     <AdminLayout title="Agri Scientist Crop Scan Reviews">
       <div className="space-y-6">
-        <p className="text-xs text-slate-400">Review AI leaf disease diagnoses and confirm treatment package recommendations.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Review AI leaf disease diagnoses and confirm treatment package recommendations.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {diagnoses.map((d) => (
-            <div key={d.id} className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-800/80 shadow-xl space-y-3">
+            <div key={d.id} className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl space-y-3">
               <div className="flex justify-between items-center">
-                <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full">{d.crop} Crop</span>
+                <span className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full">{d.crop} Crop</span>
                 {d.adminReviewed ? (
-                  <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-cyan-400" /> Reviewed
+                  <span className="bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Reviewed
                   </span>
                 ) : (
-                  <button onClick={() => handleReview(d.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl cursor-pointer shadow-md shadow-emerald-950/50 transition-all">
+                  <button onClick={() => handleReview(d.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl cursor-pointer shadow-md transition-all">
                     Verify Diagnosis
                   </button>
                 )}
               </div>
 
-              <h3 className="font-black text-sm text-white">{d.title}</h3>
-              <p className="text-xs text-slate-300">{d.description}</p>
+              <h3 className="font-black text-sm text-slate-900 dark:text-white">{d.title}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300">{d.description}</p>
             </div>
           ))}
         </div>
