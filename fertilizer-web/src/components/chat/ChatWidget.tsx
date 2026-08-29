@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, Paperclip, Bot } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Bot } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 import { ChatHeader } from './ChatHeader';
 import { MessageBubble } from './MessageBubble';
 import { QuickReplies } from './QuickReplies';
 import { ChatMessage } from '../../types';
 import { chatApi } from '../../api/chatApi';
+import { AnimatedSparkles, AnimatedCropDoctor } from '../common/AnimatedIcons';
 
 export const ChatWidget: React.FC = () => {
   const { chatOpen, toggleChat, setChatOpen } = useUIStore();
@@ -80,66 +82,83 @@ export const ChatWidget: React.FC = () => {
     <div className="fixed bottom-5 right-5 z-40">
       
       {/* Floating Trigger Button */}
-      {!chatOpen && (
-        <button
-          onClick={toggleChat}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white p-3.5 rounded-full shadow-2xl flex items-center gap-2 group transition-all duration-300 transform hover:scale-105 cursor-pointer border-2 border-emerald-400"
-          aria-label="Open Chat Support"
-        >
-          <div className="relative">
-            <Bot className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 border-2 border-emerald-600 rounded-full animate-ping" />
-          </div>
-          <span className="text-xs font-bold pr-1 hidden sm:inline">Ask KrishiMitra AI</span>
-        </button>
-      )}
+      <AnimatePresence>
+        {!chatOpen && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleChat}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white p-3.5 rounded-full shadow-2xl flex items-center gap-2 group transition-all cursor-pointer border-2 border-emerald-400"
+            aria-label="Open Chat Support"
+          >
+            <div className="relative">
+              <AnimatedCropDoctor size={24} className="text-white" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 border-2 border-emerald-600 rounded-full animate-ping" />
+            </div>
+            <span className="text-xs font-bold pr-1 hidden sm:inline">Ask KrishiMitra AI</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Floating Chat Panel */}
-      {chatOpen && (
-        <div className="w-[92vw] sm:w-[380px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col justify-between overflow-hidden animate-scale-in">
-          <ChatHeader onClose={() => setChatOpen(false)} />
-
-          {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-3 bg-slate-50/50">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-
-            {isTyping && (
-              <div className="flex items-center gap-2 text-xs text-gray-400 p-2 italic">
-                <Bot className="w-4 h-4 text-emerald-600 animate-bounce" />
-                <span>KrishiMitra is analyzing...</span>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Reply Chips */}
-          <QuickReplies onSelect={(query) => handleSendMessage(query)} />
-
-          {/* Input Bar */}
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-            className="p-2.5 bg-white border-t border-gray-100 flex items-center gap-2"
+      <AnimatePresence>
+        {chatOpen && (
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.85, opacity: 0, y: 20 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="w-[92vw] sm:w-[380px] h-[520px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 flex flex-col justify-between overflow-hidden"
           >
-            <input
-              type="text"
-              placeholder="Ask about crops, fertilizers, pests..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:border-emerald-500"
-            />
-            <button
-              type="submit"
-              disabled={!inputMessage.trim()}
-              className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-40 transition-colors cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+            <ChatHeader onClose={() => setChatOpen(false)} />
 
-        </div>
-      )}
+            {/* Messages Scroll Area */}
+            <div className="flex-1 overflow-y-auto p-3 bg-slate-50/50 dark:bg-slate-950/50">
+              {messages.map((msg) => (
+                <MessageBubble key={msg.id} message={msg} />
+              ))}
+
+              {isTyping && (
+                <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 p-2 italic font-semibold">
+                  <AnimatedSparkles size={16} className="text-emerald-500" />
+                  <span>KrishiMitra is analyzing...</span>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Quick Reply Chips */}
+            <QuickReplies onSelect={(query) => handleSendMessage(query)} />
+
+            {/* Input Bar */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+              className="p-2.5 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 flex items-center gap-2"
+            >
+              <input
+                type="text"
+                placeholder="Ask about crops, fertilizers, pests..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                className="flex-1 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                disabled={!inputMessage.trim()}
+                className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-40 transition-colors cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+              </motion.button>
+            </form>
+
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

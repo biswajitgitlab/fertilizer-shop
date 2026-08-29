@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Sprout, ArrowRight, ShieldCheck, Truck, Headphones, Award, Stethoscope, ChevronRight, Star, Calendar, Leaf, Sparkles, Zap, Activity, Bug, PackageCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, ChevronRight, Star, Calendar, Bug, PackageCheck, Zap, Activity } from 'lucide-react';
 
 import { ProductCard } from '../components/product/ProductCard';
 import { productApi } from '../api/productApi';
 import { Product, Category } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
+import { PageTransition } from '../components/common/PageTransition';
+import {
+  AnimatedLeaf,
+  AnimatedSprout,
+  AnimatedShield,
+  AnimatedTruck,
+  AnimatedSparkles,
+  AnimatedCropDoctor,
+  AnimatedPulseBadge,
+  AnimatedSearch
+} from '../components/common/AnimatedIcons';
 
 // Bright, high-resolution agriculture photos (100% verified 200 OK & vibrant)
 const VIBRANT_FARM_HERO = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800";
@@ -75,7 +87,7 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="space-y-0 pb-0 bg-slate-950 text-slate-900 font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <PageTransition className="space-y-0 pb-0 bg-slate-950 text-slate-900 font-sans selection:bg-emerald-500 selection:text-slate-950">
       
       {/* ─── 1. LIQUID GLASS HERO SECTION ─── */}
       <section
@@ -93,11 +105,16 @@ export const Home: React.FC = () => {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]" />
         
         <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-7 text-center lg:text-left">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 space-y-7 text-center lg:text-left"
+          >
             
             {/* Top Liquid Badge */}
             <div className="inline-flex items-center gap-2.5 bg-emerald-500/15 backdrop-blur-xl border border-emerald-400/30 text-emerald-300 text-xs font-black px-4 py-2 rounded-full shadow-lg">
-              <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+              <AnimatedSparkles size={16} className="text-emerald-400" />
               <span>Government Certified Genuine Agricultural Inputs</span>
             </div>
 
@@ -123,38 +140,52 @@ export const Home: React.FC = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white/95 backdrop-blur-md text-slate-900 font-semibold rounded-2xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-500 transition-all"
                 />
-                <Search className="w-5 h-5 text-emerald-700 absolute left-3.5 top-4" />
+                <div className="absolute left-3.5 top-3.5">
+                  <AnimatedSearch size={20} className="text-emerald-700" />
+                </div>
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 type="submit"
-                className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 cursor-pointer transform active:scale-95"
+                className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
               >
                 Search Store
-              </button>
+              </motion.button>
             </form>
 
             {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/25 transform hover:-translate-y-0.5"
-              >
-                <span>Browse Store Products</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                to={isAuthenticated ? "/diagnose" : "/login"}
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/30 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all"
-              >
-                <Stethoscope className="w-4 h-4 text-emerald-400" />
-                <span>Try AI Crop Doctor</span>
-              </Link>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  to="/products"
+                  className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/25"
+                >
+                  <AnimatedSprout size={18} className="text-slate-950" />
+                  <span>Browse Store Products</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  to={isAuthenticated ? "/diagnose" : "/login"}
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/30 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all"
+                >
+                  <AnimatedCropDoctor size={18} className="text-emerald-400" />
+                  <span>Try AI Crop Doctor</span>
+                </Link>
+              </motion.div>
             </div>
 
-          </div>
+          </motion.div>
 
           {/* Liquid Glass Feature Hero Card */}
-          <div className="lg:col-span-5 relative hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-5 relative hidden lg:block"
+          >
             <div className="relative mx-auto max-w-sm aspect-4/5 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-2 bg-white/10 backdrop-blur-2xl">
               <img
                 src={VIBRANT_GREEN_CROPS}
@@ -166,8 +197,7 @@ export const Home: React.FC = () => {
               
               {/* Floating Status Pill */}
               <div className="absolute top-6 right-6 bg-slate-950/80 backdrop-blur-xl text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
-                <span>Govt Verified Inputs</span>
+                <AnimatedPulseBadge text="Govt Verified" color="emerald" />
               </div>
 
               {/* Liquid Card Bottom Detail */}
@@ -180,48 +210,53 @@ export const Home: React.FC = () => {
                 <p className="text-xs text-emerald-100/90 font-medium">Delivered to 12,500+ Farms this month</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-slate-950 border-y border-white/10">
-        <div className="max-w-7xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
-              <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-slate-950 border-y border-white/10 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 text-xs text-emerald-400 font-black uppercase tracking-wider bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                <AnimatedSprout size={14} className="text-emerald-400" />
+                <span>Smart Crop Advisory Grid</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Select Your Crop for Customized Care &amp; Inputs
               </h2>
             </div>
-            <span className="text-xs text-emerald-400 font-bold hidden sm:inline">Smart Crop Advisory Grid</span>
+            <p className="text-xs text-slate-400 font-medium max-w-sm">
+              Click any crop to discover tailored NPK schedules, pest control sprays, and high-yield fertilizers.
+            </p>
           </div>
 
-          {/* Touch-Friendly Horizontal Scroll Crop Selector Grid */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
+          {/* Fully Responsive Non-Truncated Crop Selector Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {[
-              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30" },
-              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30" },
-              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30" },
-              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30" },
-              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30" },
-              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30" },
-              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30" },
-              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30" },
+              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400" },
+              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30 text-amber-400" },
+              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30 text-rose-400" },
+              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-400" },
+              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30 text-emerald-300" },
+              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30 text-amber-300" },
+              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30 text-rose-300" },
+              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30 text-yellow-400" },
             ].map((crop, idx) => (
-              <button
+              <motion.button
                 key={idx}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
-                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-5 rounded-2xl hover:scale-105 transition-all cursor-pointer shadow-lg active:scale-95`}
+                className={`w-full flex flex-col items-center text-center bg-gradient-to-b ${crop.color} border backdrop-blur-xl p-3 rounded-2xl cursor-pointer shadow-lg transition-all group`}
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/20">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/20 mb-2 shadow-md group-hover:scale-105 transition-transform duration-300">
                   <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
                 </div>
-                <div className="text-left">
-                  <span className="text-xs font-black text-white block leading-snug">{crop.name}</span>
-                  <span className="text-[10px] text-emerald-400 font-bold">View Recommended</span>
-                </div>
-              </button>
+                <span className="text-xs font-black text-white block leading-snug truncate w-full">{crop.name}</span>
+                <span className={`text-[10px] ${crop.color.split(' ').pop()} font-bold mt-1 block`}>View Care</span>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -324,7 +359,7 @@ export const Home: React.FC = () => {
               <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all" />
               <div className="space-y-3 relative z-10">
                 <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-400 font-bold">
-                  <Stethoscope className="w-6 h-6" />
+                  <AnimatedCropDoctor size={24} className="text-emerald-400" />
                 </div>
                 <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Instant AI Disease Diagnostics</span>
                 <h3 className="text-2xl font-black text-white">Scan Leaf Diseases &amp; Get Treatment Recommendations</h3>
@@ -347,7 +382,7 @@ export const Home: React.FC = () => {
             <div className="rounded-3xl p-8 bg-slate-900/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-teal-400/40 transition-all">
               <div className="space-y-3">
                 <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-400 font-bold">
-                  <ShieldCheck className="w-6 h-6" />
+                  <AnimatedShield size={24} className="text-teal-400" />
                 </div>
                 <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">Government Verified</span>
                 <h3 className="text-xl font-black text-white">100% Lab-Tested Inputs</h3>
@@ -366,7 +401,7 @@ export const Home: React.FC = () => {
             <div className="rounded-3xl p-8 bg-slate-900/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-amber-400/40 transition-all">
               <div className="space-y-3">
                 <div className="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-400 font-bold">
-                  <Truck className="w-6 h-6" />
+                  <AnimatedTruck size={24} className="text-amber-400" />
                 </div>
                 <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">Express Dispatch</span>
                 <h3 className="text-xl font-black text-white">Direct Farm Doorstep Shipping</h3>
@@ -600,7 +635,7 @@ export const Home: React.FC = () => {
         
         <div className="max-w-3xl mx-auto relative z-10 space-y-6">
           <span className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black px-4 py-1.5 rounded-full">
-            <Leaf className="w-4 h-4" />
+            <AnimatedLeaf size={16} className="text-emerald-400" />
             Empowering Modern Agriculture
           </span>
           
@@ -613,25 +648,29 @@ export const Home: React.FC = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/20"
-            >
-              <span>Shop All Products</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            {!isAuthenticated && (
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
               <Link
-                to="/register"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/20 font-bold px-8 py-4 rounded-2xl text-sm transition-all"
+                to="/products"
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/20"
               >
-                <span>Create Free Account</span>
+                <span>Shop All Products</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
+            </motion.div>
+            {!isAuthenticated && (
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/20 font-bold px-8 py-4 rounded-2xl text-sm transition-all"
+                >
+                  <span>Create Free Account</span>
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>
       </section>
 
-    </div>
+    </PageTransition>
   );
 };

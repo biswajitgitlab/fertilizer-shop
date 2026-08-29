@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sprout, Search, ShoppingBag, User, Globe, Menu, X,
-  ShieldCheck, LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon
+  Search, User, Globe, Menu, X,
+  LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { useUIStore } from '../../store/uiStore';
 import { useTranslation } from 'react-i18next';
+import {
+  AnimatedLeaf,
+  AnimatedCart,
+  AnimatedShield,
+  AnimatedSparkles,
+  AnimatedSearch
+} from './AnimatedIcons';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -50,7 +58,7 @@ export const Navbar: React.FC = () => {
       <div className="bg-emerald-900 dark:bg-slate-950 text-emerald-100 text-xs py-1.5 px-3 sm:px-4 border-b border-emerald-800/40 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
           <div className="flex items-center gap-1.5 truncate">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <AnimatedShield className="w-4 h-4 text-emerald-400 shrink-0" />
             <span className="font-medium text-[11px] sm:text-xs truncate">
               <span className="sm:hidden">Govt. Certified Agri Store &amp; Direct Delivery</span>
               <span className="hidden sm:inline">Government Certified Genuine Agricultural Inputs &amp; Direct Farm Delivery</span>
@@ -85,10 +93,13 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           
           {/* Logo */}
-          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0">
-              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-            </div>
+          <Link to={isAdmin ? '/admin/dashboard' : '/'} className="flex items-center gap-2 shrink-0 group">
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 3 }}
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0"
+            >
+              <img src="/logo.png" alt="SarkarFertilizer Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain drop-shadow-sm" />
+            </motion.div>
             <div className="leading-none">
               <span className="text-lg sm:text-xl font-black tracking-tight text-gray-900 dark:text-white flex items-center">
                 Sarkar<span className="text-emerald-600 dark:text-emerald-400">Fertilizer</span>
@@ -115,14 +126,16 @@ export const Navbar: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all"
               />
-              <Search className="w-4 h-4 text-gray-400 dark:text-slate-400 absolute left-3.5 top-3" />
+              <div className="absolute left-3.5 top-2.5">
+                <AnimatedSearch className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
             </form>
           )}
 
           {/* Admin banner in navbar */}
           {isAdmin && (
             <div className="hidden md:flex items-center gap-2 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs font-bold px-3 py-1.5 rounded-xl">
-              <ShieldCheck className="w-4 h-4" />
+              <AnimatedShield className="w-4 h-4 text-amber-600" />
               <span>Administrator Mode</span>
             </div>
           )}
@@ -152,7 +165,7 @@ export const Navbar: React.FC = () => {
                   isActive('/diagnose') ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-gray-700 dark:text-slate-300'
                 }`}
               >
-                <Stethoscope className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Stethoscope className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
                 <span>{t('nav_diagnose')}</span>
               </Link>
               <Link
@@ -172,18 +185,27 @@ export const Navbar: React.FC = () => {
 
             {/* Cart Button — only for non-admin */}
             {!isAdmin && (
-              <button
+              <motion.button
                 onClick={toggleDrawer}
-                className="relative p-2 text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-2 text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
                 aria-label="View Cart"
               >
-                <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
-                {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 animate-scale-in">
-                    {itemCount}
-                  </span>
-                )}
-              </button>
+                <AnimatedCart className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700 dark:text-emerald-400" active={itemCount > 0} />
+                <AnimatePresence>
+                  {itemCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm"
+                    >
+                      {itemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             )}
 
             {/* Auth Dropdown / Login */}
@@ -214,7 +236,7 @@ export const Navbar: React.FC = () => {
                       <p className="text-xs text-gray-500 dark:text-slate-400">{user?.phone || user?.email}</p>
                       {isAdmin && (
                         <span className="inline-flex items-center gap-1 mt-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          <ShieldCheck className="w-3 h-3" />
+                          <AnimatedShield size={12} className="text-amber-500" />
                           Administrator
                         </span>
                       )}
