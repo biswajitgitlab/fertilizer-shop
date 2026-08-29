@@ -58,7 +58,7 @@ class DashboardController extends Controller
             }
 
             // Recent Orders
-            $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(10)->get();
+            $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(10)->get()->toArray();
 
             // Top Selling Products
             $topProducts = DB::table('order_items')

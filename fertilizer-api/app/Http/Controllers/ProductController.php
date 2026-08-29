@@ -138,8 +138,8 @@ class ProductController extends Controller
                 ->get();
 
             return [
-                'product' => $product,
-                'related' => $relatedProducts
+                'product' => $product->toArray(),
+                'related' => $relatedProducts->toArray()
             ];
         });
 
