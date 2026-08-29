@@ -26,6 +26,18 @@ class Product extends Model
         'is_featured' => 'boolean',
     ];
 
+    protected $appends = ['stock'];
+
+    public function getStockAttribute()
+    {
+        return $this->attributes['stock_qty'] ?? 0;
+    }
+
+    public function setStockAttribute($value)
+    {
+        $this->attributes['stock_qty'] = $value;
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
