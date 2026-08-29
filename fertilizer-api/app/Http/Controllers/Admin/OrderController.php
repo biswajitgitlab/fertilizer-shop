@@ -5,35 +5,48 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'items.product', 'payment']);
+        $status = $request->input('status', '');
+        $paymentStatus = $request->input('payment_status', '');
+        $page = $request->input('page', 1);
+        $dateRange = $request->input('date_range', '');
 
-        if ($request->filled('status')) {
-            $query->where('status', strtoupper($request->status));
-        }
+        $cacheKey = "admin_orders_p{$page}_st_{$status}_pay_{$paymentStatus}_d_" . md5($dateRange);
 
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', strtoupper($request->payment_status));
-        }
+        $orders = Cache::remember($cacheKey, 180, function () use ($request) {
+            $query = Order::with(['user', 'items.product', 'payment']);
 
-        if ($request->filled('date_range')) {
-            $dates = explode(',', $request->date_range);
-            if (count($dates) == 2) {
-                $query->whereBetween('created_at', [$dates[0], $dates[1]]);
+            if ($request->filled('status')) {
+                $query->where('status', strtoupper($request->status));
             }
-        }
 
-        $orders = $query->orderBy('created_at', 'desc')->paginate(50);
+            if ($request->filled('payment_status')) {
+                $query->where('payment_status', strtoupper($request->payment_status));
+            }
+
+            if ($request->filled('date_range')) {
+                $dates = explode(',', $request->date_range);
+                if (count($dates) == 2) {
+                    $query->whereBetween('created_at', [$dates[0], $dates[1]]);
+                }
+            }
+
+            return $query->orderBy('created_at', 'desc')->paginate(50);
+        });
+
         return response()->json($orders);
     }
 
     public function show($id)
     {
-        $order = Order::with(['user', 'items.product', 'payment'])->findOrFail($id);
+        $order = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
+            return Order::with(['user', 'items.product', 'payment'])->findOrFail($id);
+        });
         return response()->json($order);
     }
 
@@ -55,6 +68,10 @@ class OrderController extends Controller
         }
 
         $order->save();
+
+        Cache::forget("admin_order_{$id}");
+        Cache::forget('admin_dashboard_stats');
+        Cache::forget('admin_analytics_metrics');
 
         try {
             $order->load('user');
@@ -80,6 +97,13 @@ class OrderController extends Controller
 
         Order::whereIn('id', $request->order_ids)->update(['status' => $request->status]);
 
+        Cache::forget('admin_dashboard_stats');
+        Cache::forget('admin_analytics_metrics');
+        foreach ($request->order_ids as $id) {
+            Cache::forget("admin_order_{$id}");
+        }
+
         return response()->json(['message' => 'Orders updated successfully']);
     }
 }
+

@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CouponController extends Controller
 {
     public function index()
     {
-        $coupons = Coupon::orderBy('created_at', 'desc')->paginate(20);
+        $coupons = Cache::remember('admin_coupons_list', 600, function () {
+            return Coupon::orderBy('created_at', 'desc')->paginate(20);
+        });
         return response()->json($coupons);
     }
 
@@ -26,12 +29,15 @@ class CouponController extends Controller
         ]);
 
         $coupon = Coupon::create($request->all());
+        Cache::forget('admin_coupons_list');
         return response()->json(['message' => 'Coupon created successfully', 'coupon' => $coupon], 201);
     }
 
     public function show($id)
     {
-        $coupon = Coupon::findOrFail($id);
+        $coupon = Cache::remember("admin_coupon_{$id}", 600, function () use ($id) {
+            return Coupon::findOrFail($id);
+        });
         return response()->json($coupon);
     }
 
@@ -49,6 +55,9 @@ class CouponController extends Controller
         ]);
 
         $coupon->update($request->all());
+        Cache::forget('admin_coupons_list');
+        Cache::forget("admin_coupon_{$id}");
+
         return response()->json(['message' => 'Coupon updated successfully', 'coupon' => $coupon]);
     }
 
@@ -56,6 +65,10 @@ class CouponController extends Controller
     {
         $coupon = Coupon::findOrFail($id);
         $coupon->delete();
+        Cache::forget('admin_coupons_list');
+        Cache::forget("admin_coupon_{$id}");
+
         return response()->json(['message' => 'Coupon deleted successfully']);
     }
 }
+

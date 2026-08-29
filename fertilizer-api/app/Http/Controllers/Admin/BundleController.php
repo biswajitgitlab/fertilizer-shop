@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 
 use App\Models\ProductBundle;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class BundleController extends Controller
 {
     public function index()
     {
-        $bundles = ProductBundle::with('products')->get();
+        $bundles = Cache::remember('admin_bundles_list', 600, function () {
+            return ProductBundle::with('products')->get();
+        });
         return response()->json($bundles);
     }
 
@@ -37,12 +40,16 @@ class BundleController extends Controller
             $bundle->products()->attach($product['product_id'], ['quantity' => $product['quantity']]);
         }
 
+        Cache::forget('admin_bundles_list');
+
         return response()->json($bundle->load('products'), 201);
     }
 
     public function show(string $id)
     {
-        $bundle = ProductBundle::with('products')->findOrFail($id);
+        $bundle = Cache::remember("admin_bundle_{$id}", 600, function () use ($id) {
+            return ProductBundle::with('products')->findOrFail($id);
+        });
         return response()->json($bundle);
     }
 
@@ -76,6 +83,9 @@ class BundleController extends Controller
             $bundle->products()->sync($syncData);
         }
 
+        Cache::forget('admin_bundles_list');
+        Cache::forget("admin_bundle_{$id}");
+
         return response()->json($bundle->load('products'));
     }
 
@@ -83,6 +93,11 @@ class BundleController extends Controller
     {
         $bundle = ProductBundle::findOrFail($id);
         $bundle->delete();
+
+        Cache::forget('admin_bundles_list');
+        Cache::forget("admin_bundle_{$id}");
+
         return response()->json(['message' => 'Bundle deleted']);
     }
 }
+
