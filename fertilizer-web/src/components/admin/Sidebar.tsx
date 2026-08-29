@@ -117,6 +117,15 @@ export const Sidebar: React.FC<{
 
       {/* Bottom Actions */}
       <div className="space-y-1 pt-3 border-t border-slate-800/80 w-full">
+        {/* Theme Switch Button */}
+        <button
+          onClick={toggleTheme}
+          title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+          className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs font-bold text-amber-300 hover:text-amber-200 hover:bg-slate-900/80 rounded-xl transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : ''}`}
+        >
+          {theme === 'dark' ? <Sun className="w-4 h-4 shrink-0 text-amber-400" /> : <Moon className="w-4 h-4 shrink-0 text-slate-300" />}
+          {!collapsed && <span className="truncate">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
         <NavLink
           to="/"
           title={collapsed ? "Exit to Customer Store" : undefined}

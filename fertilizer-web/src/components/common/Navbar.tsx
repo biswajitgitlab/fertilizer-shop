@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Sprout, Search, ShoppingBag, User, Globe, Menu, X,
-  ShieldCheck, LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard
+  ShieldCheck, LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { itemCount, toggleDrawer } = useCart();
-  const { language, setLanguage } = useUIStore();
+  const { language, setLanguage, theme, toggleTheme } = useUIStore();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,8 +56,19 @@ export const Navbar: React.FC = () => {
               <span className="hidden sm:inline">Government Certified Genuine Agricultural Inputs &amp; Direct Farm Delivery</span>
             </span>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <span className="hidden md:inline text-xs">Toll Free: 1800-888-FARM</span>
+            
+            {/* Dark / Light Theme Toggle Switch */}
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="flex items-center gap-1 font-semibold text-[11px] sm:text-xs cursor-pointer bg-emerald-800/80 text-amber-300 hover:text-white px-2 py-0.5 rounded-md border border-emerald-700/50 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-3 h-3 text-amber-300" /> : <Moon className="w-3 h-3 text-emerald-200" />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
+
             <button
               onClick={handleLanguageToggle}
               className="flex items-center gap-1 hover:text-white font-semibold text-[11px] sm:text-xs cursor-pointer bg-emerald-800/80 px-2 py-0.5 rounded-md border border-emerald-700/50"

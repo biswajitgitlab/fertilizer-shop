@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
-import { Bell, Search, Menu, Sparkles, Shield, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, Search, Menu, Sparkles, Shield, PanelLeftClose, PanelLeftOpen, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useUIStore } from '../../store/uiStore';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }> = ({
   children,
   title = "Admin Portal"
 }) => {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useUIStore();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -80,6 +82,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
             </div>
+
+            {/* Theme Toggle Switch */}
+            <button
+              onClick={toggleTheme}
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="p-2 text-amber-400 hover:text-amber-300 hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer flex items-center justify-center border border-slate-800"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-300" />}
+            </button>
 
             {/* Notifications Button */}
             <button className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer">
