@@ -55,7 +55,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/planner/{id}', [App\Http\Controllers\API\PlannerController::class, 'update']);
     Route::delete('/planner/{id}', [App\Http\Controllers\API\PlannerController::class, 'destroy']);
     Route::post('/planner/{id}/mark-done/{task_id}', [App\Http\Controllers\API\PlannerController::class, 'markDone']);
+    // Razorpay Direct Routes
+    Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
+    Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
 });
+
+// Razorpay Direct Public Routes (also accessible without bearer token if needed)
+Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
+Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
 
 // Webhooks
 Route::post('/webhooks/payment', function (\Illuminate\Http\Request $request) {

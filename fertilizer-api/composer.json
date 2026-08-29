@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "predis/predis": "^3.5",
+        "razorpay/razorpay": "^2.9",
         "spatie/laravel-permission": "^8.3"
     },
     "require-dev": {

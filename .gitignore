@@ -5,7 +5,9 @@ fertilizer-web/node_modules/
 
 # Environment files
 .env
+.env*
 fertilizer-api/.env
+fertilizer-web/.env
 
 # Build outputs & caches
 fertilizer-web/dist/

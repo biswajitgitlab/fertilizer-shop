@@ -109,6 +109,26 @@ export const orderApi = {
     }
   },
 
+  createRazorpayOrder: async (amountInPaise: number, currency = 'INR', receipt?: string) => {
+    const res = await apiClient.post('/create-order', {
+      amount: amountInPaise,
+      currency,
+      receipt
+    });
+    return res.data;
+  },
+
+  verifyRazorpayPayment: async (payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    order_id?: string | number;
+  }) => {
+    const res = await apiClient.post('/verify-payment', payload);
+    return res.data;
+  },
+
   getOrderById: async (id: string) => orderApi.getOrder(id),
   getMyOrders: async () => orderApi.getOrders()
 };
+

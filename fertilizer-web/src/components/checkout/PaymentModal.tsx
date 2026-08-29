@@ -49,6 +49,100 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleRazorpayStandardCheckout = async () => {
+    try {
+      setProcessStep('gateway_connect');
+      const amountInPaise = Math.max(100, Math.round(amount * 100));
+
+      const orderRes = await orderApi.createRazorpayOrder(
+        amountInPaise,
+        'INR',
+        `rcpt_ord_${orderId}`
+      );
+
+      const razorpayOrderId = orderRes.order_id || orderRes.id;
+      if (!razorpayOrderId) {
+        throw new Error("Failed to retrieve Razorpay Order ID from backend");
+      }
+
+      setProcessStep('idle');
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TVWk5BV07S6AvH',
+        amount: orderRes.amount || amountInPaise,
+        currency: orderRes.currency || 'INR',
+        name: 'Sarkar Fertilizer',
+        description: `Order #${orderId}`,
+        order_id: razorpayOrderId,
+        handler: async function (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) {
+          setProcessStep('verifying_signature');
+          try {
+            const verifyRes = await orderApi.verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              order_id: orderId,
+            });
+
+            if (verifyRes.status === 'success' || verifyRes.message?.includes('verified') || verifyRes.razorpay_payment_id) {
+              setTxnDetails({
+                txnId: response.razorpay_payment_id,
+                date: new Date().toLocaleString('en-IN'),
+                gateway: 'RAZORPAY_STANDARD_CHECKOUT'
+              });
+              setProcessStep('success');
+              toast.success("Payment verified successfully!");
+              setTimeout(() => {
+                onSuccess();
+              }, 1800);
+            } else {
+              setProcessStep('failed');
+              toast.error(verifyRes.message || "Payment signature verification failed");
+            }
+          } catch (verifyError: any) {
+            console.error("Verification error:", verifyError);
+            setProcessStep('failed');
+            toast.error(verifyError.response?.data?.message || "Signature verification failed on server");
+          }
+        },
+        prefill: {
+          name: "Farmer Customer",
+          email: "farmer@example.com",
+          contact: "9876543210"
+        },
+        theme: {
+          color: "#059669"
+        },
+        modal: {
+          ondismiss: function () {
+            toast.error("Payment modal cancelled by user");
+          }
+        }
+      };
+
+      if ((window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay(options);
+        rzp.on('payment.failed', function (resp: any) {
+          console.error("Razorpay Payment Failed:", resp.error);
+          toast.error(`Payment Failed: ${resp.error?.description || 'Transaction declined'}`);
+          setProcessStep('failed');
+          orderApi.markPaymentFailed(orderId, resp.error);
+        });
+        rzp.open();
+      } else {
+        toast.error("Razorpay Checkout JS is not loaded. Please try again.");
+      }
+    } catch (err: any) {
+      console.error("Razorpay checkout error:", err);
+      toast.error(err.response?.data?.message || err.message || "Failed to initialize Razorpay checkout");
+      setProcessStep('idle');
+    }
+  };
+
   const handleInitiatePayment = async () => {
     if (simulateFail) {
       setProcessStep('gateway_connect');
@@ -310,6 +404,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           {/* STEP: IDLE (Payment Selection Form) */}
           {processStep === 'idle' && (
             <>
+              {/* Razorpay Standard Web Checkout Primary Button */}
+              <button
+                type="button"
+                onClick={handleRazorpayStandardCheckout}
+                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black rounded-2xl text-sm transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] ring-4 ring-blue-500/20"
+              >
+                <Lock className="w-4 h-4 text-blue-200" />
+                <span>Pay with Razorpay Standard Checkout</span>
+              </button>
+
+              <div className="relative flex items-center justify-center my-2">
+                <div className="border-t border-gray-200 w-full"></div>
+                <span className="bg-white px-3 text-[11px] text-gray-400 font-semibold uppercase">Or alternative methods</span>
+              </div>
+
               {/* Payment Method Selector Tabs */}
               <div className="grid grid-cols-3 gap-2 p-1 bg-gray-100 rounded-2xl text-xs font-bold">
                 <button

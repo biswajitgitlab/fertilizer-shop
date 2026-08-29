@@ -87,6 +87,13 @@ export interface Order {
   trackingNumber?: string;
   createdAt: string;
   adminNotes?: string;
+  numericId?: string | number;
+  paymentDetails?: {
+    gateway: string;
+    transactionId: string;
+    status: string;
+    date: string;
+  } | null;
 }
 
 export interface Diagnosis {
