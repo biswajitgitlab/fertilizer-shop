@@ -11,32 +11,32 @@ export const Analytics: React.FC = () => {
     { name: 'Vitamins', value: 5 },
   ];
 
-  const COLORS = ['#059669', '#0d9488', '#16a34a', '#ca8a04', '#0284c7'];
+  const COLORS = ['#10b981', '#14b8a6', '#06b6d4', '#eab308', '#ec4899'];
 
   return (
     <AdminLayout title="Sales & Category Analytics">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* Category Share Chart */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-4">
-          <h3 className="text-base font-black text-gray-900">Sales Breakdown by Product Category</h3>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-800/80 shadow-xl space-y-4">
+          <h3 className="text-base font-black text-white">Sales Breakdown by Product Category</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={categorySales} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                  {categorySales.map((entry, index) => (
+                  {categorySales.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '1rem', color: '#f8fafc' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Top Demands Bar Chart */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-4">
-          <h3 className="text-base font-black text-gray-900">Top In-Demand Crop Fertilizers</h3>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-800/80 shadow-xl space-y-4">
+          <h3 className="text-base font-black text-white">Top In-Demand Crop Fertilizers</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={[
@@ -46,10 +46,10 @@ export const Analytics: React.FC = () => {
                 { name: 'Chlorpyrifos', bags: 620 },
                 { name: 'Plant Growth', bags: 510 },
               ]}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} />
-                <YAxis stroke="#94a3b8" fontSize={10} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+                <YAxis stroke="#64748b" fontSize={10} />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '1rem', color: '#f8fafc' }} />
                 <Bar dataKey="bags" fill="#10b981" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

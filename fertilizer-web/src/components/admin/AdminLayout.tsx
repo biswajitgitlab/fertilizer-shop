@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
-import { Bell, Search, Menu, User, X } from 'lucide-react';
+import { Bell, Search, Menu, Sparkles, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }> = ({
@@ -11,10 +11,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-emerald-500 selection:text-white flex">
       
+      {/* Dynamic Background Mesh Gradients */}
+      <div className="fixed top-0 left-1/4 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="fixed bottom-0 right-1/4 w-[700px] h-[700px] bg-teal-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="fixed top-1/3 right-10 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
+
       {/* Desktop Fixed Sidebar */}
-      <div className="hidden lg:block shrink-0">
+      <div className="hidden lg:block shrink-0 z-20">
         <Sidebar />
       </div>
 
@@ -22,59 +27,75 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="relative w-64 max-w-xs bg-slate-950 z-10">
+          <div className="relative w-64 max-w-xs bg-slate-950 z-10 shadow-2xl border-r border-slate-800">
             <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} />
           </div>
         </div>
       )}
 
       {/* Main Content Body */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 z-10">
         
-        {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        {/* Glassmorphic Sticky Top Header */}
+        <header className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg shadow-black/20">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-xl"
+              className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-black text-gray-900">{title}</h1>
+            
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
+                <span>{title}</span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-widest">
+                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  Live System
+                </span>
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block w-64">
+            {/* Search Input */}
+            <div className="relative hidden sm:block w-72">
               <input
                 type="text"
-                placeholder="Search orders, SKU..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-1.5 text-xs focus:outline-none focus:border-emerald-500"
+                placeholder="Search orders, farmers, SKUs..."
+                className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-inner"
               />
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
             </div>
 
-            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-xl">
+            {/* Notifications Button */}
+            <button className="relative p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-400 rounded-full" />
             </button>
 
-            <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs border border-emerald-300">
+            {/* Admin Profile Chip */}
+            <div className="flex items-center gap-2.5 pl-3 border-l border-slate-800">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black flex items-center justify-center text-xs shadow-md shadow-emerald-950/50 border border-emerald-400/30">
                 {user?.name?.[0] || 'A'}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-gray-900 leading-tight">{user?.name || 'Admin'}</p>
-                <p className="text-[10px] text-gray-400 font-semibold">Store Manager</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-xs font-bold text-slate-100 leading-tight">{user?.name || 'Store Admin'}</p>
+                  <Shield className="w-3 h-3 text-emerald-400" />
+                </div>
+                <p className="text-[10px] text-emerald-400/90 font-semibold tracking-wide uppercase">Manager</p>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page Children Area */}
-        <main className="p-4 sm:p-8 flex-1 max-w-7xl w-full mx-auto">
+        {/* Page Main Content Area */}
+        <main className="p-4 sm:p-8 flex-1 max-w-7xl w-full mx-auto space-y-6">
           {children}
         </main>
 

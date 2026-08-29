@@ -4,7 +4,6 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import { productApi } from '../../api/productApi';
 import { Category } from '../../types';
-import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { ArrowLeft, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -87,108 +86,125 @@ export const ProductForm: React.FC = () => {
     <AdminLayout title={isEdit ? "Edit Fertilizer SKU" : "Create New Fertilizer SKU"}>
       <div className="max-w-3xl mx-auto space-y-6">
         
-        <button onClick={() => navigate('/admin/products')} className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900">
+        <button onClick={() => navigate('/admin/products')} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer">
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Product Catalog</span>
         </button>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-xs space-y-5">
-          <Input
-            label="Product Title / Chemical Brand Name *"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
+        <form onSubmit={handleSubmit} className="bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800/80 p-6 sm:p-8 shadow-xl space-y-5 text-slate-200">
+          <div>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Product Title / Chemical Brand Name *</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+              required
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Category *</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Category *</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full text-sm bg-white border border-gray-200 rounded-xl px-3.5 py-2.5"
+                className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
                 required
               >
-                {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                {categories.map(c => <option key={c.id} value={c.name} className="bg-slate-900 text-white">{c.name}</option>)}
               </select>
             </div>
 
-            <Input
-              label="Pack Unit (e.g. 50 kg Bag, 1 L Bottle) *"
-              value={formData.unit}
-              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-              required
-            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Pack Unit (e.g. 50 kg Bag, 1 L Bottle) *</label>
+              <input
+                type="text"
+                value={formData.unit}
+                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+                required
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Input
-              label="Selling Price (₹) *"
-              type="number"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              required
-            />
-            <Input
-              label="Original MRP Price (₹)"
-              type="number"
-              value={formData.originalPrice}
-              onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-            />
-            <Input
-              label="Stock Quantity *"
-              type="number"
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-              required
-            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Selling Price (₹) *</label>
+              <input
+                type="number"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Original MRP Price (₹)</label>
+              <input
+                type="number"
+                value={formData.originalPrice}
+                onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Stock Quantity *</label>
+              <input
+                type="number"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500"
+                required
+              />
+            </div>
           </div>
 
           {/* NPK Inputs */}
-          <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-2">
-            <label className="block text-xs font-bold text-emerald-900">NPK Nitrogen-Phosphorus-Potassium Ratio (%)</label>
+          <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 space-y-2">
+            <label className="block text-xs font-bold text-emerald-400">NPK Nitrogen-Phosphorus-Potassium Ratio (%)</label>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <span className="text-[10px] text-emerald-700 font-bold uppercase">Nitrogen (N)</span>
+                <span className="text-[10px] text-emerald-300 font-bold uppercase">Nitrogen (N)</span>
                 <input
                   type="number"
                   value={formData.npk.n}
                   onChange={(e) => setFormData({ ...formData, npk: { ...formData.npk, n: Number(e.target.value) } })}
-                  className="w-full text-xs bg-white border border-emerald-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-slate-950 border border-emerald-500/30 rounded-xl px-3 py-2 font-bold text-emerald-400"
                 />
               </div>
               <div>
-                <span className="text-[10px] text-emerald-700 font-bold uppercase">Phosphorus (P)</span>
+                <span className="text-[10px] text-emerald-300 font-bold uppercase">Phosphorus (P)</span>
                 <input
                   type="number"
                   value={formData.npk.p}
                   onChange={(e) => setFormData({ ...formData, npk: { ...formData.npk, p: Number(e.target.value) } })}
-                  className="w-full text-xs bg-white border border-emerald-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-slate-950 border border-emerald-500/30 rounded-xl px-3 py-2 font-bold text-emerald-400"
                 />
               </div>
               <div>
-                <span className="text-[10px] text-emerald-700 font-bold uppercase">Potassium (K)</span>
+                <span className="text-[10px] text-emerald-300 font-bold uppercase">Potassium (K)</span>
                 <input
                   type="number"
                   value={formData.npk.k}
                   onChange={(e) => setFormData({ ...formData, npk: { ...formData.npk, k: Number(e.target.value) } })}
-                  className="w-full text-xs bg-white border border-emerald-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-slate-950 border border-emerald-500/30 rounded-xl px-3 py-2 font-bold text-emerald-400"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Product Description</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Product Description</label>
             <textarea
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full text-xs bg-white border border-gray-200 rounded-xl p-3"
+              className="w-full text-xs bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 focus:outline-none focus:border-emerald-500"
             />
           </div>
 
-          <Button type="submit" isLoading={isLoading} className="w-full py-3" icon={<Save className="w-4 h-4" />}>
+          <Button type="submit" isLoading={isLoading} className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold" icon={<Save className="w-4 h-4" />}>
             Save Fertilizer Product SKU
           </Button>
         </form>

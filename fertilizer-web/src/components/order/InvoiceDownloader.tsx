@@ -48,10 +48,10 @@ export const InvoiceDownloader: React.FC<{ order: Order }> = ({ order }) => {
         <div class="details">
           <div>
             <strong>Billed To:</strong><br/>
-            ${order.shippingAddress.name}<br/>
-            ${order.shippingAddress.line1}, ${order.shippingAddress.line2 || ''}<br/>
-            ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.pincode}<br/>
-            Phone: ${order.shippingAddress.phone}
+            ${order.shippingAddress?.name || order.customerName || 'Valued Customer'}<br/>
+            ${order.shippingAddress?.line1 || 'N/A'}${order.shippingAddress?.line2 ? `, ${order.shippingAddress.line2}` : ''}<br/>
+            ${[order.shippingAddress?.city, order.shippingAddress?.state].filter(Boolean).join(', ')}${order.shippingAddress?.pincode ? ` - ${order.shippingAddress.pincode}` : ''}<br/>
+            Phone: ${order.shippingAddress?.phone || order.phone || 'N/A'}
           </div>
           <div style="text-align: right;">
             <strong>Payment Method:</strong> ${order.paymentMethod}<br/>
