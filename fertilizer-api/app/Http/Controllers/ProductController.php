@@ -79,7 +79,8 @@ class ProductController extends Controller
                 ->where('is_featured', true)
                 ->latest()
                 ->take(8)
-                ->get();
+                ->get()
+                ->toArray();
         });
             
         return response()->json($products);
@@ -100,7 +101,8 @@ class ProductController extends Controller
                 }])
                 ->orderByDesc('order_items_count')
                 ->take(8)
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return response()->json($products);

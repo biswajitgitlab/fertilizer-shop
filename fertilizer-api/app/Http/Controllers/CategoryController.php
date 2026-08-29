@@ -14,7 +14,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Cache::remember('categories_all', 3600, function () {
-            return Category::withCount('products')->orderBy('sort_order')->get();
+            return Category::withCount('products')->orderBy('sort_order')->get()->toArray();
         });
 
         return response()->json($categories);
