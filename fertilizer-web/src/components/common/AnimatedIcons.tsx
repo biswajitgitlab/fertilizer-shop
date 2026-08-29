@@ -331,8 +331,8 @@ export const AnimatedPulseBadge: React.FC<{ text?: string; color?: 'emerald' | '
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md shadow-xs ${textClasses[color]}`}>
-      <span className="relative flex h-2 w-2">
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md shadow-xs whitespace-nowrap shrink-0 ${textClasses[color]}`}>
+      <span className="relative flex h-2 w-2 shrink-0">
         <motion.span
           className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${bgClasses[color]}`}
           animate={{ scale: [1, 2, 1], opacity: [0.75, 0, 0.75] }}
@@ -340,7 +340,7 @@ export const AnimatedPulseBadge: React.FC<{ text?: string; color?: 'emerald' | '
         />
         <span className={`relative inline-flex rounded-full h-2 w-2 ${bgClasses[color]}`} />
       </span>
-      {text}
+      <span>{text}</span>
     </span>
   );
 };

@@ -113,12 +113,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Info Section */}
         <div className="p-5 flex flex-col flex-1 justify-between gap-3 bg-gradient-to-b from-white via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950/50 text-gray-900 dark:text-white">
           <div>
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <RatingStars rating={product.rating} count={product.reviewsCount} />
+            <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
+              <RatingStars rating={product.rating} count={product.reviewsCount} compact />
               {product.stock > 0 ? (
                 <AnimatedPulseBadge text="In Stock" color="emerald" />
               ) : (
-                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50">
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 whitespace-nowrap shrink-0">
                   Out of Stock
                 </span>
               )}
@@ -138,26 +138,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Price & Action Button */}
           <div className="pt-3 border-t border-gray-100/80 dark:border-slate-800 flex items-center justify-between gap-2">
-            <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-black text-emerald-900 dark:text-emerald-400 tracking-tight">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-lg font-black text-emerald-900 dark:text-emerald-400 tracking-tight whitespace-nowrap">
                   {formatCurrency(product.price)}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-xs text-gray-400 dark:text-slate-500 line-through font-medium">
+                  <span className="text-xs text-gray-400 dark:text-slate-500 line-through font-medium whitespace-nowrap">
                     {formatCurrency(product.originalPrice)}
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold">Incl. GST &amp; Guarantee</p>
+              <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold truncate">Incl. GST &amp; Guarantee</p>
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={handleAddToCart}
               disabled={product.stock <= 0}
-              className={`px-4 py-2.5 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 font-black text-xs cursor-pointer shadow-md ${
+              className={`px-3.5 py-2 rounded-2xl transition-all duration-300 flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer shadow-md shrink-0 whitespace-nowrap ${
                 isInCart
                   ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 border border-emerald-300/80 dark:border-emerald-700'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30 hover:shadow-emerald-600/50'
@@ -166,13 +166,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             >
               {isInCart ? (
                 <>
-                  <AnimatedCheck size={16} className="text-emerald-700 dark:text-emerald-300" />
-                  <span>Added</span>
+                  <AnimatedCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0" />
+                  <span className="whitespace-nowrap">Added</span>
                 </>
               ) : (
                 <>
-                  <AnimatedCart size={16} className="text-white" active />
-                  <span>Add to Cart</span>
+                  <AnimatedCart size={18} className="text-white shrink-0" active />
+                  <span className="whitespace-nowrap">Add to Cart</span>
                 </>
               )}
             </motion.button>

@@ -71,21 +71,25 @@ export const Products: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Top Header & Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">Fertilizer & Crop Care Marketplace</h1>
-          <p className="text-xs text-gray-500 dark:text-slate-400">Showing {products.length} lab-tested products for optimal yield</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-emerald-200/80 dark:border-slate-800/80 shadow-lg shadow-emerald-900/5 relative overflow-hidden">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            Fertilizer & Crop Care Marketplace
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-slate-400">
+            Showing {products.length} lab-tested products for optimal field yield
+          </p>
         </div>
 
         <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
           <input
             type="text"
-            placeholder="Search products or ingredients..."
+            placeholder="Search fertilizers, seeds, pesticides..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white/90 dark:bg-slate-800/90 border border-emerald-200/80 dark:border-slate-700 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-2xs transition-all"
           />
-          <Search className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-emerald-600 dark:text-slate-400 absolute left-3.5 top-3" />
         </form>
       </div>
 
@@ -108,16 +112,17 @@ export const Products: React.FC = () => {
         </div>
 
         {/* Mobile Filter Button */}
-        <div className="lg:hidden flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800">
+        <div className="lg:hidden flex items-center justify-between bg-white/85 dark:bg-slate-900/85 backdrop-blur-md p-4 rounded-2xl border border-emerald-200/70 dark:border-slate-800 shadow-xs">
           <button
             onClick={() => setMobileFilterOpen(true)}
-            className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-white bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-xl"
+            className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-white bg-emerald-100/70 dark:bg-slate-800 px-4 py-2 rounded-xl border border-emerald-200/80 dark:border-slate-700"
           >
             <SlidersHorizontal className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Filter & Sort Products</span>
           </button>
-          <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">{products.length} Found</span>
+          <span className="text-xs font-bold text-emerald-800 dark:text-slate-400">{products.length} Found</span>
         </div>
+
 
         {/* Mobile Drawer */}
         {mobileFilterOpen && (

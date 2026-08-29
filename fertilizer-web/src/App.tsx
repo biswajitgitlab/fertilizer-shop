@@ -72,9 +72,17 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans pb-16 md:pb-0 transition-colors duration-300">
+    <div className="relative min-h-screen bg-gradient-to-b from-emerald-50/90 via-teal-50/50 to-green-50/80 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans pb-16 md:pb-0 transition-colors duration-300 overflow-x-hidden">
+      {/* Global Light-Green Decorative Glow Blobs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-300/30 dark:bg-emerald-900/10 rounded-full blur-3xl pointer-events-none glow-blob" />
+      <div className="absolute top-1/3 -right-20 w-96 h-96 bg-teal-300/25 dark:bg-teal-900/10 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
+      <div className="absolute bottom-10 left-10 w-80 h-80 bg-lime-200/35 dark:bg-emerald-950/15 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-5s' }} />
+      
+      {/* Geometric Ambient Dots */}
+      <div className="planner-grid-pattern absolute inset-0 opacity-[0.14] dark:opacity-[0.03] pointer-events-none" />
+
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 relative z-10">{children}</main>
       <Footer />
       <CartDrawer />
       <ChatWidget />
@@ -82,6 +90,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     </div>
   );
 };
+
 
 
 export function App() {
