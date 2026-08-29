@@ -63,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
 // Razorpay Direct Public Routes (also accessible without bearer token if needed)
 Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
 Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
+Route::get('/payment-gateway/status', [\App\Http\Controllers\RazorpayController::class, 'getCircuitStatus']);
+Route::post('/admin/payment-gateway/reset-circuit', [\App\Http\Controllers\RazorpayController::class, 'resetCircuit']);
 
 // Webhooks
 Route::post('/webhooks/payment', function (\Illuminate\Http\Request $request) {

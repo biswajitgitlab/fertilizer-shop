@@ -6,10 +6,40 @@ use Illuminate\Http\Request;
 use Razorpay\Api\Api;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\PaymentCircuitBreaker;
 use Illuminate\Support\Str;
 
 class RazorpayController extends Controller
 {
+    private PaymentCircuitBreaker $circuitBreaker;
+
+    public function __construct()
+    {
+        $this->circuitBreaker = new PaymentCircuitBreaker('razorpay_gateway', 3, 60);
+    }
+
+    /**
+     * Get Payment Circuit Breaker Status
+     * GET /api/payment-gateway/status
+     */
+    public function getCircuitStatus()
+    {
+        return response()->json($this->circuitBreaker->getStatusDetails());
+    }
+
+    /**
+     * Reset Circuit Breaker (Admin)
+     * POST /api/admin/payment-gateway/reset-circuit
+     */
+    public function resetCircuit()
+    {
+        $this->circuitBreaker->reset();
+        return response()->json([
+            'message' => 'Payment circuit breaker reset successfully',
+            'status' => $this->circuitBreaker->getStatusDetails()
+        ]);
+    }
+
     /**
      * Create Razorpay Order
      * POST /api/create-order
@@ -24,6 +54,16 @@ class RazorpayController extends Controller
                 'status' => 'error',
                 'message' => 'Razorpay API credentials not configured'
             ], 401);
+        }
+
+        if (!$this->circuitBreaker->isAvailable()) {
+            $status = $this->circuitBreaker->getStatusDetails();
+            return response()->json([
+                'status' => 'error',
+                'circuit_open' => true,
+                'message' => "Payment gateway is undergoing high failure rates. Please use Cash on Delivery or retry in {$status['retry_after_seconds']}s.",
+                'retry_after' => $status['retry_after_seconds']
+            ], 503);
         }
 
         $amountInput = $request->input('amount');
@@ -47,13 +87,15 @@ class RazorpayController extends Controller
         $receipt = $request->input('receipt', 'rcpt_' . Str::random(10));
 
         try {
-            $api = new Api($keyId, $keySecret);
-            $razorpayOrder = $api->order->create([
-                'receipt' => (string) $receipt,
-                'amount' => $amountInPaise,
-                'currency' => $currency,
-                'notes' => $request->input('notes', [])
-            ]);
+            $razorpayOrder = $this->circuitBreaker->execute(function () use ($keyId, $keySecret, $receipt, $amountInPaise, $currency, $request) {
+                $api = new Api($keyId, $keySecret);
+                return $api->order->create([
+                    'receipt' => (string) $receipt,
+                    'amount' => $amountInPaise,
+                    'currency' => $currency,
+                    'notes' => $request->input('notes', [])
+                ]);
+            });
 
             return response()->json([
                 'status' => 'success',
@@ -61,11 +103,13 @@ class RazorpayController extends Controller
                 'amount' => $razorpayOrder['amount'],
                 'currency' => $razorpayOrder['currency'],
                 'receipt' => $razorpayOrder['receipt'],
+                'circuit' => $this->circuitBreaker->getStatusDetails()
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Razorpay API Error: ' . $e->getMessage()
+                'message' => 'Razorpay API Error: ' . $e->getMessage(),
+                'circuit' => $this->circuitBreaker->getStatusDetails()
             ], 500);
         }
     }
@@ -99,11 +143,15 @@ class RazorpayController extends Controller
         $generatedSignature = hash_hmac('sha256', $razorpayOrderId . '|' . $razorpayPaymentId, $keySecret);
 
         if (!hash_equals($generatedSignature, $razorpaySignature)) {
+            // Note: Signature mismatch is a user/tampering error, not a gateway server failure
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid payment signature: Signature mismatch'
             ], 400);
         }
+
+        // Successfully verified payment
+        $this->circuitBreaker->recordSuccess();
 
         $dbOrderId = $request->input('order_id') ?? $request->input('db_order_id');
         $order = null;
@@ -139,6 +187,7 @@ class RazorpayController extends Controller
             'razorpay_payment_id' => $razorpayPaymentId,
             'razorpay_order_id' => $razorpayOrderId,
             'order' => $order ? $order->load(['items.product', 'payment']) : null,
+            'circuit' => $this->circuitBreaker->getStatusDetails()
         ], 200);
     }
 }
