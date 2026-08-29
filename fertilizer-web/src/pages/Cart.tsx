@@ -4,7 +4,7 @@ import { useCart } from '../hooks/useCart';
 import { CartItem } from '../components/cart/CartItem';
 import { formatCurrency } from '../utils/formatters';
 import { Button } from '../components/common/Button';
-import { ShoppingBag, Tag, ArrowRight, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, Tag, ArrowRight, ShieldCheck, ArrowLeft, Truck, Sparkles, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Cart: React.FC = () => {
@@ -18,19 +18,33 @@ export const Cart: React.FC = () => {
     total,
     couponCode,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    freeShippingThreshold
   } = useCart();
 
   const [couponInput, setCouponInput] = useState('');
 
+  const amountForFreeDelivery = Math.max(0, freeShippingThreshold - subtotal);
+  const freeDeliveryProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
+
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
-    if (applyCoupon(couponInput)) {
-      toast.success("Coupon code applied!");
+    const res = applyCoupon(couponInput);
+    if (res.success) {
+      toast.success(res.message);
       setCouponInput('');
     } else {
-      toast.error("Invalid coupon code.");
+      toast.error(res.message);
+    }
+  };
+
+  const handleQuickApplyToken = (code: string) => {
+    const res = applyCoupon(code);
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error(res.message);
     }
   };
 
@@ -57,13 +71,119 @@ export const Cart: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <h1 className="text-2xl font-black text-gray-900">Your Shopping Cart ({items.length} Products)</h1>
 
+      {/* FREE SHIPPING PROGRESS BAR */}
+      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-5 rounded-3xl shadow-md space-y-3">
+        <div className="flex items-center justify-between text-xs font-bold">
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-emerald-400 animate-pulse" />
+            <span>
+              {amountForFreeDelivery > 0 ? (
+                <>Shop <strong className="text-emerald-300 font-extrabold">{formatCurrency(amountForFreeDelivery)}</strong> more for <span className="text-emerald-300 underline">FREE Delivery</span></>
+              ) : (
+                <span className="text-emerald-300 font-extrabold flex items-center gap-1">
+                  🎉 Congratulations! You've Unlocked FREE Delivery!
+                </span>
+              )}
+            </span>
+          </div>
+          <span className="text-[11px] bg-white/10 px-2.5 py-0.5 rounded-lg text-emerald-200">
+            {freeDeliveryProgress}% Goal
+          </span>
+        </div>
+
+        {/* Progress Bar Container */}
+        <div className="w-full bg-white/20 h-3 rounded-full overflow-hidden p-0.5 backdrop-blur-xs">
+          <div
+            className="bg-gradient-to-r from-emerald-400 to-teal-300 h-full rounded-full transition-all duration-500 shadow-sm"
+            style={{ width: `${freeDeliveryProgress}%` }}
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Cart Items Column */}
-        <div className="lg:col-span-8 space-y-3">
-          {items.map((item) => (
-            <CartItem key={item.product.id} item={item} />
-          ))}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="space-y-3">
+            {items.map((item) => (
+              <CartItem key={item.product.id} item={item} />
+            ))}
+          </div>
+
+          {/* TOKEN / COUPON OFFERS FOR NEW & EXISTING CUSTOMERS */}
+          <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              <h3 className="text-sm font-black text-gray-900">Available Discount Tokens & Offers</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  code: 'NEWFARMER',
+                  title: 'New Customer Offer',
+                  discountText: 'Flat ₹150 OFF',
+                  minOrderText: 'On orders >= ₹499',
+                  color: 'border-emerald-200 bg-emerald-50/70 text-emerald-950',
+                  badge: 'NEW USER'
+                },
+                {
+                  code: 'WELCOME10',
+                  title: 'Welcome Discount',
+                  discountText: '10% OFF',
+                  minOrderText: 'On orders >= ₹299',
+                  color: 'border-blue-200 bg-blue-50/70 text-blue-950',
+                  badge: 'POPULAR'
+                },
+                {
+                  code: 'KRISHISAVE',
+                  title: 'Farmer Mega Savings',
+                  discountText: 'Flat ₹250 OFF',
+                  minOrderText: 'On orders >= ₹999',
+                  color: 'border-purple-200 bg-purple-50/70 text-purple-950',
+                  badge: 'BEST VALUE'
+                }
+              ].map((token) => (
+                <div
+                  key={token.code}
+                  className={`p-4 rounded-2xl border ${token.color} space-y-2 relative flex flex-col justify-between`}
+                >
+                  <span className="absolute top-2 right-2 text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-white/80 border border-gray-200 text-gray-800">
+                    {token.badge}
+                  </span>
+
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">{token.title}</span>
+                    <h4 className="text-base font-black">{token.discountText}</h4>
+                    <p className="text-[11px] text-gray-600 font-medium">{token.minOrderText}</p>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-between">
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider px-2 py-1 bg-white rounded-lg border border-gray-300">
+                      {token.code}
+                    </span>
+                    <button
+                      onClick={() => handleQuickApplyToken(token.code)}
+                      disabled={couponCode === token.code}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                        couponCode === token.code
+                          ? 'bg-emerald-600 text-white cursor-default flex items-center gap-1'
+                          : 'bg-gray-900 text-white hover:bg-gray-800'
+                      }`}
+                    >
+                      {couponCode === token.code ? (
+                        <>
+                          <Check className="w-3 h-3" /> Applied
+                        </>
+                      ) : (
+                        'Apply'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Order Summary Side Card */}
@@ -77,7 +197,7 @@ export const Cart: React.FC = () => {
             <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-800">
               <div className="flex items-center gap-2">
                 <Tag className="w-4 h-4 text-emerald-600" />
-                <span>Coupon '{couponCode}' Applied</span>
+                <span>Token '{couponCode}' Applied</span>
               </div>
               <button onClick={removeCoupon} className="text-rose-600 hover:underline cursor-pointer">
                 Remove
@@ -87,10 +207,10 @@ export const Cart: React.FC = () => {
             <form onSubmit={handleApply} className="flex gap-2">
               <input
                 type="text"
-                placeholder="Coupon (e.g. KRISHI10)"
+                placeholder="Token Code (e.g. NEWFARMER)"
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 uppercase focus:outline-none focus:border-emerald-500"
+                className="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 uppercase focus:outline-none focus:border-emerald-500 font-mono font-bold"
               />
               <Button type="submit" variant="secondary" size="sm">
                 Apply
@@ -106,7 +226,7 @@ export const Cart: React.FC = () => {
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-emerald-700 font-bold">
-                <span>Discount</span>
+                <span>Discount Token</span>
                 <span>-{formatCurrency(discount)}</span>
               </div>
             )}

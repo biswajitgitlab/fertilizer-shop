@@ -190,6 +190,20 @@ class CartController extends Controller
             return response()->json(['message' => 'Invalid or expired coupon'], 400);
         }
 
+        if ($coupon->is_new_customer_only) {
+            $userId = auth()->id() ?? $request->input('user_id');
+            if ($userId) {
+                $hasPastOrders = \App\Models\Order::where('user_id', $userId)
+                    ->whereIn('status', ['CONFIRMED', 'DELIVERED', 'COMPLETED', 'SHIPPED'])
+                    ->exists();
+                if ($hasPastOrders) {
+                    return response()->json([
+                        'message' => 'Coupon ' . $coupon->code . ' is valid for first-time buyers with no previous orders.'
+                    ], 400);
+                }
+            }
+        }
+
         $cart = $this->getCart();
         $calculation = $this->calculateCart($cart, $request->code);
         

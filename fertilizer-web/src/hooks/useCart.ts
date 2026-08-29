@@ -19,6 +19,7 @@ export const useCart = () => {
     discount: store.getDiscount(),
     shippingFee: store.getShippingFee(),
     tax: store.getTax(),
-    total: store.getTotal()
+    total: store.getTotal(),
+    freeShippingThreshold: store.FREE_SHIPPING_THRESHOLD
   };
 };

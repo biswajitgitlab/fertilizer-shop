@@ -98,6 +98,12 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/trending', [ProductController::class, 'trending']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/products/{id}/reviews', [\App\Http\Controllers\ReviewController::class, 'index']);
+Route::post('/products/{id}/reviews', [\App\Http\Controllers\ReviewController::class, 'store']);
+
+Route::get('/coupons/public', function() {
+    return response()->json(\App\Models\Coupon::where('is_active', true)->get());
+});
 
 Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index']);
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show']);

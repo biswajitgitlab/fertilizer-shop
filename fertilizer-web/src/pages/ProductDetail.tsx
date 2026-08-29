@@ -9,8 +9,18 @@ import { ProductCard } from '../components/product/ProductCard';
 import { Button } from '../components/common/Button';
 import { useCart } from '../hooks/useCart';
 import { formatCurrency, calculateDiscount } from '../utils/formatters';
-import { ShieldCheck, Truck, Headphones, ShoppingCart, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Truck, Headphones, ShoppingCart, CheckCircle2, Star, UserCheck, MessageSquare, Send, Lock, Check } from 'lucide-react';
+import { apiClient } from '../api/axiosInstances';
 import toast from 'react-hot-toast';
+
+interface ReviewItem {
+  id: number;
+  user_name: string;
+  rating: number;
+  comment: string;
+  verified_purchase: boolean;
+  created_at: string;
+}
 
 export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +33,22 @@ export const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'desc' | 'dosage' | 'crops' | 'reviews'>('desc');
 
+  // Reviews state
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [ratingStats, setRatingStats] = useState<{ average_rating: number; total_reviews: number; rating_counts: Record<number, number> }>({
+    average_rating: 5.0,
+    total_reviews: 0,
+    rating_counts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  });
+  const [userCanReview, setUserCanReview] = useState<boolean>(false);
+  const [alreadyReviewed, setAlreadyReviewed] = useState<boolean>(false);
+  const [hasDeliveredOrder, setHasDeliveredOrder] = useState<boolean>(false);
+  const [eligibilityReason, setEligibilityReason] = useState<string | null>(null);
+
+  const [newRating, setNewRating] = useState<number>(5);
+  const [newComment, setNewComment] = useState<string>('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
+
   useEffect(() => {
     const fetchDetail = async () => {
       setIsLoading(true);
@@ -32,6 +58,9 @@ export const ProductDetail: React.FC = () => {
         setProduct(data);
         const rel = await productApi.getRelated(data.category, data.id);
         setRelated(rel);
+
+        // Fetch reviews & eligibility
+        fetchReviews(data.id);
       } catch (e) {
         console.error("Detail error:", e);
       } finally {
@@ -40,6 +69,52 @@ export const ProductDetail: React.FC = () => {
     };
     fetchDetail();
   }, [slug]);
+
+  const fetchReviews = async (productId: number | string) => {
+    try {
+      const res = await apiClient.get(`/products/${productId}/reviews`);
+      if (res.data) {
+        setReviews(res.data.reviews || []);
+        setRatingStats({
+          average_rating: res.data.average_rating || 5.0,
+          total_reviews: res.data.total_reviews || 0,
+          rating_counts: res.data.rating_counts || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+        });
+        setUserCanReview(!!res.data.user_can_review);
+        setAlreadyReviewed(!!res.data.already_reviewed);
+        setHasDeliveredOrder(!!res.data.has_delivered_order);
+        setEligibilityReason(res.data.eligibility_reason || null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch reviews:", err);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    if (!newComment.trim() || newComment.length < 5) {
+      toast.error("Please enter a review comment (minimum 5 characters)");
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      await apiClient.post(`/products/${product.id}/reviews`, {
+        rating: newRating,
+        comment: newComment
+      });
+      toast.success("Thank you! Review submitted successfully.");
+      setNewComment('');
+      setNewRating(5);
+      fetchReviews(product.id);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || "Failed to submit review.";
+      toast.error(msg);
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -113,7 +188,7 @@ export const ProductDetail: React.FC = () => {
             </h1>
 
             <div className="flex items-center gap-4 mt-3">
-              <RatingStars rating={product.rating} count={product.reviewsCount} size="md" />
+              <RatingStars rating={ratingStats.average_rating || product.rating} count={ratingStats.total_reviews || product.reviewsCount} size="md" />
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                 product.stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
               }`}>
@@ -209,7 +284,7 @@ export const ProductDetail: React.FC = () => {
             { id: 'desc', label: 'Product Overview' },
             { id: 'dosage', label: 'Application & Dosage' },
             { id: 'crops', label: 'Suitable Crops' },
-            { id: 'reviews', label: `Customer Reviews (${product.reviewsCount})` },
+            { id: 'reviews', label: `Customer Reviews (${ratingStats.total_reviews || product.reviewsCount})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -264,16 +339,134 @@ export const ProductDetail: React.FC = () => {
         )}
 
         {activeTab === 'reviews' && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              <div className="text-center pr-4 border-r border-gray-200">
-                <span className="text-3xl font-black text-gray-900">{product.rating}</span>
-                <RatingStars rating={product.rating} />
-                <span className="text-[10px] text-gray-400 font-semibold">{product.reviewsCount} Ratings</span>
+          <div className="space-y-8">
+            {/* Rating Summary Card */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-gray-50 p-6 rounded-3xl border border-gray-200/80 items-center">
+              
+              <div className="md:col-span-4 text-center border-b md:border-b-0 md:border-r border-gray-200 pb-4 md:pb-0 pr-0 md:pr-4 space-y-2">
+                <h3 className="text-4xl font-black text-gray-900">{ratingStats.average_rating}</h3>
+                <div className="flex justify-center">
+                  <RatingStars rating={ratingStats.average_rating} size="lg" />
+                </div>
+                <p className="text-xs text-gray-500 font-medium">Based on {ratingStats.total_reviews} Verified Reviews</p>
               </div>
-              <p className="text-xs text-gray-600 font-medium">
-                100% verified farmer reviews from government licensed fertilizer buyers.
-              </p>
+
+              {/* Rating Bars */}
+              <div className="md:col-span-8 space-y-2 text-xs">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const count = ratingStats.rating_counts[star] || 0;
+                  const percent = ratingStats.total_reviews > 0 ? Math.round((count / ratingStats.total_reviews) * 100) : 0;
+                  return (
+                    <div key={star} className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 w-12 font-bold text-gray-700">
+                        <span>{star}</span>
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      </div>
+                      <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
+                        <div className="bg-amber-400 h-full rounded-full transition-all" style={{ width: `${percent}%` }} />
+                      </div>
+                      <span className="w-10 text-right text-gray-500 font-mono text-[11px]">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* REAL E-COMMERCE REVIEW ELIGIBILITY & FORM CONTAINER */}
+            <div>
+              {userCanReview ? (
+                <form onSubmit={handleReviewSubmit} className="bg-emerald-50/50 border border-emerald-200 p-6 rounded-3xl space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm">
+                    <MessageSquare className="w-4 h-4 text-emerald-600" />
+                    <span>Write a Verified Buyer Review</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="font-bold text-gray-700">Your Rating:</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNewRating(star)}
+                          className="p-1 hover:scale-110 transition-transform cursor-pointer"
+                        >
+                          <Star className={`w-5 h-5 ${star <= newRating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={3}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Share your crop yield results, dosage performance, and feedback..."
+                    className="w-full text-xs bg-white border border-gray-200 rounded-2xl p-3.5 focus:outline-none focus:border-emerald-600"
+                  />
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isSubmittingReview}
+                      className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Submit Review</span>
+                    </button>
+                  </div>
+                </form>
+              ) : alreadyReviewed ? (
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-center gap-3 text-xs text-blue-900 font-bold">
+                  <Check className="w-5 h-5 text-blue-600 shrink-0" />
+                  <span>You have already submitted a verified review for this product. Thank you for your feedback!</span>
+                </div>
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded-2xl flex items-center gap-3 text-xs text-gray-700 font-medium">
+                  <Lock className="w-5 h-5 text-gray-400 shrink-0" />
+                  <div>
+                    <span className="font-bold text-gray-900 block">Verified Buyer Review Lock</span>
+                    <span>Only customers who have purchased and received delivery of this item can submit a review.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Review List */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">Verified Customer Feedback</h4>
+
+              {reviews.length === 0 ? (
+                <p className="text-xs text-gray-500 italic text-center py-4">No reviews yet for this product. Be the first farmer to share your review!</p>
+              ) : (
+                <div className="space-y-3">
+                  {reviews.map((rev) => (
+                    <div key={rev.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50/50 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
+                            {rev.user_name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-900 block">{rev.user_name}</span>
+                            <span className="text-[10px] text-gray-400">{rev.created_at}</span>
+                          </div>
+                        </div>
+
+                        {rev.verified_purchase && (
+                          <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200">
+                            <UserCheck className="w-3 h-3 text-emerald-600" />
+                            Verified Buyer
+                          </span>
+                        )}
+                      </div>
+
+                      <RatingStars rating={rev.rating} size="sm" />
+                      <p className="text-gray-700 leading-relaxed font-medium">{rev.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
