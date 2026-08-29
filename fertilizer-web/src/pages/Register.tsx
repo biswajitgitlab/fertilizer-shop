@@ -25,8 +25,12 @@ export const Register: React.FC = () => {
       await authApi.register({ name, phone, email, state, password });
       toast.success("OTP sent to your mobile phone!");
       navigate(`/verify-otp?phone=${phone}`);
-    } catch (e) {
-      toast.error("Registration failed. Mobile may already exist.");
+    } catch (e: any) {
+      if (e.response?.status === 429) {
+        toast.error("Too many registration attempts! Please wait 1 minute before trying again.");
+      } else {
+        toast.error(e.response?.data?.message || "Registration failed. Mobile may already exist.");
+      }
     } finally {
       setIsLoading(false);
     }

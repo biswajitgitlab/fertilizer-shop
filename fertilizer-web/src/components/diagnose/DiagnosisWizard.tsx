@@ -47,8 +47,12 @@ export const DiagnosisWizard: React.FC = () => {
       });
       toast.success("AI Crop Diagnosis Completed!");
       navigate(`/diagnose/${result.id}`);
-    } catch (e) {
-      toast.error("Failed to run diagnosis.");
+    } catch (e: any) {
+      if (e.response?.status === 429) {
+        toast.error("Too many diagnosis requests! Please wait 1 minute before trying again.");
+      } else {
+        toast.error(e.response?.data?.message || "Failed to run diagnosis.");
+      }
     } finally {
       setIsSubmitting(false);
     }

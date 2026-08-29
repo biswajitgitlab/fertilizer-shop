@@ -57,13 +57,17 @@ export const ChatWidget: React.FC = () => {
           timestamp: response.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
-    } catch (e) {
+    } catch (e: any) {
+      const errText = e?.response?.status === 429
+        ? "Too many chat messages sent! Please wait 1 minute before asking more questions."
+        : "I am having trouble connecting right now, but you can explore our products or call toll-free 1800-888-FARM!";
+
       setMessages((prev) => [
         ...prev,
         {
           id: `bot-err-${Date.now()}`,
           sender: "bot",
-          text: "I am having trouble connecting right now, but you can explore our products or call toll-free 1800-888-FARM!",
+          text: errText,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);

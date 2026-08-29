@@ -29,8 +29,12 @@ export const VerifyOtp: React.FC = () => {
       login(res.user, res.token);
       toast.success("Mobile Verified Successfully!");
       navigate('/');
-    } catch (e) {
-      toast.error("Invalid OTP code. Default demo OTP is 1234.");
+    } catch (e: any) {
+      if (e.response?.status === 429) {
+        toast.error("Too many OTP verification attempts! Please wait 1 minute before trying again.");
+      } else {
+        toast.error(e.response?.data?.message || "Invalid OTP code. Default demo OTP is 1234.");
+      }
     } finally {
       setIsLoading(false);
     }
