@@ -11,7 +11,7 @@ class ConstantsSeeder extends Seeder
 {
     public function run(): void
     {
-        // NOTE: Using verified stable 200 OK Unsplash agriculture photos.
+        // Verified 200 OK bright agricultural photos matching each category
         $categories = [
             [
                 'name' => 'Chemical Fertilizers',
@@ -21,17 +21,17 @@ class ConstantsSeeder extends Seeder
             [
                 'name' => 'Organic & Bio-Fertilizers',
                 'slug' => 'organic-bio-fertilizers',
-                'icon' => 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=600&auto=format&fit=crop&q=80',
+                'icon' => 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Insecticides',
                 'slug' => 'insecticides',
-                'icon' => 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
+                'icon' => 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Herbicides & Weedicides',
                 'slug' => 'herbicides',
-                'icon' => 'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?w=600&auto=format&fit=crop&q=80',
+                'icon' => 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Fungicides & Pesticides',
@@ -41,7 +41,7 @@ class ConstantsSeeder extends Seeder
             [
                 'name' => 'Plant Growth Vitamins & Bio-Stimulants',
                 'slug' => 'vitamins-bio-stimulants',
-                'icon' => 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
+                'icon' => 'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
             ],
             [
                 'name' => 'Micronutrients & Zinc',
@@ -95,8 +95,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&auto=format&fit=crop&q=80',
                     'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 3, 'p' => 2, 'k' => 2],
                 'suitable_crops_json' => ["Vegetables", "Paddy", "Wheat", "Maize", "Pulses", "Fruits"],
@@ -115,7 +115,7 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
-                    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=600&auto=format&fit=crop&q=80',
                     'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
@@ -135,8 +135,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => false,
                 'is_active' => true,
                 'images_json' => [
-                    'https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e9?w=600&auto=format&fit=crop&q=80',
                     'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Tea", "Sugarcane", "Non-crop weed management", "Orchards"],
@@ -175,8 +175,8 @@ class ConstantsSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'images_json' => [
+                    'https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&auto=format&fit=crop&q=80',
                     'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80',
-                    'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 5, 'p' => 2, 'k' => 5],
                 'suitable_crops_json' => ["Cotton", "Chilli", "Onion", "Banana", "Wheat", "Paddy", "Vegetables"],
@@ -196,6 +196,7 @@ class ConstantsSeeder extends Seeder
                 'is_active' => true,
                 'images_json' => [
                     'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=600&auto=format&fit=crop&q=80',
+                    'https://images.unsplash.com/photo-1628352081506-83c43123ed6d?w=600&auto=format&fit=crop&q=80',
                 ],
                 'composition_json' => ['n' => 0, 'p' => 0, 'k' => 0],
                 'suitable_crops_json' => ["Rice", "Paddy", "Corn", "Citrus", "Sugarcane", "Wheat"],

@@ -8,13 +8,15 @@ import { Product, Category } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 
-// Bright, high-resolution agriculture photos guaranteed 200 OK
+// Bright, high-resolution agriculture photos (100% verified 200 OK & vibrant)
 const VIBRANT_FARM_HERO = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_CROP_SPRAY = "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_CROP_SPRAY = "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_FERTILIZER_SOIL = "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_ORGANIC_FARM = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_ORGANIC_COMPOST = "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_SEEDS = "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_GREEN_CROPS = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_VITAMINS = "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_MICRONUTRIENTS = "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=800";
 
 export const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -26,18 +28,21 @@ export const Home: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // High-res visual image fallbacks for categories
+  // Accurate visual image mapper for categories
   const getCategoryImage = (name: string, defaultImg?: string) => {
-    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost')) {
-      return defaultImg;
-    }
     const lname = name.toLowerCase();
+    if (lname.includes('organic') || lname.includes('bio')) return VIBRANT_ORGANIC_COMPOST;
     if (lname.includes('chemical') || lname.includes('fertilizer')) return VIBRANT_FERTILIZER_SOIL;
     if (lname.includes('pesticide') || lname.includes('insecticide')) return VIBRANT_CROP_SPRAY;
-    if (lname.includes('fungicide')) return VIBRANT_CROP_SPRAY;
-    if (lname.includes('herbicide') || lname.includes('weed')) return VIBRANT_GREEN_CROPS;
-    if (lname.includes('organic') || lname.includes('bio')) return VIBRANT_ORGANIC_FARM;
+    if (lname.includes('fungicide')) return VIBRANT_GREEN_CROPS;
+    if (lname.includes('herbicide') || lname.includes('weed')) return VIBRANT_FARM_HERO;
+    if (lname.includes('vitamin') || lname.includes('stimulant')) return VIBRANT_VITAMINS;
+    if (lname.includes('micronutrient') || lname.includes('zinc')) return VIBRANT_MICRONUTRIENTS;
     if (lname.includes('seed')) return VIBRANT_SEEDS;
+
+    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost') && !defaultImg.includes('1585314062340')) {
+      return defaultImg;
+    }
     return VIBRANT_FARM_HERO;
   };
 
@@ -222,24 +227,24 @@ export const Home: React.FC = () => {
               </div>
             </Link>
 
-            {/* Visual Card 3: Plant Growth Vitamins */}
-            <Link to="/products?category=plant-growth-promoters" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            {/* Visual Card 3: Organic Compost */}
+            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
-                src={VIBRANT_ORGANIC_FARM}
-                alt="Growth Boosters"
+                src={VIBRANT_ORGANIC_COMPOST}
+                alt="Organic Bio Compost"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Bloom Boosters</span>
-                <h3 className="text-base font-black">Bio-Vita &amp; Growth Tonics</h3>
+                <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Bio-Organic Soil</span>
+                <h3 className="text-base font-black">Vermicompost &amp; Bio-Fertilizer</h3>
                 <p className="text-xs text-amber-300 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3.5 h-3.5" /></p>
               </div>
             </Link>
 
             {/* Visual Card 4: Seeds */}
-            <Link to="/products?category=high-yield-seeds" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            <Link to="/products?category=seeds-tools" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
               <img
                 src={VIBRANT_SEEDS}
                 alt="High Yield Seeds"
