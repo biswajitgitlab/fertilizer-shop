@@ -82,8 +82,11 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <div className="absolute top-1/3 -right-20 w-96 h-96 bg-lime-300/30 dark:bg-teal-800/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
       <div className="absolute bottom-10 left-10 w-80 h-80 bg-teal-200/35 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-5s' }} />
       
-      {/* Geometric Ambient Dots */}
-      <div className="planner-grid-pattern absolute inset-0 opacity-[0.14] dark:opacity-[0.03] pointer-events-none" />
+      {/* High Quality Authentic Fern Frond Leaves Background Overlay */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center opacity-[0.05] dark:opacity-[0.12] mix-blend-overlay pointer-events-none z-0"
+        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=1920')` }}
+      />
 
       <Navbar />
       <main className="flex-1 relative z-10">{children}</main>

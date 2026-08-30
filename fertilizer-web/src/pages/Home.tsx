@@ -101,7 +101,7 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <PageTransition className="space-y-0 pb-0 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
+    <PageTransition className="space-y-0 pb-0 bg-emerald-50/60 dark:bg-[#022c22] text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
       {/* ─── 1. LIQUID GLASS HERO SPOTLIGHT CAROUSEL ─── */}
       <section className="pt-20 sm:pt-24 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -109,7 +109,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
-      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white/90 dark:bg-slate-950 border-y border-emerald-200/60 dark:border-white/10 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-emerald-50/90 dark:bg-[#022c22] border-y border-emerald-200/60 dark:border-emerald-800/40 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
@@ -159,7 +159,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 2. VISUAL PHOTO BANNER GRID ─── */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 transition-colors duration-300">
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-[#043427] transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6 sm:mb-8 space-y-1">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -239,22 +239,21 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 3. HIGH-YIELD SMART FARMING SERVICES CAROUSEL ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-[#022c22] relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <ServicesCarousel isAuthenticated={isAuthenticated} />
         </div>
       </section>
 
-
       {/* ─── 4. CATEGORIES LIST WITH RICH IMAGE TILES ─── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-[#043427] text-emerald-950 dark:text-emerald-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <CategoryCarousel categories={categories} getCategoryImage={getCategoryImage} />
         </div>
       </section>
 
       {/* ─── 5. FEATURED HIGH-YIELD FERTILIZERS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-[#022c22] relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -281,7 +280,7 @@ export const Home: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-900/80 rounded-3xl border border-slate-200 dark:border-white/10 p-12 text-center space-y-3">
+            <div className="bg-white dark:bg-[#043427]/80 rounded-3xl border border-emerald-200 dark:border-emerald-800/40 p-12 text-center space-y-3">
               <PackageCheck className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto animate-bounce" />
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Loading Store Products...</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">Browse our complete product catalog below.</p>
@@ -308,7 +307,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 7. FARMER TESTIMONIALS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-100/90 dark:bg-slate-950 text-slate-900 dark:text-white relative transition-colors duration-300">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-100/60 dark:bg-[#022c22] text-emerald-950 dark:text-emerald-50 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-10">
           <div className="text-center space-y-2">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -341,14 +340,14 @@ export const Home: React.FC = () => {
                 rating: 5
               }
             ].map((rev, i) => (
-              <div key={i} className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 p-7 space-y-4 shadow-xl">
+              <div key={i} className="bg-white/90 dark:bg-[#043427]/80 backdrop-blur-xl rounded-3xl border border-emerald-200/80 dark:border-emerald-800/40 p-7 space-y-4 shadow-xl">
                 <div className="flex text-amber-400 gap-1">
                   {[...Array(rev.rating)].map((_, idx) => (
                     <Star key={idx} className="w-4 h-4 fill-amber-400" />
                   ))}
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic font-medium">"{rev.text}"</p>
-                <div className="pt-4 border-t border-slate-200 dark:border-white/10">
+                <div className="pt-4 border-t border-emerald-100 dark:border-emerald-800/40">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">{rev.name}</h4>
                   <p className="text-[11px] text-emerald-700 dark:text-emerald-400">{rev.location} • <span className="text-amber-600 dark:text-amber-300 font-semibold">{rev.crop}</span></p>
                 </div>
@@ -359,7 +358,12 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 8. FINAL CALLOUT ─── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 text-center relative overflow-hidden">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-[#022c22] to-teal-950 text-center relative overflow-hidden">
+        {/* High Quality Authentic Fern Frond Leaves Photo Background Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"
+          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=1920')` }}
+        />
         <div className="absolute top-10 left-1/3 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-3xl mx-auto relative z-10 space-y-6">
