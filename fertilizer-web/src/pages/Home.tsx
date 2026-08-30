@@ -347,100 +347,207 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── 3. BENTO GRID HIGHLIGHTS ─── */}
+      {/* ─── 3. BENTO GRID HIGHLIGHTS WITH RICH SERVICE IMAGES ─── */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Smart Platform Services
             </span>
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white">Agriculture Services Built for Maximum Yield</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              Agriculture Services Built for Maximum Yield
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+              Next-generation technology, verified inputs, and automated scheduling tailored for high-output farming.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            {/* Bento Card 1: AI Clinic */}
-            <div className="md:col-span-2 rounded-3xl p-8 bg-white/90 dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-slate-900/60 border border-emerald-300/80 dark:border-emerald-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-emerald-400 transition-all shadow-xl">
-              <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all" />
-              <div className="space-y-3 relative z-10">
-                <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
-                  <AnimatedCropDoctor size={24} className="text-emerald-600 dark:text-emerald-400" />
+            {/* Bento Card 1: AI Clinic with Visual Crop Diagnostics Image */}
+            <div className="md:col-span-2 rounded-3xl p-6 sm:p-8 bg-white/90 dark:bg-gradient-to-br dark:from-emerald-950/70 dark:to-slate-950/80 border border-emerald-300/80 dark:border-emerald-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between group hover:border-emerald-400 transition-all duration-300 shadow-xl">
+              <div className="absolute -right-12 -bottom-12 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all pointer-events-none" />
+              
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-emerald-700 dark:text-emerald-300 text-xs font-black">
+                    <AnimatedCropDoctor size={18} className="text-emerald-600 dark:text-emerald-400" />
+                    <span>Instant AI Disease Diagnostics</span>
+                  </div>
+                  
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
+                    Scan Leaf Diseases &amp; Get Instant Treatment Plans
+                  </h3>
+                  
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Upload photos of affected leaves or stems. Our AI model detects over 150 crop diseases and suggests verified treatments with exact product dosage.
+                  </p>
+
+                  <div className="pt-2">
+                    <Link
+                      to={isAuthenticated ? "/diagnose" : "/login"}
+                      className="inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-black px-6 py-3.5 rounded-2xl text-xs transition-all shadow-lg shadow-emerald-600/20 cursor-pointer"
+                    >
+                      <span>Test AI Doctor Now</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
-                <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">Instant AI Disease Diagnostics</span>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">Scan Leaf Diseases &amp; Get Treatment Recommendations</h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
-                  Upload photos of affected leaves or stems. Our AI detects over 150 crop diseases and suggests verified treatments.
-                </p>
-              </div>
-              <div className="pt-4 relative z-10">
-                <Link
-                  to={isAuthenticated ? "/diagnose" : "/login"}
-                  className="inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
-                >
-                  <span>Test AI Doctor Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+
+                {/* Card 1 Visual Image Thumbnail with Scan Line overlay */}
+                <div className="lg:col-span-5 relative">
+                  <div className="relative rounded-2xl overflow-hidden border border-emerald-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
+                    <img
+                      src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800"
+                      alt="AI Leaf Disease Diagnosis"
+                      onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_CROP_SPRAY; }}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                    
+                    {/* Floating Diagnostic Pill */}
+                    <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold shadow-lg">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span>AI Scanner Active</span>
+                    </div>
+
+                    <div className="absolute bottom-3 left-3 right-3 p-2.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-white/20 text-white space-y-0.5">
+                      <div className="flex items-center justify-between text-[10px] text-emerald-400 font-black">
+                        <span>Pathogen Detection</span>
+                        <span>98.4% Match</span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-100 line-clamp-1">Fungal Leaf Blight (Alternaria)</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Bento Card 2: 100% Genuine Lab Guarantee */}
-            <div className="rounded-3xl p-8 bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-teal-400/40 transition-all shadow-xl">
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold">
-                  <AnimatedShield size={24} className="text-teal-600 dark:text-teal-400" />
+            {/* Bento Card 2: 100% Lab-Tested Inputs with Lab Testing Image */}
+            <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-teal-400/50 transition-all duration-300 shadow-xl">
+              <div className="space-y-4">
+                {/* Visual Service Image Header */}
+                <div className="relative rounded-2xl overflow-hidden border border-teal-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
+                  <img
+                    src="https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=800"
+                    alt="Lab Quality Testing"
+                    onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FERTILIZER_SOIL; }}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                  <div className="absolute top-2.5 left-2.5 bg-slate-950/85 backdrop-blur-md border border-teal-400/40 text-teal-300 text-[10px] font-black px-2.5 py-1 rounded-lg">
+                    NABL Certified
+                  </div>
                 </div>
-                <span className="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400 tracking-wider">Government Verified</span>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white">100% Lab-Tested Inputs</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Every batch of NPK, Urea, and insecticides undergoes strict NABL quality testing before dispatch.
-                </p>
+
+                <div className="space-y-2">
+                  <div className="w-10 h-10 bg-teal-500/20 border border-teal-400/30 rounded-xl flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold">
+                    <AnimatedShield size={20} className="text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400 tracking-wider">Government Verified</span>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">100% Lab-Tested Inputs</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                    Every batch of NPK, Urea, and crop protection sprays undergoes rigorous laboratory quality testing before dispatch.
+                  </p>
+                </div>
               </div>
-              <div className="pt-2">
+
+              <div className="pt-2 border-t border-slate-200/80 dark:border-white/10">
                 <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
                   <Zap className="w-4 h-4" /> Zero Adulteration Guarantee
                 </span>
               </div>
             </div>
 
-            {/* Bento Card 3: Free Farm Doorstep Delivery */}
-            <div className="rounded-3xl p-8 bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-amber-400/40 transition-all shadow-xl">
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold">
-                  <AnimatedTruck size={24} className="text-amber-600 dark:text-amber-400" />
+            {/* Bento Card 3: Direct Farm Doorstep Shipping with Delivery Truck Image */}
+            <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-amber-400/50 transition-all duration-300 shadow-xl">
+              <div className="space-y-4">
+                {/* Visual Service Image Header */}
+                <div className="relative rounded-2xl overflow-hidden border border-amber-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
+                  <img
+                    src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800"
+                    alt="Direct Farm Delivery"
+                    onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                  <div className="absolute top-2.5 left-2.5 bg-slate-950/85 backdrop-blur-md border border-amber-400/40 text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-lg">
+                    Free Delivery &gt; ₹999
+                  </div>
                 </div>
-                <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">Express Dispatch</span>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white">Direct Farm Doorstep Shipping</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Free delivery across Haryana, Punjab &amp; UP for orders above ₹999. Heavy bag bulk dispatch available.
-                </p>
+
+                <div className="space-y-2">
+                  <div className="w-10 h-10 bg-amber-500/20 border border-amber-400/30 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold">
+                    <AnimatedTruck size={20} className="text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">Express Dispatch</span>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Direct Farm Doorstep Shipping</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                    Fast delivery across Haryana, Punjab &amp; UP. Heavy 50kg bag dispatch right to your farm gate.
+                  </p>
+                </div>
               </div>
-              <div className="pt-2">
+
+              <div className="pt-2 border-t border-slate-200/80 dark:border-white/10">
                 <span className="text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5">
                   <Activity className="w-4 h-4" /> Live GPS Order Tracking
                 </span>
               </div>
             </div>
 
-            {/* Bento Card 4: Farm Calendar Planner */}
-            <div className="md:col-span-2 rounded-3xl p-8 bg-white/90 dark:bg-gradient-to-br dark:from-teal-900/40 dark:to-slate-900/60 border border-teal-300/80 dark:border-teal-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-teal-400 transition-all shadow-xl">
-              <div className="space-y-3 relative z-10">
-                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold">
-                  <Calendar className="w-6 h-6" />
+            {/* Bento Card 4: Farm Calendar Planner with Crop Stage Image */}
+            <div className="md:col-span-2 rounded-3xl p-6 sm:p-8 bg-white/90 dark:bg-gradient-to-br dark:from-teal-950/70 dark:to-slate-950/80 border border-teal-300/80 dark:border-teal-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between group hover:border-teal-400 transition-all duration-300 shadow-xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="inline-flex items-center gap-2 bg-teal-500/15 border border-teal-500/30 px-3.5 py-1.5 rounded-full text-teal-700 dark:text-teal-300 text-xs font-black">
+                    <Calendar className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    <span>Automated Agri Schedule</span>
+                  </div>
+                  
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight">
+                    Personalized Fertilizer &amp; Spray Calendar
+                  </h3>
+                  
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Set your crop sowing date for Paddy, Wheat, Cotton, or Sugarcane. Receive automated reminders when it's time for basal dosage, top dressing, or micro-nutrient sprays.
+                  </p>
+
+                  <div className="pt-2">
+                    <Link
+                      to={isAuthenticated ? "/planner" : "/login"}
+                      className="inline-flex items-center gap-2 bg-teal-600 dark:bg-teal-400 hover:bg-teal-500 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black px-6 py-3.5 rounded-2xl text-xs transition-all shadow-lg shadow-teal-600/20 cursor-pointer"
+                    >
+                      <span>Open Smart Planner</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
-                <span className="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400 tracking-wider">Automated Agri Schedule</span>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">Personalized Fertilizer &amp; Spray Calendar</h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
-                  Set your sowing date for Paddy, Wheat, Cotton, or Sugarcane. Get automatic SMS reminders when it's time for basal dosage, top dressing, or Micronutrient sprays.
-                </p>
-              </div>
-              <div className="pt-4 relative z-10">
-                <Link
-                  to={isAuthenticated ? "/planner" : "/login"}
-                  className="inline-flex items-center gap-2 bg-teal-600 dark:bg-teal-400 hover:bg-teal-500 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
-                >
-                  <span>Open Smart Planner</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+
+                {/* Card 4 Visual Image Thumbnail */}
+                <div className="lg:col-span-5 relative">
+                  <div className="relative rounded-2xl overflow-hidden border border-teal-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
+                    <img
+                      src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800"
+                      alt="Personalized Crop Spray Calendar"
+                      onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_GREEN_CROPS; }}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                    
+                    <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md border border-teal-400/40 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-[10px] text-teal-300 font-bold shadow-lg">
+                      <AnimatedSprout size={14} className="text-teal-400" />
+                      <span>Wheat Crop Stage 2</span>
+                    </div>
+
+                    <div className="absolute bottom-3 left-3 right-3 p-2.5 rounded-xl bg-slate-950/80 backdrop-blur-md border border-white/20 text-white space-y-0.5">
+                      <div className="flex items-center justify-between text-[10px] text-teal-300 font-black">
+                        <span>Upcoming Dosage</span>
+                        <span className="bg-teal-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">In 2 Days</span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-100 line-clamp-1">Spray Zinc EDTA + NPK 19:19:19</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
