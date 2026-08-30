@@ -46,7 +46,7 @@ class Admin extends Authenticatable
      */
     public function getEffectivePermissions(): array
     {
-        if ($this->hasRole(['Super Admin', 'Admin']) || in_array($this->role, ['Super Admin', 'Admin'])) {
+        if ($this->hasRole('Super Admin') || $this->role === 'Super Admin') {
             return \Spatie\Permission\Models\Permission::pluck('name')->toArray();
         }
 
@@ -67,7 +67,7 @@ class Admin extends Authenticatable
      */
     public function hasEffectivePermission(string $permission): bool
     {
-        if ($this->hasRole(['Super Admin', 'Admin']) || in_array($this->role, ['Super Admin', 'Admin'])) {
+        if ($this->hasRole('Super Admin') || $this->role === 'Super Admin') {
             return true;
         }
 

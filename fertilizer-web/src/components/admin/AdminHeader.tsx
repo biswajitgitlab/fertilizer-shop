@@ -567,7 +567,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     </p>
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                   </div>
-                  <p className="text-[10px] text-emerald-500 font-extrabold tracking-wider uppercase leading-tight">Super Admin</p>
+                  <p className="text-[10px] text-emerald-500 font-extrabold tracking-wider uppercase leading-tight">
+                    {user?.role || 'Staff Admin'}
+                  </p>
                 </div>
 
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 hidden sm:block transition-transform duration-200 ${profileOpen ? 'rotate-180' : ''}`} />
@@ -593,7 +595,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                       <p className="text-xs font-black truncate">{user?.name || 'Store Administrator'}</p>
                       <p className="text-[10px] text-slate-400 truncate">{user?.email || 'admin@fertilizershop.com'}</p>
                       <span className="inline-block mt-1 text-[9px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">
-                        Super Administrator
+                        {user?.role || 'Staff Member'}
                       </span>
                     </div>
                   </div>

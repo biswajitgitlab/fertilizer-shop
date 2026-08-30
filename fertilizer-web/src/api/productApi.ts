@@ -3,23 +3,35 @@ import { INITIAL_PRODUCTS, CATEGORIES } from '../utils/constants';
 
 export const mapProduct = (p: any): any => {
   if (!p) return p;
-  if (p.price !== undefined && p.stock !== undefined && p.images !== undefined) return p; // Already mapped (mock)
+
+  const rawAvg = p.reviews_avg_rating !== null && p.reviews_avg_rating !== undefined
+    ? Number(p.reviews_avg_rating)
+    : (p.rating !== undefined ? Number(p.rating) : 0);
+
+  const rating = rawAvg > 0 ? Number(rawAvg.toFixed(1)) : 0;
+
+  const rawCount = p.reviews_count !== null && p.reviews_count !== undefined
+    ? Number(p.reviews_count)
+    : (p.reviewsCount !== undefined ? Number(p.reviewsCount) : 0);
+
+  const reviewsCount = rawCount > 0 ? rawCount : 0;
+
   return {
     ...p,
     id: p.id?.toString(),
     category: p.category?.name || p.categorySlug || 'Uncategorized',
     categorySlug: p.category?.slug || p.categorySlug || '',
     price: Number(p.price) || 0,
-    originalPrice: Number(p.discount_price) || Number(p.price) || 0, // In Laravel, maybe discount_price was original? Or vice versa. Let's assume original price is discount_price if > price
-    stock: Number(p.stock_qty) || 0,
-    images: Array.isArray(p.images_json) ? p.images_json : (p.images || []),
+    originalPrice: Number(p.discount_price) || Number(p.price) || 0,
+    stock: p.stock_qty !== undefined ? Number(p.stock_qty) : (Number(p.stock) || 0),
+    images: Array.isArray(p.images_json) && p.images_json.length > 0 ? p.images_json : (Array.isArray(p.images) && p.images.length > 0 ? p.images : []),
     suitableCrops: Array.isArray(p.suitable_crops_json) ? p.suitable_crops_json : (p.suitableCrops || []),
     npk: p.composition_json || p.npk,
     description: p.description || '',
     shortDescription: p.short_desc || p.shortDescription || '',
     usageInstructions: p.usage_instructions || p.usageInstructions || '',
-    rating: Number(p.reviews_avg_rating) || p.rating || 0,
-    reviewsCount: Number(p.reviews_count) || p.reviewsCount || 0,
+    rating,
+    reviewsCount,
     unit: p.unit || '',
   };
 };

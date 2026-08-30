@@ -48,8 +48,10 @@ export interface User {
   farmLocation?: string;
   farmSize?: string;
   farm_location?: string;
-  // Backend returns 'Admin' | 'Customer', frontend may use 'admin' | 'user'
   role: string;
+  roles?: string[];
+  effective_permissions?: string[];
+  is_staff?: boolean;
 }
 
 export interface CartItem {

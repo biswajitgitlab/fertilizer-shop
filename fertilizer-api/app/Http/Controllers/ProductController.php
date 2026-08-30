@@ -26,7 +26,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with('category')->withAvg('reviews', 'rating');
+        $query = Product::with('category')->withAvg('reviews', 'rating')->withCount('reviews');
 
         if ($request->filled('category')) {
             $query->whereHas('category', function($q) use ($request) {
@@ -88,6 +88,7 @@ class ProductController extends Controller
         $products = Cache::remember('products_featured', 1800, function () {
             return Product::with('category')
                 ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
                 ->where('is_featured', true)
                 ->latest()
                 ->take(8)
@@ -106,6 +107,7 @@ class ProductController extends Controller
         $products = Cache::remember('products_trending', 1800, function () {
             return Product::with('category')
                 ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
                 ->withCount(['orderItems' => function ($query) {
                     $query->whereHas('order', function($q) {
                         $q->where('created_at', '>=', now()->subDays(30));
@@ -128,12 +130,14 @@ class ProductController extends Controller
         $data = Cache::remember("product_{$slug}", 3600, function () use ($slug) {
             $product = Product::with(['category', 'reviews.user'])
                 ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
                 ->where('slug', $slug)
                 ->firstOrFail();
 
             $relatedProducts = Product::where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)
                 ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
                 ->take(4)
                 ->get();
 

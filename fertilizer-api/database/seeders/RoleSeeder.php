@@ -63,7 +63,16 @@ class RoleSeeder extends Seeder
         // 2. Define standard system roles and permission sets
         $rolePermissions = [
             'Super Admin' => $permissions,
-            'Admin' => $permissions,
+            'Admin' => [
+                'products.view', 'products.create', 'products.edit', 'products.delete',
+                'orders.view', 'orders.edit', 'orders.status', 'orders.delete',
+                'users.view', 'roles.view',
+                'customers.view', 'customers.edit', 'customers.delete',
+                'analytics.view', 'analytics.export',
+                'notifications.view', 'notifications.send',
+                'inventory.view', 'inventory.update',
+                'crop_plans.view', 'crop_plans.manage',
+            ],
             'Store Manager' => [
                 'products.view', 'products.create', 'products.edit', 'products.delete',
                 'orders.view', 'orders.edit', 'orders.status', 'orders.delete',

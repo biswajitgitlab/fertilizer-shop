@@ -75,7 +75,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
 Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
 Route::get('/payment-gateway/status', [\App\Http\Controllers\RazorpayController::class, 'getCircuitStatus']);
-Route::post('/admin/payment-gateway/reset-circuit', [\App\Http\Controllers\RazorpayController::class, 'resetCircuit']);
 
 // Webhooks
 Route::post('/webhooks/payment', function (\Illuminate\Http\Request $request) {
@@ -119,58 +118,73 @@ Route::get('/coupons/public', function() {
 Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index']);
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show']);
 
-// Admin Routes
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
-    // Products
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-
-    // Dashboard
+// Admin Routes — Restricted to Internal Staff with Granular RBSC Permissions
+Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function () {
+    // Dashboard (All internal staff)
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
 
-    // Orders
-    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index']);
-    Route::get('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'show']);
-    Route::put('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'update']);
-    Route::post('/orders/bulk-update', [\App\Http\Controllers\Admin\OrderController::class, 'bulkUpdate']);
+    // Payment Gateway Circuit Reset
+    Route::post('/payment-gateway/reset-circuit', [\App\Http\Controllers\RazorpayController::class, 'resetCircuit'])->middleware('rbsc:analytics.view');
 
-    // Customers
-    Route::get('/customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index']);
-    Route::get('/customers/{id}', [\App\Http\Controllers\Admin\CustomerController::class, 'show']);
+    // Products Management
+    Route::post('/products', [ProductController::class, 'store'])->middleware('rbsc:products.create');
+    Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('rbsc:products.edit');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('rbsc:products.delete');
 
-    // Analytics
-    Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
+    // Orders Management
+    Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->middleware('rbsc:orders.view');
+    Route::get('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->middleware('rbsc:orders.view');
+    Route::put('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->middleware('rbsc:orders.edit,orders.status');
+    Route::post('/orders/bulk-update', [\App\Http\Controllers\Admin\OrderController::class, 'bulkUpdate'])->middleware('rbsc:orders.edit,orders.status');
 
-    // Inventory
-    Route::get('/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index']);
-    Route::put('/inventory/{id}', [\App\Http\Controllers\Admin\InventoryController::class, 'update']);
-    Route::get('/inventory/{id}/logs', [\App\Http\Controllers\Admin\InventoryController::class, 'logs']);
+    // Customers CRM Management
+    Route::get('/customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->middleware('rbsc:customers.view');
+    Route::get('/customers/{id}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->middleware('rbsc:customers.view');
 
-    // Coupons
-    Route::apiResource('coupons', \App\Http\Controllers\Admin\CouponController::class);
+    // Analytics Reporting
+    Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->middleware('rbsc:analytics.view');
 
-    // Bundles
-    Route::apiResource('bundles', \App\Http\Controllers\Admin\BundleController::class);
+    // Inventory & Warehouse Management
+    Route::get('/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->middleware('rbsc:inventory.view');
+    Route::put('/inventory/{id}', [\App\Http\Controllers\Admin\InventoryController::class, 'update'])->middleware('rbsc:inventory.update');
+    Route::get('/inventory/{id}/logs', [\App\Http\Controllers\Admin\InventoryController::class, 'logs'])->middleware('rbsc:inventory.view');
 
-    // Diagnoses
-    Route::put('/diagnoses/{id}', [\App\Http\Controllers\Admin\DiagnosisController::class, 'update']);
+    // Coupons & Promotions
+    Route::get('/coupons', [\App\Http\Controllers\Admin\CouponController::class, 'index'])->middleware('rbsc:products.view');
+    Route::post('/coupons', [\App\Http\Controllers\Admin\CouponController::class, 'store'])->middleware('rbsc:products.create');
+    Route::get('/coupons/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'show'])->middleware('rbsc:products.view');
+    Route::put('/coupons/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'update'])->middleware('rbsc:products.edit');
+    Route::delete('/coupons/{coupon}', [\App\Http\Controllers\Admin\CouponController::class, 'destroy'])->middleware('rbsc:products.delete');
 
-    // User Management
-    Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
+    // Product Bundles
+    Route::get('/bundles', [\App\Http\Controllers\Admin\BundleController::class, 'index'])->middleware('rbsc:products.view');
+    Route::post('/bundles', [\App\Http\Controllers\Admin\BundleController::class, 'store'])->middleware('rbsc:products.create');
+    Route::get('/bundles/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'show'])->middleware('rbsc:products.view');
+    Route::put('/bundles/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'update'])->middleware('rbsc:products.edit');
+    Route::delete('/bundles/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->middleware('rbsc:products.delete');
+
+    // Crop Diagnoses Triage
+    Route::put('/diagnoses/{id}', [\App\Http\Controllers\Admin\DiagnosisController::class, 'update'])->middleware('rbsc:crop_plans.manage');
+
+    // User Management (Staff Accounts)
+    Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->middleware('rbsc:users.view');
+    Route::post('/users', [\App\Http\Controllers\Admin\UserController::class, 'store'])->middleware('rbsc:users.create');
+    Route::get('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'show'])->middleware('rbsc:users.view');
+    Route::put('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'update'])->middleware('rbsc:users.edit');
+    Route::delete('/users/{user}', [\App\Http\Controllers\Admin\UserController::class, 'destroy'])->middleware('rbsc:users.delete');
 
     // Roles & Team Permissions Management
-    Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index']);
-    Route::post('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store']);
-    Route::put('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'update']);
-    Route::delete('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy']);
-    Route::get('/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'permissions']);
-    Route::get('/team', [\App\Http\Controllers\Admin\RoleController::class, 'team']);
-    Route::post('/team/assign-role', [\App\Http\Controllers\Admin\RoleController::class, 'assignRole']);
-    Route::put('/team/{id}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updateUserPermissions']);
+    Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->middleware('rbsc:roles.view');
+    Route::post('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->middleware('rbsc:roles.create');
+    Route::put('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->middleware('rbsc:roles.edit');
+    Route::delete('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->middleware('rbsc:roles.delete');
+    Route::get('/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'permissions'])->middleware('rbsc:roles.view');
+    Route::get('/team', [\App\Http\Controllers\Admin\RoleController::class, 'team'])->middleware('rbsc:roles.view,users.view');
+    Route::post('/team/assign-role', [\App\Http\Controllers\Admin\RoleController::class, 'assignRole'])->middleware('rbsc:roles.edit,users.edit');
+    Route::put('/team/{id}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updateUserPermissions'])->middleware('rbsc:roles.edit,users.edit');
 
     // Admin Real Notifications with Permission Scopes
-    Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead']);
-    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead']);
+    Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->middleware('rbsc:notifications.view');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead'])->middleware('rbsc:notifications.view');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead'])->middleware('rbsc:notifications.view');
 });

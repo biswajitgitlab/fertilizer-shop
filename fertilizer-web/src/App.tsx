@@ -99,8 +99,46 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ScrollToTop />
-        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3500,
+            style: {
+              background: 'rgba(15, 23, 42, 0.94)',
+              color: '#f8fafc',
+              borderRadius: '1rem',
+              border: '1px solid rgba(51, 65, 85, 0.8)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              padding: '12px 18px',
+            },
+            success: {
+              duration: 3500,
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#020617',
+              },
+              style: {
+                border: '1px solid rgba(16, 185, 129, 0.5)',
+                animation: 'toast-pulse-success 2.5s infinite ease-in-out',
+              },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#f43f5e',
+                secondary: '#020617',
+              },
+              style: {
+                border: '1px solid rgba(244, 63, 94, 0.5)',
+                animation: 'toast-pulse-error 2.5s infinite ease-in-out',
+              },
+            },
+          }}
+        />
         <LayoutWrapper>
           <Routes>
             {/* Customer Storefront Routes — Public */}
@@ -133,21 +171,21 @@ export function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
 
-            {/* Admin Routes — Internal Staff Only */}
+            {/* Admin Routes — Internal Staff Only with RBSC Permissions */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/admin/products" element={<ProtectedRoute adminOnly><AdminProducts /></ProtectedRoute>} />
-            <Route path="/admin/products/new" element={<ProtectedRoute adminOnly><AdminProductForm /></ProtectedRoute>} />
-            <Route path="/admin/products/edit/:id" element={<ProtectedRoute adminOnly><AdminProductForm /></ProtectedRoute>} />
-            <Route path="/admin/orders" element={<ProtectedRoute adminOnly><AdminOrders /></ProtectedRoute>} />
-            <Route path="/admin/orders/:id" element={<ProtectedRoute adminOnly><AdminOrderDetail /></ProtectedRoute>} />
-            <Route path="/admin/customers" element={<ProtectedRoute adminOnly><AdminCustomers /></ProtectedRoute>} />
-            <Route path="/admin/diagnoses" element={<ProtectedRoute adminOnly><AdminDiagnoses /></ProtectedRoute>} />
-            <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
-            <Route path="/admin/inventory" element={<ProtectedRoute adminOnly><AdminInventory /></ProtectedRoute>} />
-            <Route path="/admin/coupons" element={<ProtectedRoute adminOnly><AdminCoupons /></ProtectedRoute>} />
-            <Route path="/admin/roles" element={<ProtectedRoute adminOnly><AdminRoles /></ProtectedRoute>} />
-            <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/products" element={<ProtectedRoute adminOnly requiredPermission="products.view"><AdminProducts /></ProtectedRoute>} />
+            <Route path="/admin/products/new" element={<ProtectedRoute adminOnly requiredPermission="products.create"><AdminProductForm /></ProtectedRoute>} />
+            <Route path="/admin/products/edit/:id" element={<ProtectedRoute adminOnly requiredPermission="products.edit"><AdminProductForm /></ProtectedRoute>} />
+            <Route path="/admin/orders" element={<ProtectedRoute adminOnly requiredPermission="orders.view"><AdminOrders /></ProtectedRoute>} />
+            <Route path="/admin/orders/:id" element={<ProtectedRoute adminOnly requiredPermission="orders.view"><AdminOrderDetail /></ProtectedRoute>} />
+            <Route path="/admin/customers" element={<ProtectedRoute adminOnly requiredPermission="customers.view"><AdminCustomers /></ProtectedRoute>} />
+            <Route path="/admin/diagnoses" element={<ProtectedRoute adminOnly requiredPermission="crop_plans.view"><AdminDiagnoses /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute adminOnly requiredPermission="analytics.view"><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="/admin/inventory" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminInventory /></ProtectedRoute>} />
+            <Route path="/admin/coupons" element={<ProtectedRoute adminOnly requiredPermission="products.view"><AdminCoupons /></ProtectedRoute>} />
+            <Route path="/admin/roles" element={<ProtectedRoute adminOnly requiredPermission="roles.view"><AdminRoles /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminUsers /></ProtectedRoute>} />
 
             {/* Catch all redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />

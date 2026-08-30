@@ -23,7 +23,7 @@ class ReviewController extends Controller
             ->get();
 
         $totalReviews = $reviews->count();
-        $avgRating = $totalReviews > 0 ? round($reviews->avg('rating'), 1) : 5.0;
+        $avgRating = $totalReviews > 0 ? round($reviews->avg('rating'), 1) : 0.0;
 
         $ratingCounts = [
             5 => $reviews->where('rating', 5)->count(),

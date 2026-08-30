@@ -26,7 +26,7 @@ class AdminNotificationController extends Controller
         }
 
         $effectivePermissions = $admin->getEffectivePermissions();
-        $isSuperAdmin = $admin->hasRole(['Super Admin', 'Admin']) || in_array('roles.manage', $effectivePermissions);
+        $isSuperAdmin = $admin->hasRole('Super Admin') || $admin->role === 'Super Admin';
         $readByArray = CacheGetAdminReadIds($admin->id);
         $readAllTs = (int) Cache::get("admin_read_all_{$admin->id}", 0);
 
@@ -203,7 +203,7 @@ class AdminNotificationController extends Controller
         $admin = $request->user();
 
         $effectivePermissions = $admin->getEffectivePermissions();
-        $isSuperAdmin = $admin->hasRole(['Super Admin', 'Admin']) || in_array('roles.manage', $effectivePermissions);
+        $isSuperAdmin = $admin->hasRole('Super Admin') || $admin->role === 'Super Admin';
 
         $dbNotifications = Notification::where(function ($query) use ($admin, $effectivePermissions, $isSuperAdmin) {
             $query->where('admin_id', $admin->id);

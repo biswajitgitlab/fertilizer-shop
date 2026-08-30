@@ -175,6 +175,7 @@ export const AdminLogin: React.FC = () => {
                   { label: '🎧 Support Lead', login: 'support@fertilizershop.com', pass: 'staff123' },
                   { label: '📦 Warehouse', login: 'warehouse@fertilizershop.com', pass: 'staff123' },
                   { label: '🌾 Field Officer', login: 'field.officer@fertilizershop.com', pass: 'staff123' },
+                  { label: '👤 General Staff', login: 'staff@fertilizershop.com', pass: 'staff123' },
                 ].map((demo, idx) => (
                   <button
                     key={idx}

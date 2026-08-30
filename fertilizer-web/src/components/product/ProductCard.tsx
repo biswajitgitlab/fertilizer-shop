@@ -5,6 +5,7 @@ import { Product } from '../../types';
 import { formatCurrency, calculateDiscount } from '../../utils/formatters';
 import { RatingStars } from './RatingStars';
 import { useCart } from '../../hooks/useCart';
+import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 import {
   AnimatedSparkles,
@@ -23,6 +24,7 @@ const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1625246333195-78d9c38a
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, items } = useCart();
+  const { isAdmin } = useAuth();
   const discount = calculateDiscount(product.price, product.originalPrice);
   const isInCart = items.some(item => item.product.id === product.id);
   const [isLiked, setIsLiked] = useState(false);
@@ -152,30 +154,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 font-bold truncate">Incl. GST &amp; Guarantee</p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className={`px-3.5 py-2 rounded-2xl transition-all duration-300 flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer shadow-md shrink-0 whitespace-nowrap ${
-                isInCart
-                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 border border-emerald-300/80 dark:border-emerald-700'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30 hover:shadow-emerald-600/50'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-              title="Add to Cart"
-            >
-              {isInCart ? (
-                <>
-                  <AnimatedCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0" />
-                  <span className="whitespace-nowrap">Added</span>
-                </>
-              ) : (
-                <>
-                  <AnimatedCart size={18} className="text-white shrink-0" active />
-                  <span className="whitespace-nowrap">Add to Cart</span>
-                </>
-              )}
-            </motion.button>
+            {isAdmin ? (
+              <Link
+                to={`/admin/products/edit/${product.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="px-3 py-2 rounded-2xl bg-amber-500/10 dark:bg-amber-950/50 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-1.5 shrink-0 whitespace-nowrap transition-all shadow-xs"
+                title="Edit product in Admin Portal"
+              >
+                <AnimatedShield size={16} className="text-amber-500 shrink-0" />
+                <span>Edit Product</span>
+              </Link>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
+                className={`px-3.5 py-2 rounded-2xl transition-all duration-300 flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer shadow-md shrink-0 whitespace-nowrap ${
+                  isInCart
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 border border-emerald-300/80 dark:border-emerald-700'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30 hover:shadow-emerald-600/50'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title="Add to Cart"
+              >
+                {isInCart ? (
+                  <>
+                    <AnimatedCheck size={18} className="text-emerald-700 dark:text-emerald-300 shrink-0" />
+                    <span className="whitespace-nowrap">Added</span>
+                  </>
+                ) : (
+                  <>
+                    <AnimatedCart size={18} className="text-white shrink-0" active />
+                    <span className="whitespace-nowrap">Add to Cart</span>
+                  </>
+                )}
+              </motion.button>
+            )}
           </div>
         </div>
       </motion.div>

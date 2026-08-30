@@ -233,7 +233,44 @@ class ConstantsSeeder extends Seeder
             if ($category) {
                 $prod['category_id'] = $category->id;
             }
-            Product::updateOrCreate(['slug' => $prod['slug']], $prod);
+            $productObj = Product::updateOrCreate(['slug' => $prod['slug']], $prod);
+
+        $sampleComments = [
+            5 => [
+                'Bumper crop yield after applying this fertilizer! Delivered in 2 days.',
+                'Excellent product quality. Root development improved significantly within 10 days.',
+                'Genuine product certified by Govt FCO. Works great for paddy and vegetables.'
+            ],
+            4 => [
+                'Good quality agricultural input. Fast shipping and solid packaging.',
+                'Effective dosage results observed on wheat crop. Will order again.'
+            ]
+        ];
+
+        $userIds = \App\Models\User::pluck('id')->toArray();
+        if (empty($userIds)) {
+            $userIds = [2, 3, 4];
+        }
+
+        foreach (Product::all() as $productObj) {
+            $numReviews = rand(2, min(4, count($userIds)));
+            $reviewerIds = array_slice($userIds, 0, $numReviews);
+
+            foreach ($reviewerIds as $uId) {
+                $rating = rand(4, 5);
+                $commentList = $sampleComments[$rating];
+                $comment = $commentList[array_rand($commentList)];
+
+                \App\Models\ProductReview::updateOrCreate(
+                    ['product_id' => $productObj->id, 'user_id' => $uId],
+                    [
+                        'rating' => $rating,
+                        'comment' => $comment,
+                        'verified_purchase' => true,
+                    ]
+                );
+            }
         }
     }
+}
 }

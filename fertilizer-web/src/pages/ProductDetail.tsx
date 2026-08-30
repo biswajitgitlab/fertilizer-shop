@@ -8,8 +8,9 @@ import { QuantitySelector } from '../components/cart/QuantitySelector';
 import { ProductCard } from '../components/product/ProductCard';
 import { Button } from '../components/common/Button';
 import { useCart } from '../hooks/useCart';
+import { useAuth } from '../hooks/useAuth';
 import { formatCurrency, calculateDiscount } from '../utils/formatters';
-import { ShieldCheck, Truck, Headphones, ShoppingCart, CheckCircle2, Star, UserCheck, MessageSquare, Send, Lock, Check } from 'lucide-react';
+import { ShieldCheck, Truck, Headphones, ShoppingCart, CheckCircle2, Star, UserCheck, MessageSquare, Send, Lock, Check, Edit3 } from 'lucide-react';
 import { apiClient } from '../api/axiosInstances';
 import toast from 'react-hot-toast';
 
@@ -26,6 +27,7 @@ export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isAdmin } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
@@ -36,7 +38,7 @@ export const ProductDetail: React.FC = () => {
   // Reviews state
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [ratingStats, setRatingStats] = useState<{ average_rating: number; total_reviews: number; rating_counts: Record<number, number> }>({
-    average_rating: 5.0,
+    average_rating: 0,
     total_reviews: 0,
     rating_counts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
   });
@@ -224,37 +226,56 @@ export const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Quantity & CTA Buttons */}
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-bold text-gray-700 dark:text-slate-300">Quantity</span>
-              <QuantitySelector
-                quantity={quantity}
-                onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
-                onIncrease={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                max={product.stock}
-              />
+          {/* Quantity & CTA Buttons or Admin View Banner */}
+          {isAdmin ? (
+            <div className="p-4 bg-amber-50/90 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-800/80 rounded-2xl space-y-2 shadow-xs">
+              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-xs">
+                <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>Admin View Mode — Storefront Inspection Only</span>
+              </div>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300/90 font-medium leading-relaxed">
+                You are currently viewing this item under administrative staff credentials. Customer ordering and cart features are restricted to customer accounts.
+              </p>
+              <Link
+                to={`/admin/products/edit/${product.id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all mt-1"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit Product in Admin Portal</span>
+              </Link>
             </div>
+          ) : (
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-bold text-gray-700 dark:text-slate-300">Quantity</span>
+                <QuantitySelector
+                  quantity={quantity}
+                  onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
+                  onIncrease={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  max={product.stock}
+                />
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button
-                onClick={handleAddToCart}
-                disabled={product.stock <= 0}
-                variant="outline"
-                className="py-3 text-sm"
-                icon={<ShoppingCart className="w-4 h-4" />}
-              >
-                Add to Cart
-              </Button>
-              <Button
-                onClick={handleBuyNow}
-                disabled={product.stock <= 0}
-                className="py-3 text-sm"
-              >
-                Buy Now
-              </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={product.stock <= 0}
+                  variant="outline"
+                  className="py-3 text-sm"
+                  icon={<ShoppingCart className="w-4 h-4" />}
+                >
+                  Add to Cart
+                </Button>
+                <Button
+                  onClick={handleBuyNow}
+                  disabled={product.stock <= 0}
+                  className="py-3 text-sm"
+                >
+                  Buy Now
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Trust Highlights */}
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100 dark:border-slate-800 text-center text-[11px] text-gray-600 dark:text-slate-300 font-medium">
@@ -345,11 +366,15 @@ export const ProductDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-gray-50 dark:bg-slate-800/80 p-6 rounded-3xl border border-gray-200/80 dark:border-slate-700 items-center">
               
               <div className="md:col-span-4 text-center border-b md:border-b-0 md:border-r border-gray-200 dark:border-slate-700 pb-4 md:pb-0 pr-0 md:pr-4 space-y-2">
-                <h3 className="text-4xl font-black text-gray-900 dark:text-white">{ratingStats.average_rating}</h3>
+                <h3 className="text-4xl font-black text-gray-900 dark:text-white">
+                  {ratingStats.total_reviews > 0 ? Number(ratingStats.average_rating).toFixed(1) : "0.0"}
+                </h3>
                 <div className="flex justify-center">
-                  <RatingStars rating={ratingStats.average_rating} size="lg" />
+                  <RatingStars rating={ratingStats.average_rating} count={ratingStats.total_reviews} size="lg" />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Based on {ratingStats.total_reviews} Verified Reviews</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
+                  {ratingStats.total_reviews > 0 ? `Based on ${ratingStats.total_reviews} Verified Reviews` : "No Verified Reviews Yet"}
+                </p>
               </div>
 
               {/* Rating Bars */}

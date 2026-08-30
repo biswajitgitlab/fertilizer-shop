@@ -21,18 +21,21 @@ export const Sidebar: React.FC<{
 
   const isCollapsed = collapsed !== undefined ? collapsed : sidebarCollapsed;
 
+  const isSuperAdmin = user?.role === 'Super Admin' || user?.roles?.includes('Super Admin');
+  const userPermissions = user?.effective_permissions || [];
+
   const links = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Staff Management', path: '/admin/users', icon: UserCheck },
-    { name: 'Customer CRM', path: '/admin/customers', icon: Users },
-    { name: 'Products', path: '/admin/products', icon: Package },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { name: 'Crop Diagnoses', path: '/admin/diagnoses', icon: Stethoscope },
-    { name: 'Sales Analytics', path: '/admin/analytics', icon: BarChart2 },
-    { name: 'Inventory', path: '/admin/inventory', icon: Warehouse },
-    { name: 'Coupons', path: '/admin/coupons', icon: Tag },
-    { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck },
-  ];
+    { name: 'Staff Management', path: '/admin/users', icon: UserCheck, perm: 'users.view' },
+    { name: 'Customer CRM', path: '/admin/customers', icon: Users, perm: 'customers.view' },
+    { name: 'Products', path: '/admin/products', icon: Package, perm: 'products.view' },
+    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag, perm: 'orders.view' },
+    { name: 'Crop Diagnoses', path: '/admin/diagnoses', icon: Stethoscope, perm: 'crop_plans.view' },
+    { name: 'Sales Analytics', path: '/admin/analytics', icon: BarChart2, perm: 'analytics.view' },
+    { name: 'Inventory', path: '/admin/inventory', icon: Warehouse, perm: 'inventory.view' },
+    { name: 'Coupons', path: '/admin/coupons', icon: Tag, perm: 'products.view' },
+    { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck, perm: 'roles.view' },
+  ].filter(link => !link.perm || isSuperAdmin || userPermissions.includes(link.perm));
 
   const handleLogout = async () => {
     try {
