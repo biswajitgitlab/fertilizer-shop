@@ -25,15 +25,15 @@ import {
   AnimatedSearch
 } from '../components/common/AnimatedIcons';
 
-// Bright, high-resolution agriculture photos (100% verified 200 OK & vibrant)
+// Dedicated, authentic crop input product photos
 const VIBRANT_FARM_HERO = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_CROP_SPRAY = "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_FERTILIZER_SOIL = "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=800";
-const VIBRANT_ORGANIC_COMPOST = "/images/categories/vermicompost_soil.png";
-const VIBRANT_SEEDS = "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_CROP_SPRAY = "/images/products/confidor_insecticide.png";
+const VIBRANT_FERTILIZER_SOIL = "/images/products/npk_19_19_19.png";
+const VIBRANT_ORGANIC_COMPOST = "/images/categories/organic_bio_fertilizers.png";
+const VIBRANT_SEEDS = "/images/products/pusa_basmati_seeds.png";
 const VIBRANT_GREEN_CROPS = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800";
 const VIBRANT_VITAMINS = "/images/categories/plant_growth_vitamins.png";
-const VIBRANT_MICRONUTRIENTS = "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=800";
+const VIBRANT_MICRONUTRIENTS = "/images/products/chelated_zinc.png";
 
 // High-fidelity dedicated service images
 const SERVICE_AI_DOCTOR = "/images/services/ai_crop_doctor_scan.png";
@@ -56,7 +56,7 @@ export const Home: React.FC = () => {
 
   // Accurate visual image mapper for categories
   const getCategoryImage = (name: string, defaultImg?: string) => {
-    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost') && !defaultImg.includes('1585314062340')) {
+    if (defaultImg && !defaultImg.includes('placeholder') && !defaultImg.includes('localhost') && !defaultImg.includes('1585314062340') && !defaultImg.includes('unsplash')) {
       return defaultImg;
     }
 
@@ -64,13 +64,13 @@ export const Home: React.FC = () => {
     if (lname.includes('organic') || lname.includes('bio')) return VIBRANT_ORGANIC_COMPOST;
     if (lname.includes('chemical') || lname.includes('fertilizer')) return VIBRANT_FERTILIZER_SOIL;
     if (lname.includes('pesticide') || lname.includes('insecticide')) return VIBRANT_CROP_SPRAY;
-    if (lname.includes('fungicide')) return VIBRANT_GREEN_CROPS;
-    if (lname.includes('herbicide') || lname.includes('weed')) return VIBRANT_FARM_HERO;
+    if (lname.includes('fungicide')) return "/images/products/saaf_fungicide.png";
+    if (lname.includes('herbicide') || lname.includes('weed')) return "/images/products/glycel_herbicide.png";
     if (lname.includes('vitamin') || lname.includes('stimulant')) return VIBRANT_VITAMINS;
     if (lname.includes('micronutrient') || lname.includes('zinc')) return VIBRANT_MICRONUTRIENTS;
     if (lname.includes('seed')) return VIBRANT_SEEDS;
 
-    return VIBRANT_FARM_HERO;
+    return VIBRANT_FERTILIZER_SOIL;
   };
 
   useEffect(() => {
@@ -140,10 +140,9 @@ export const Home: React.FC = () => {
             ].map((crop, idx) => (
               <motion.button
                 key={idx}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
-                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-md transition-all active:scale-95`}
+                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-md active:scale-95`}
               >
                 <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-white/20">
                   <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
@@ -160,78 +159,78 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 2. VISUAL PHOTO BANNER GRID ─── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 transition-colors duration-300">
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 space-y-1">
+          <div className="text-center mb-6 sm:mb-8 space-y-1">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Explore By Category
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Certified Crop Inputs &amp; Farm Care Essentials</h2>
+            <h2 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white">Certified Crop Inputs &amp; Farm Care Essentials</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             
             {/* Visual Card 1: Fertilizers */}
-            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
+            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
               <img
                 src={VIBRANT_FERTILIZER_SOIL}
                 alt="Fertilizers"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Growth Fertilizers</span>
-                <h3 className="text-base font-black">NPK &amp; Urea Bags</h3>
-                <p className="text-xs text-emerald-300 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3.5 h-3.5" /></p>
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+                <span className="bg-emerald-500 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Growth Fertilizers</span>
+                <h3 className="text-xs sm:text-base font-black truncate">NPK &amp; Urea Bags</h3>
+                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
               </div>
             </Link>
 
             {/* Visual Card 2: Pesticides */}
-            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
+            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
               <img
                 src={VIBRANT_CROP_SPRAY}
                 alt="Pesticides"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="bg-teal-500 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Insect &amp; Pest Sprays</span>
-                <h3 className="text-base font-black">Pesticides &amp; Insecticides</h3>
-                <p className="text-xs text-teal-300 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3.5 h-3.5" /></p>
+              <div className="absolute inset-0 bg-gradient-to-t from-teal-950/80 via-teal-950/20 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+                <span className="bg-teal-500 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Pest Sprays</span>
+                <h3 className="text-xs sm:text-base font-black truncate">Pesticides &amp; Sprays</h3>
+                <p className="text-[10px] sm:text-xs text-teal-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
               </div>
             </Link>
 
             {/* Visual Card 3: Organic Compost */}
-            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
+            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
               <img
                 src={VIBRANT_ORGANIC_COMPOST}
                 alt="Organic Bio Compost"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Bio-Organic Soil</span>
-                <h3 className="text-base font-black">Vermicompost &amp; Bio-Fertilizer</h3>
-                <p className="text-xs text-amber-300 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3.5 h-3.5" /></p>
+              <div className="absolute inset-0 bg-gradient-to-t from-amber-950/80 via-amber-950/20 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+                <span className="bg-amber-400 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Bio-Organic Soil</span>
+                <h3 className="text-xs sm:text-base font-black truncate">Bio-Fertilizers</h3>
+                <p className="text-[10px] sm:text-xs text-amber-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
               </div>
             </Link>
 
             {/* Visual Card 4: Seeds */}
-            <Link to="/products?category=seeds-tools" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
+            <Link to="/products?category=seeds-tools" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
               <img
                 src={VIBRANT_SEEDS}
                 alt="High Yield Seeds"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 p-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 text-white space-y-1">
-                <span className="bg-emerald-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Certified Seeds</span>
-                <h3 className="text-base font-black">High-Yield Seeds</h3>
-                <p className="text-xs text-emerald-300 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3.5 h-3.5" /></p>
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+                <span className="bg-emerald-400 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Certified Seeds</span>
+                <h3 className="text-xs sm:text-base font-black truncate">High-Yield Seeds</h3>
+                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
               </div>
             </Link>
 
@@ -278,7 +277,7 @@ export const Home: React.FC = () => {
           {featured.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {featured.map((prod) => (
-                <ProductCard key={prod.id} product={prod} />
+                <ProductCard key={prod.id} product={prod} disableHoverEffect={true} />
               ))}
             </div>
           ) : (
