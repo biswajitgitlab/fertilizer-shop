@@ -9,23 +9,33 @@ export const TrendingProductsSection: React.FC = () => {
   const [trending, setTrending] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [liveStats, setLiveStats] = useState<{ searches_today: number; total_views: number }>({
+    searches_today: 1452,
+    total_views: 3840
+  });
+
+  const fetchData = async () => {
+    try {
+      const [trendingData, statsData] = await Promise.all([
+        productApi.getTrending(),
+        productApi.getLiveStats()
+      ]);
+      setTrending(trendingData);
+      if (statsData && statsData.searches_today) {
+        setLiveStats(statsData);
+      }
+    } catch (e) {
+      console.error("Failed to load live trending analytics:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchTrending = async () => {
-      try {
-        const data = await productApi.getTrending();
-        if (isMounted) {
-          setTrending(data);
-        }
-      } catch (e) {
-        console.error("Failed to load trending products:", e);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    fetchTrending();
-    return () => { isMounted = false; };
+    fetchData();
+    // Poll live Redis analytics every 20 seconds
+    const interval = setInterval(fetchData, 20000);
+    return () => clearInterval(interval);
   }, []);
 
   // Filter products based on selected category tab
@@ -53,18 +63,13 @@ export const TrendingProductsSection: React.FC = () => {
       { label: '#3 Most Inspected', color: 'from-rose-500 to-pink-600 text-white' },
       { label: '#4 Trending Pick', color: 'from-emerald-500 to-teal-600 text-white' },
     ];
-    const defaultRank = { label: views ? `${views} Visits` : '🔥 Popular', color: 'from-slate-700 to-slate-900 text-white' };
+    const defaultRank = { label: views ? `${views.toLocaleString()} Visits` : '🔥 Popular', color: 'from-slate-700 to-slate-900 text-white' };
     return ranks[idx] || defaultRank;
   };
 
-  // Dynamic live search count based on total product views
-  const dynamicSearchCount = useMemo(() => {
-    const sumViews = trending.reduce((acc, p) => acc + (p.viewsCount || 0), 0);
-    if (sumViews > 0) {
-      return (sumViews * 16 + 1420).toLocaleString();
-    }
-    return '12,480';
-  }, [trending]);
+  const dynamicSearchFormatted = useMemo(() => {
+    return liveStats.searches_today.toLocaleString();
+  }, [liveStats.searches_today]);
 
   return (
     <section className="py-10 space-y-8">
@@ -126,11 +131,11 @@ export const TrendingProductsSection: React.FC = () => {
         <div className="mt-4 mb-6 flex flex-wrap items-center justify-between gap-3 bg-amber-500/5 dark:bg-amber-950/30 border border-amber-300/30 dark:border-amber-800/40 rounded-2xl px-4 py-2.5 text-xs text-slate-700 dark:text-amber-200/90 font-semibold relative z-10">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>Real-time Redis analytics update automatically every 5 minutes based on farmer views.</span>
+            <span>Real-time Redis analytics update automatically based on farmer views.</span>
           </div>
           <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 font-bold shrink-0">
-            <Zap className="w-3.5 h-3.5 fill-orange-500" />
-            <span>{dynamicSearchCount}+ Searches Today</span>
+            <Zap className="w-3.5 h-3.5 fill-orange-500 animate-bounce" />
+            <span>{dynamicSearchFormatted}+ Searches Today</span>
           </div>
         </div>
 

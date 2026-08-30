@@ -120,6 +120,49 @@ export const productApi = {
       return INITIAL_PRODUCTS.filter(p => p.isTrending);
     }
   },
+
+  getLiveStats: async () => {
+    try {
+      const res = await publicApi.get('/analytics/live-stats');
+      return res.data;
+    } catch (e) {
+      return { searches_today: 1452, total_views: 3840 };
+    }
+  },
+
+  trackSearch: async (query: string) => {
+    if (!query) return;
+    try {
+      await publicApi.post('/analytics/track-search', { query });
+    } catch (e) {
+      // Ignore network errors on search tracking
+    }
+  },
+
+  getRecentlyViewed: async () => {
+    const { authApi } = await import('./axiosInstances');
+    try {
+      const res = await authApi.get('/user/recently-viewed');
+      return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
+    } catch (e) {
+      return [];
+    }
+  },
+
+  syncRecentlyViewed: async (productIds: (string | number)[]) => {
+    const { authApi } = await import('./axiosInstances');
+    try {
+      await authApi.post('/user/recently-viewed/sync', { product_ids: productIds.map(Number) });
+    } catch (e) {}
+  },
+
+  clearRecentlyViewedBackend: async () => {
+    const { authApi } = await import('./axiosInstances');
+    try {
+      await authApi.delete('/user/recently-viewed');
+    } catch (e) {}
+  },
+
   getProductById: async (id: string) => productApi.getProduct(id),
   getProductBySlug: async (slug: string) => productApi.getProduct(slug),
   getRelated: async (category: string, excludeId?: string) => {

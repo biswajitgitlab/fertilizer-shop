@@ -1,12 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useRecentlyViewedStore } from '../../store/recentlyViewedStore';
 import { ProductCard } from './ProductCard';
-import { History, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, Trash2, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const RecentlyViewedSection: React.FC<{ currentProductId?: string | number }> = ({ currentProductId }) => {
-  const { items, clearRecentlyViewed } = useRecentlyViewedStore();
+  const { items, isSyncedWithServer, fetchRecentlyViewed, clearRecentlyViewed } = useRecentlyViewedStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchRecentlyViewed();
+  }, [fetchRecentlyViewed]);
 
   // Filter out current product if on Product Detail page
   const filteredItems = currentProductId
@@ -40,11 +44,17 @@ export const RecentlyViewedSection: React.FC<{ currentProductId?: string | numbe
               <History className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <h3 className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 flex-wrap">
                 Recently Viewed Products
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/80 dark:border-emerald-700/60">
                   {filteredItems.length} items
                 </span>
+                {isSyncedWithServer && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-300/60 dark:border-teal-800">
+                    <ShieldCheck className="w-3 h-3 text-teal-500" />
+                    Account Synced
+                  </span>
+                )}
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-medium hidden sm:block">
                 Products you inspected during your browsing session

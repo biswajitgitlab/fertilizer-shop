@@ -16,6 +16,7 @@ import {
   AnimatedSparkles,
   AnimatedSearch
 } from './AnimatedIcons';
+import { productApi } from '../../api/productApi';
 import { Logo } from './Logo';
 
 export const Navbar: React.FC = () => {
@@ -33,7 +34,9 @@ export const Navbar: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      const q = searchQuery.trim();
+      productApi.trackSearch(q);
+      navigate(`/products?search=${encodeURIComponent(q)}`);
       setMobileMenuOpen(false);
     }
   };

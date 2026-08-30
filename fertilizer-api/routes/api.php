@@ -41,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync']);
     Route::get('/cart/abandoned', [App\Http\Controllers\CartController::class, 'abandoned']);
 
+    // User Recently Viewed Products (Redis-backed)
+    Route::get('/user/recently-viewed', [ProductController::class, 'recentlyViewed']);
+    Route::post('/user/recently-viewed/sync', [ProductController::class, 'syncRecentlyViewed']);
+    Route::delete('/user/recently-viewed', [ProductController::class, 'clearRecentlyViewed']);
+
     // Order Routes
     Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store']);
     Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index']);
@@ -75,6 +80,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
 Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
 Route::get('/payment-gateway/status', [\App\Http\Controllers\RazorpayController::class, 'getCircuitStatus']);
+
+// Analytics & Live Metrics Public Routes
+Route::get('/analytics/live-stats', [ProductController::class, 'liveStats']);
+Route::post('/analytics/track-search', [ProductController::class, 'trackSearch']);
 
 // Webhooks
 Route::post('/webhooks/payment', function (\Illuminate\Http\Request $request) {
