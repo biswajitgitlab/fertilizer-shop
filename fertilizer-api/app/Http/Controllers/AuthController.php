@@ -120,7 +120,7 @@ class AuthController extends Controller
         ]);
     }
 
-    // POST /api/auth/login (Unified Login for both Admins and Customers)
+    // POST /api/auth/login (Storefront Customer Login ONLY)
     public function login(Request $request)
     {
         $request->validate([
@@ -129,34 +129,52 @@ class AuthController extends Controller
         ]);
 
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $loginValue = trim($request->login);
 
-        // 1. Check Admin model first
-        $account = Admin::where($loginField, $request->login)->first();
-
-        // 2. If not admin, check Customer User model
-        if (!$account) {
-            $account = User::where($loginField, $request->login)->first();
-        }
-
-        if (!$account || !Hash::check($request->password, $account->password)) {
-            throw ValidationException::withMessages([
-                'login' => ['Invalid credentials.'],
+        // Check if account is an Admin/Staff trying to use Customer login
+        $adminAccount = Admin::where($loginField, $loginValue)->first();
+        if ($adminAccount && Hash::check($request->password, $adminAccount->password)) {
+            // Staff credentials detected on customer portal — return token & flag
+            $token = $adminAccount->createToken('access_token')->plainTextToken;
+            return response()->json([
+                'message' => 'Staff login recognized.',
+                'access_token' => $token,
+                'user' => [
+                    'id' => $adminAccount->id,
+                    'name' => $adminAccount->name,
+                    'email' => $adminAccount->email,
+                    'phone' => $adminAccount->phone,
+                    'role' => $adminAccount->role ?: 'Admin',
+                ],
+                'is_staff' => true,
             ]);
         }
 
-        $token = $account->createToken('access_token')->plainTextToken;
+        // Strictly query Customer users table
+        $user = User::where($loginField, $loginValue)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'login' => ['Invalid customer credentials.'],
+            ]);
+        }
+
+        $token = $user->createToken('access_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Logged in successfully.',
             'access_token' => $token,
-            'user' => $account
+            'user' => $user,
+            'is_staff' => false,
         ]);
     }
 
     // POST /api/auth/logout
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
 
         return response()->json(['message' => 'Logged out successfully.']);
     }

@@ -4,11 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\AdminAuthController;
 
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    
+    // Dedicated Admin Portal Login
+    Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -19,6 +23,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+
+    // Admin Auth Sanctum routes
+    Route::post('/admin/auth/logout', [AdminAuthController::class, 'logout']);
+    Route::get('/admin/auth/me', [AdminAuthController::class, 'me']);
 
     // Cart Routes
     Route::get('/cart', [App\Http\Controllers\CartController::class, 'index']);
@@ -109,7 +117,7 @@ Route::get('/bundles', [\App\Http\Controllers\BundleController::class, 'index'])
 Route::get('/bundles/{slug}', [\App\Http\Controllers\BundleController::class, 'show']);
 
 // Admin Routes
-Route::middleware(['auth:sanctum', 'role:Admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // Products
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{id}', [ProductController::class, 'update']);

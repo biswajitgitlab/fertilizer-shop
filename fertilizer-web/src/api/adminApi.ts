@@ -2,6 +2,21 @@ import { apiClient } from './axiosInstances';
 import { mapProduct } from './productApi';
 import { Order, Diagnosis } from '../types';
 
+export const adminAuthApi = {
+  login: async (credentials: { login: string; password: string }) => {
+    const res = await apiClient.post('/admin/auth/login', credentials);
+    return res.data;
+  },
+  logout: async () => {
+    const res = await apiClient.post('/admin/auth/logout');
+    return res.data;
+  },
+  me: async () => {
+    const res = await apiClient.get('/admin/auth/me');
+    return res.data;
+  }
+};
+
 export const normalizeAdminOrder = (o: any): Order => {
   if (!o) {
     return {
@@ -410,7 +425,6 @@ export const adminApi = {
       console.warn("Failed to fetch admin orders from backend, using fallback dataset:", e);
     }
 
-    // If API returned 0 orders or failed (and no specific status filter was passed or filter matches fallback), return seed orders
     if (fetchedOrders.length === 0 && !cleanParams.status) {
       fetchedOrders = DEMO_FALLBACK_ORDERS;
     } else if (fetchedOrders.length === 0 && cleanParams.status) {
@@ -450,10 +464,10 @@ export const adminApi = {
     }
   },
 
-  getCustomers: async () => {
+  getCustomers: async (params?: { search?: string }) => {
     let list: any[] = [];
     try {
-      const res = await apiClient.get('/admin/customers');
+      const res = await apiClient.get('/admin/customers', { params });
       const raw = res.data;
       const rawList = raw.data || (Array.isArray(raw) ? raw : []);
       if (Array.isArray(rawList) && rawList.length > 0) {
@@ -465,13 +479,42 @@ export const adminApi = {
 
     if (list.length === 0) {
       list = [
-        { id: '1', name: 'Ramesh Kumar (Farmer)', phone: '9876543210', role: 'Customer', state: 'Haryana', farm_location: 'Karnal' },
-        { id: '2', name: 'Biswajit Sarkar', phone: '7863955493', role: 'Customer', state: 'Haryana', farm_location: 'Nilokheri' },
-        { id: '3', name: 'Sukhwinder Singh', phone: '9812345678', role: 'Customer', state: 'Punjab', farm_location: 'Ambala' },
-        { id: '4', name: 'Gurpreet Kaur', phone: '9729102938', role: 'Customer', state: 'Haryana', farm_location: 'Kurukshetra' }
+        { id: 1, name: 'Ramesh Kumar (Farmer)', email: 'ramesh@example.com', phone: '9876543210', is_verified: true, farm_location: 'Karnal, Haryana', farm_size_acres: 12, created_at: new Date().toISOString() },
+        { id: 2, name: 'Biswajit Sarkar', email: 'biswajit@example.com', phone: '7863955493', is_verified: true, farm_location: 'Nilokheri, Haryana', farm_size_acres: 8, created_at: new Date().toISOString() },
+        { id: 3, name: 'Sukhwinder Singh', email: 'sukhwinder@example.com', phone: '9812345678', is_verified: false, farm_location: 'Ambala, Punjab', farm_size_acres: 15, created_at: new Date().toISOString() },
+        { id: 4, name: 'Gurpreet Kaur', email: 'gurpreet@example.com', phone: '9729102938', is_verified: true, farm_location: 'Kurukshetra, Haryana', farm_size_acres: 5, created_at: new Date().toISOString() }
       ];
     }
     return list;
+  },
+  getCustomerDetails: async (id: number | string) => {
+    try {
+      const res = await apiClient.get(`/admin/customers/${id}`);
+      return res.data;
+    } catch (e) {
+      console.warn("Failed to fetch customer details, using fallback profile data:", e);
+      return {
+        customer: {
+          id: typeof id === 'number' ? id : parseInt(id) || 1,
+          name: 'Ramesh Kumar (Farmer)',
+          email: 'ramesh.farmer@example.com',
+          phone: '9876543210',
+          farm_location: 'Karnal, Haryana',
+          farm_size_acres: 12,
+          is_verified: true,
+          created_at: new Date().toISOString()
+        },
+        stats: {
+          orders_count: 5,
+          total_spent: 14500,
+          crop_diagnoses_count: 3
+        },
+        orders: [
+          { id: 'ORD-761923', total: 1012, status: 'CONFIRMED', created_at: new Date().toISOString() },
+          { id: 'ORD-540192', total: 1295, status: 'SHIPPED', created_at: new Date(Date.now() - 86400000).toISOString() }
+        ]
+      };
+    }
   },
   getDashboardStats: async () => adminApi.getDashboard(),
   getDiagnoses: async () => {
@@ -685,4 +728,3 @@ export const adminApi = {
     return res.data;
   }
 };
-

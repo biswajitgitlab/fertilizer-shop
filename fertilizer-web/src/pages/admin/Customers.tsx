@@ -33,7 +33,7 @@ export const Customers: React.FC = () => {
   // Detail Modal
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDetailData | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
+  const [inspectingId, setInspectingId] = useState<number | string | null>(null);
 
   const fetchCustomers = async () => {
     setIsLoading(true);
@@ -59,7 +59,7 @@ export const Customers: React.FC = () => {
   }, [search]);
 
   const handleInspectCustomer = async (c: CustomerRecord) => {
-    setIsFetchingDetail(true);
+    setInspectingId(c.id);
     try {
       const data = await adminApi.getCustomerDetails(c.id);
       setSelectedCustomer(data);
@@ -67,7 +67,7 @@ export const Customers: React.FC = () => {
     } catch (e) {
       toast.error("Failed to fetch customer profile.");
     } finally {
-      setIsFetchingDetail(false);
+      setInspectingId(null);
     }
   };
 
@@ -190,11 +190,16 @@ export const Customers: React.FC = () => {
                       <td className="py-3.5 px-4">
                         <button
                           onClick={() => handleInspectCustomer(c)}
-                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer flex items-center gap-1 text-[11px] font-bold px-2.5"
+                          disabled={inspectingId === c.id}
+                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer flex items-center gap-1 text-[11px] font-bold px-2.5 transition-all disabled:opacity-50"
                           title="Inspect Farmer CRM Profile"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Inspect Profile</span>
+                          {inspectingId === c.id ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-500" />
+                          ) : (
+                            <Eye className="w-3.5 h-3.5" />
+                          )}
+                          <span>{inspectingId === c.id ? 'Loading...' : 'Inspect Profile'}</span>
                         </button>
                       </td>
                     </tr>
@@ -216,7 +221,7 @@ export const Customers: React.FC = () => {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-base font-black text-slate-900 dark:text-white truncate">{selectedCustomer.customer.name || 'Farmer'}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{selectedCustomer.customer.email} • {selectedCustomer.customer.phone}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{selectedCustomer.customer.email} • {selectedCustomer.customer.phone || 'No phone'}</p>
                   </div>
                 </div>
                 <button
@@ -238,7 +243,7 @@ export const Customers: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
                   <Sprout className="w-4 h-4 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
                   <p className="text-xs text-slate-500 dark:text-slate-400">Total Spend</p>
-                  <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">₹{selectedCustomer.stats.total_spent.toLocaleString('en-IN')}</p>
+                  <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">₹{Number(selectedCustomer.stats.total_spent || 0).toLocaleString('en-IN')}</p>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-center">
@@ -254,6 +259,29 @@ export const Customers: React.FC = () => {
                 <p className="font-bold text-slate-700 dark:text-slate-300">Land Holding: <span className="font-medium text-slate-900 dark:text-white">{selectedCustomer.customer.farm_size_acres ? `${selectedCustomer.customer.farm_size_acres} Acres` : 'Not Specified'}</span></p>
                 <p className="font-bold text-slate-700 dark:text-slate-300">Account Registered: <span className="font-medium text-slate-900 dark:text-white">{new Date(selectedCustomer.customer.created_at).toLocaleDateString('en-IN')}</span></p>
               </div>
+
+              {/* Recent Orders Section */}
+              {selectedCustomer.orders && selectedCustomer.orders.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Recent Orders</h4>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                    {selectedCustomer.orders.map((o: any, idx: number) => (
+                      <div key={o.id || idx} className="bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div>
+                          <p className="font-bold text-slate-900 dark:text-white">Order #{o.order_number || o.id}</p>
+                          <p className="text-[10px] text-slate-400">{new Date(o.created_at).toLocaleDateString('en-IN')}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-black text-emerald-600 dark:text-emerald-400">₹{Number(o.total || 0).toLocaleString('en-IN')}</p>
+                          <span className="text-[9px] uppercase font-extrabold text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                            {o.status || 'PENDING'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-slate-800">
                 <button

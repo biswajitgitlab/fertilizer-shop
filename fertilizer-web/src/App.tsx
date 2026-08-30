@@ -29,8 +29,10 @@ import { Profile } from './pages/Profile';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { VerifyOtp } from './pages/VerifyOtp';
+import { ForgotPassword } from './pages/ForgotPassword';
 
 // Admin Pages
+import { AdminLogin } from './pages/admin/AdminLogin';
 import { Dashboard as AdminDashboard } from './pages/admin/Dashboard';
 import { Products as AdminProducts } from './pages/admin/Products';
 import { ProductForm as AdminProductForm } from './pages/admin/ProductForm';
@@ -66,7 +68,7 @@ const ScrollToTop: React.FC = () => {
 const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isAuthRoute = ['/login', '/register', '/verify-otp'].includes(location.pathname);
+  const isAuthRoute = ['/login', '/register', '/verify-otp', '/forgot-password', '/admin/login'].includes(location.pathname);
 
   if (isAdminRoute || isAuthRoute) {
     return <>{children}</>;
@@ -92,8 +94,6 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
-
-
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -102,7 +102,7 @@ export function App() {
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <LayoutWrapper>
           <Routes>
-            {/* Customer Routes — Public */}
+            {/* Customer Storefront Routes — Public */}
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:slug" element={<ProductDetail />} />
@@ -110,13 +110,14 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Customer Routes — Protected (Login Required) */}
+            {/* Customer Routes — Protected (Customer Login Required) */}
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
 
-            {/* Diagnose — requires login to submit */}
+            {/* Diagnose — requires login */}
             <Route path="/diagnose" element={<ProtectedRoute><Diagnose /></ProtectedRoute>} />
             <Route path="/diagnose/history" element={<ProtectedRoute><DiagnoseHistory /></ProtectedRoute>} />
             <Route path="/diagnose/:id" element={<ProtectedRoute><DiagnoseResult /></ProtectedRoute>} />
@@ -127,7 +128,10 @@ export function App() {
 
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-            {/* Admin Routes — Admin Only */}
+            {/* Admin Portal Authentication Route */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* Admin Routes — Internal Staff Only */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/products" element={<ProtectedRoute adminOnly><AdminProducts /></ProtectedRoute>} />

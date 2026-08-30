@@ -18,21 +18,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isAdmin } = useAuthStore();
   const location = useLocation();
 
-  // Not logged in at all — redirect to login
+  // Not logged in at all — redirect to appropriate login page
   if (!isAuthenticated) {
+    if (adminOnly || location.pathname.startsWith('/admin')) {
+      return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Non-admin trying to access an admin-only route — access denied
   if (adminOnly && !isAdmin) {
-    toast.error("Access Denied: Admin privileges required.");
-    return <Navigate to="/" replace />;
+    toast.error("Access Denied: Admin staff privileges required.");
+    return <Navigate to="/admin/login" replace />;
   }
 
-  // Admin trying to access customer-only routes (orders, checkout, profile, diagnose, planner)
-  // Redirect them to their admin dashboard
+  // Admin trying to access customer-only transactional routes (orders, checkout, profile, diagnose, planner)
   if (!adminOnly && isAdmin && !customerOnly) {
-    // Allow "Exit to Store" for browsing products & home but block transactional pages
     const customerOnlyPaths = ['/orders', '/checkout', '/profile', '/diagnose', '/planner'];
     const isCustomerOnlyPath = customerOnlyPaths.some(path => location.pathname.startsWith(path));
     if (isCustomerOnlyPath) {

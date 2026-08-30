@@ -21,17 +21,31 @@ class DatabaseSeeder extends Seeder
             CropTemplateSeeder::class,
         ]);
 
-        // 1 Admin user
-        $admin = User::firstOrCreate(
+        // 1. Seed Admin in 'admins' table for Staff Portal
+        $admin = \App\Models\Admin::firstOrCreate(
             ['email' => 'admin@fertilizershop.com'],
             [
-                'name' => 'Admin User',
+                'name' => 'Admin SarkarFertilizer',
+                'phone' => '9999999999',
                 'password' => Hash::make('admin123'),
-                'role' => 'Admin',
+                'role' => 'Super Admin',
                 'is_verified' => true,
             ]
         );
-        $admin->assignRole('Admin');
+
+        // 2. Seed Customer in 'users' table for Storefront Portal
+        User::firstOrCreate(
+            ['phone' => '9876543210'],
+            [
+                'email' => 'ramesh.patel@agri.com',
+                'name' => 'Ramesh Patel',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'farm_location' => 'Karnal, Haryana',
+                'farm_size_acres' => 12,
+                'is_verified' => true,
+            ]
+        );
 
         $this->call([
             ConstantsSeeder::class,

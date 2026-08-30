@@ -9,6 +9,8 @@ import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { Logo } from '../common/Logo';
 
+import { adminAuthApi } from '../../api/adminApi';
+
 export const Sidebar: React.FC<{
   onCloseMobile?: () => void;
   collapsed?: boolean;
@@ -32,10 +34,15 @@ export const Sidebar: React.FC<{
     { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck },
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await adminAuthApi.logout();
+    } catch (e) {
+      // ignore
+    }
     logout();
     if (onCloseMobile) onCloseMobile();
-    navigate('/login');
+    navigate('/admin/login');
   };
 
   return (

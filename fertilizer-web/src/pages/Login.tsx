@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
-import { Sprout, User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
+import { User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
 
@@ -35,7 +35,10 @@ export const Login: React.FC = () => {
       const res = await authApi.login({ credential, password });
       login(res.user, res.token);
       toast.success(`Welcome back, ${res.user.name}!`);
-      if (res.user.role?.toLowerCase() === 'admin') {
+
+      // Staff / Admin users are routed to /admin/dashboard, Customers to Store/Checkout
+      const isStaff = res.is_staff || (res.user.role && res.user.role.toLowerCase() !== 'customer');
+      if (isStaff) {
         navigate('/admin/dashboard');
       } else {
         navigate(from, { replace: true });
@@ -153,7 +156,7 @@ export const Login: React.FC = () => {
         </p>
       </div>
 
-      {/* Right Panel — Login Form with Green Agricultural Atmosphere */}
+      {/* Right Panel — Login Form */}
       <div
         className="w-full lg:w-1/2 relative flex items-center justify-center bg-slate-950 px-6 py-12 overflow-hidden"
         style={{
@@ -168,15 +171,25 @@ export const Login: React.FC = () => {
 
         <div className="relative z-10 w-full max-w-md space-y-6">
 
-          {/* BACK TO SHOP BUTTON */}
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white bg-slate-900/80 hover:bg-emerald-900/80 px-4 py-2 rounded-xl border border-emerald-500/30 transition-all cursor-pointer backdrop-blur-md shadow-lg"
-          >
-            <ArrowLeft className="w-4 h-4 text-emerald-400" />
-            <span>Back to Store</span>
-          </button>
+          {/* BACK TO SHOP BUTTON & ADMIN PORTAL LINK */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="inline-flex items-center gap-2 text-xs font-bold text-emerald-300 hover:text-white bg-slate-900/80 hover:bg-emerald-900/80 px-4 py-2 rounded-xl border border-emerald-500/30 transition-all cursor-pointer backdrop-blur-md shadow-lg"
+            >
+              <ArrowLeft className="w-4 h-4 text-emerald-400" />
+              <span>Back to Store</span>
+            </button>
+
+            <Link
+              to="/admin/login"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-950/70 hover:bg-amber-900/80 px-3.5 py-2 rounded-xl border border-amber-500/40 transition-all backdrop-blur-md shadow-lg"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Staff Login →</span>
+            </Link>
+          </div>
 
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center py-2">
@@ -220,13 +233,12 @@ export const Login: React.FC = () => {
             </div>
 
             <div className="text-right">
-              <button
-                type="button"
-                onClick={() => setShowForgotModal(true)}
+              <Link
+                to="/forgot-password"
                 className="text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer"
               >
                 Forgot Password?
-              </button>
+              </Link>
             </div>
 
             <button

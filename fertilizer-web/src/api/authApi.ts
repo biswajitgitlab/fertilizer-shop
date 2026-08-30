@@ -6,14 +6,16 @@ export const authApi = {
       const res = await publicApi.post('/auth/login', { login: data.credential, password: data.password });
       return {
         token: res.data.access_token || res.data.token,
-        user: res.data.user
+        user: res.data.user,
+        is_staff: res.data.is_staff ?? (res.data.user?.role && res.data.user?.role?.toLowerCase() !== 'customer'),
+        message: res.data.message
       };
     } catch (e: any) {
       if (e.response) {
         throw e; // Backend responded with an error (e.g., 401 or 422)
       }
       // Fallback response for offline or preview testing
-      const isAdmin = data.credential === 'admin@sarkarfertilizer.com' || data.credential === '9999999999';
+      const isAdmin = data.credential === 'admin@sarkarfertilizer.com' || data.credential === 'admin@fertilizershop.com' || data.credential === '9999999999';
       return {
         token: 'jwt-demo-token-12345',
         user: {
@@ -23,8 +25,9 @@ export const authApi = {
           phone: !data.credential?.includes('@') ? data.credential : '9876543210',
           farmLocation: 'Karnal, Haryana',
           farmSize: '12 Acres',
-          role: isAdmin ? 'admin' : 'user'
-        }
+          role: isAdmin ? 'Admin' : 'Customer'
+        },
+        is_staff: isAdmin
       };
     }
   },
@@ -33,7 +36,8 @@ export const authApi = {
     try {
       const res = await publicApi.post('/auth/register', data);
       return res.data;
-    } catch (e) {
+    } catch (e: any) {
+      if (e.response) throw e;
       return { message: 'Registration successful. OTP sent.', phone: data.phone || '9876543210' };
     }
   },
@@ -41,8 +45,13 @@ export const authApi = {
   verifyOtp: async (data: { phone: string; otp: string }) => {
     try {
       const res = await publicApi.post('/auth/verify-otp', data);
-      return res.data;
-    } catch (e) {
+      return {
+        token: res.data.access_token || res.data.token,
+        user: res.data.user,
+        message: res.data.message
+      };
+    } catch (e: any) {
+      if (e.response) throw e;
       return {
         token: 'jwt-demo-token-otp',
         user: {
@@ -52,9 +61,19 @@ export const authApi = {
           email: 'farmer@sarkarfertilizer.com',
           farmLocation: 'Punjab, India',
           farmSize: '10 Acres',
-          role: 'user'
-        }
+          role: 'Customer'
+        },
+        message: 'Phone verified successfully.'
       };
+    }
+  },
+
+  logout: async () => {
+    try {
+      const res = await apiClient.post('/auth/logout');
+      return res.data;
+    } catch (e) {
+      return { message: 'Logged out.' };
     }
   },
 
@@ -71,7 +90,8 @@ export const authApi = {
     try {
       const res = await apiClient.put('/auth/profile', data);
       return res.data;
-    } catch (e) {
+    } catch (e: any) {
+      if (e.response) throw e;
       return data;
     }
   }

@@ -20,11 +20,17 @@ if (savedUserStr) {
     initialUser = JSON.parse(savedUserStr);
   } catch (e) {
     console.error("Failed to parse saved user:", e);
-    // Clear corrupted data
     localStorage.removeItem('user');
     localStorage.removeItem('token');
   }
 }
+
+const isStaffRole = (user: any): boolean => {
+  if (!user) return false;
+  if (user.is_staff === true) return true;
+  if (user.role && typeof user.role === 'string' && user.role.toLowerCase() !== 'customer') return true;
+  return false;
+};
 
 // Only consider authenticated if we have both token AND user stored
 const isInitiallyAuthenticated = !!(savedToken && initialUser);
@@ -33,7 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
   token: isInitiallyAuthenticated ? savedToken : null,
   isAuthenticated: isInitiallyAuthenticated,
-  isAdmin: initialUser?.role?.toLowerCase() === 'admin' && isInitiallyAuthenticated,
+  isAdmin: isInitiallyAuthenticated && isStaffRole(initialUser),
 
   login: (user, token) => {
     localStorage.setItem('token', token);
@@ -42,7 +48,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       user,
       token,
       isAuthenticated: true,
-      isAdmin: user.role?.toLowerCase() === 'admin'
+      isAdmin: isStaffRole(user),
     });
   },
 
@@ -64,7 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('user', JSON.stringify(newUser));
       return {
         user: newUser,
-        isAdmin: newUser.role?.toLowerCase() === 'admin'
+        isAdmin: isStaffRole(newUser),
       };
     });
   }
