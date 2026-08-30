@@ -6,6 +6,7 @@ import { formatCurrency } from '../utils/formatters';
 import { Button } from '../components/common/Button';
 import { ShoppingBag, Tag, ArrowRight, ShieldCheck, ArrowLeft, Truck, Sparkles, Check, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 
 export const Cart: React.FC = () => {
   const navigate = useNavigate();
@@ -288,6 +289,9 @@ export const Cart: React.FC = () => {
         </div>
 
       </div>
+
+      {/* RECENTLY VIEWED PRODUCTS FOR EASY ADD-BACK */}
+      <RecentlyViewedSection />
     </div>
   );
 };
