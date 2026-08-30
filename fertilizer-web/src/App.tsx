@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { CartDrawer } from './components/cart/CartDrawer';
+import { FloatingCartBanner } from './components/cart/FloatingCartBanner';
 import { ChatWidget } from './components/chat/ChatWidget';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 
@@ -86,7 +87,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <>
-      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-[#022c22] dark:via-[#043427] dark:to-[#022c22] text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-16 md:pb-0 transition-colors duration-300 overflow-x-clip">
+      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-[#022c22] dark:via-[#043427] dark:to-[#022c22] text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-24 md:pb-0 transition-colors duration-300 overflow-x-clip">
         {/* Global Fresh & Deep Leaf Decorative Glow Blobs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-400/25 dark:bg-emerald-600/15 rounded-full blur-3xl pointer-events-none glow-blob" />
         <div className="absolute top-1/3 -right-20 w-96 h-96 bg-lime-300/30 dark:bg-teal-800/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
@@ -102,6 +103,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <main className="flex-1 relative z-10">{children}</main>
         <Footer />
         <CartDrawer />
+        <FloatingCartBanner />
         <ChatWidget />
       </div>
       <MobileBottomNav />
@@ -124,7 +126,7 @@ export function App() {
         <Toaster
           position="top-right"
           toastOptions={{
-            duration: 3500,
+            duration: 1800,
             style: {
               background: 'rgba(15, 23, 42, 0.94)',
               color: '#f8fafc',
@@ -138,7 +140,7 @@ export function App() {
               padding: '12px 18px',
             },
             success: {
-              duration: 3500,
+              duration: 1800,
               iconTheme: {
                 primary: '#10b981',
                 secondary: '#020617',
@@ -149,7 +151,7 @@ export function App() {
               },
             },
             error: {
-              duration: 4000,
+              duration: 2200,
               iconTheme: {
                 primary: '#f43f5e',
                 secondary: '#020617',

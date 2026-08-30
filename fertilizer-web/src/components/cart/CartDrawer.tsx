@@ -88,8 +88,8 @@ export const CartDrawer: React.FC = () => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] overflow-hidden">
-          {/* Backdrop (z-[100] covers header, chat, and mobile bottom nav) */}
+        <div className="fixed inset-0 z-[200] overflow-hidden">
+          {/* Backdrop (z-[200] covers header, chat, and mobile bottom nav) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -299,9 +299,9 @@ export const CartDrawer: React.FC = () => {
                 )}
               </div>
 
-              {/* STICKY FOOTER (Clean & Non-Overlapping) */}
+              {/* STICKY FOOTER (Clean & Non-Overlapping Mobile Purchase UI) */}
               {items.length > 0 && (
-                <div className="shrink-0 p-4 sm:p-5 bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 space-y-3">
+                <div className="shrink-0 p-4 sm:p-5 pb-8 sm:pb-5 bg-gray-50 dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 space-y-3 relative z-20 pointer-events-auto shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
                   
                   {/* Price Breakdown */}
                   <div className="space-y-1.5 text-xs text-gray-600 dark:text-slate-400 font-medium">
@@ -334,7 +334,7 @@ export const CartDrawer: React.FC = () => {
                   <Button
                     onClick={handleCheckoutClick}
                     disabled={hasOutOfStockItems}
-                    className="w-full text-base py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-manipulation active:scale-[0.98] transition-transform"
                     icon={<ArrowRight className="w-5 h-5" />}
                   >
                     {hasOutOfStockItems ? "Remove Out of Stock Items to Checkout" : `Proceed to Checkout (${formatCurrency(total)})`}

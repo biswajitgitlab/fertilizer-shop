@@ -16,7 +16,7 @@ import {
   AnimatedPulseBadge
 } from '../common/AnimatedIcons';
 
-import { Eye } from 'lucide-react';
+import { Eye, Plus, Minus } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -27,10 +27,12 @@ interface ProductCardProps {
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600";
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankLabel }) => {
-  const { addToCart, items } = useCart();
+  const { addToCart, updateQty, removeItem, items } = useCart();
   const { isAdmin } = useAuth();
   const discount = calculateDiscount(product.price, product.originalPrice);
-  const isInCart = items.some(item => item.product.id === product.id);
+
+  const cartItem = items.find(item => String(item.product.id) === String(product.id));
+  const currentQty = cartItem ? cartItem.quantity : 0;
   const [isLiked, setIsLiked] = useState(false);
 
   const [imgSrc, setImgSrc] = useState<string>(() => {
@@ -44,8 +46,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankL
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    addToCart(product, 1, false);
     toast.success(`Added ${product.name} to cart!`);
+  };
+
+  const handleIncreaseQty = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.stock > 0 && currentQty >= product.stock) {
+      toast.error(`Only ${product.stock} units available in stock`);
+      return;
+    }
+    const newQty = currentQty + 1;
+    updateQty(product.id, newQty);
+    toast.success(`Updated ${product.name} quantity to ${newQty}`);
+  };
+
+  const handleDecreaseQty = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentQty <= 1) {
+      removeItem(product.id);
+      toast.success(`Removed ${product.name} from cart`);
+    } else {
+      const newQty = currentQty - 1;
+      updateQty(product.id, newQty);
+      toast.success(`Updated ${product.name} quantity to ${newQty}`);
+    }
   };
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -171,30 +198,55 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankL
                 <AnimatedShield size={14} className="text-amber-500 shrink-0" />
                 <span>Edit</span>
               </Link>
+            ) : product.stock <= 0 ? (
+              <button
+                disabled
+                className="w-full sm:w-auto px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 font-bold text-[10px] sm:text-xs cursor-not-allowed border border-gray-200 dark:border-slate-700 shrink-0 whitespace-nowrap"
+              >
+                Out of Stock
+              </button>
+            ) : currentQty > 0 ? (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="w-full sm:w-auto flex items-center justify-between gap-1 bg-emerald-50/90 dark:bg-emerald-950/90 border border-emerald-500/40 dark:border-emerald-600/50 rounded-xl sm:rounded-2xl p-1 shadow-xs transition-all shrink-0"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleDecreaseQty}
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-white dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-black hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-colors shadow-2xs cursor-pointer shrink-0"
+                  title="Decrease Quantity"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+                </motion.button>
+
+                <span className="px-1 font-black text-xs sm:text-sm text-emerald-900 dark:text-emerald-300 min-w-[20px] text-center select-none">
+                  {currentQty}
+                </span>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleIncreaseQty}
+                  disabled={product.stock > 0 && currentQty >= product.stock}
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 flex items-center justify-center font-black hover:bg-emerald-700 dark:hover:bg-emerald-400 transition-colors shadow-2xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  title="Increase Quantity"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+                </motion.button>
+              </div>
             ) : (
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0}
-                className={`w-full sm:w-auto px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center gap-1 sm:gap-1.5 font-black text-[11px] sm:text-xs cursor-pointer shadow-xs shrink-0 whitespace-nowrap ${
-                  isInCart
-                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900 border border-emerald-300/80 dark:border-emerald-700'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                className="w-full sm:w-auto px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl transition-all duration-300 flex items-center justify-center gap-1 sm:gap-1.5 font-black text-[11px] sm:text-xs cursor-pointer shadow-xs shrink-0 whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30"
                 title="Add to Cart"
               >
-                {isInCart ? (
-                  <>
-                    <AnimatedCheck size={14} className="text-emerald-700 dark:text-emerald-300 shrink-0" />
-                    <span>Added</span>
-                  </>
-                ) : (
-                  <>
-                    <AnimatedCart size={14} className="text-white shrink-0" active />
-                    <span>Add</span>
-                  </>
-                )}
+                <AnimatedCart size={14} className="text-white shrink-0" active />
+                <span>ADD</span>
               </motion.button>
             )}
           </div>

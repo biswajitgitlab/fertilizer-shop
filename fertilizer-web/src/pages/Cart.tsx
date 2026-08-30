@@ -276,7 +276,7 @@ export const Cart: React.FC = () => {
           <Button
             onClick={() => navigate('/checkout')}
             disabled={hasOutOfStockItems}
-            className="w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-manipulation active:scale-[0.98] transition-transform"
             icon={<ArrowRight className="w-5 h-5" />}
           >
             {hasOutOfStockItems ? "Remove Out of Stock Items to Checkout" : `Proceed to Checkout (${formatCurrency(total)})`}

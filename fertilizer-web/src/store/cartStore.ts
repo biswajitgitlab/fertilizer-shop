@@ -9,7 +9,7 @@ interface CartState {
   discountPercent: number;
   discountAmount: number;
   isFreeShippingCoupon: boolean;
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, openDrawer?: boolean) => void;
   updateQty: (productId: string | number, quantity: number) => void;
   removeItem: (productId: string | number) => void;
   clearCart: () => void;
@@ -34,7 +34,10 @@ const savedCartStr = localStorage.getItem('krishi_cart');
 let initialItems: CartItem[] = [];
 if (savedCartStr) {
   try {
-    initialItems = JSON.parse(savedCartStr);
+    const parsed = JSON.parse(savedCartStr);
+    if (Array.isArray(parsed)) {
+      initialItems = parsed.filter(item => item && item.product && typeof item.product === 'object' && item.product.id !== undefined);
+    }
   } catch (e) {
     console.error("Failed to parse cart:", e);
   }
@@ -53,7 +56,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   isFreeShippingCoupon: false,
   FREE_SHIPPING_THRESHOLD: 999,
 
-  addToCart: (product, quantity = 1) => {
+  addToCart: (product, quantity = 1, openDrawer = false) => {
     set((state) => {
       const existingIndex = state.items.findIndex(item => String(item.product.id) === String(product.id));
       let newItems: CartItem[];
@@ -64,7 +67,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         newItems = [...state.items, { product, quantity }];
       }
       saveCart(newItems);
-      return { items: newItems, isOpen: true };
+      return { items: newItems, isOpen: openDrawer ? true : state.isOpen };
     });
 
     if (localStorage.getItem('token')) {

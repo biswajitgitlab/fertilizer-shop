@@ -28,7 +28,7 @@ interface ReviewItem {
 export const ProductDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const { isAdmin } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -174,8 +174,14 @@ export const ProductDetail: React.FC = () => {
   };
 
   const handleAddToCart = () => {
+    const existingItem = items.find(i => String(i.product.id) === String(product.id));
     addToCart(product, quantity);
-    toast.success(`Added ${quantity} x ${product.name} to cart!`);
+    if (existingItem) {
+      const newQty = existingItem.quantity + quantity;
+      toast.success(`Updated ${product.name} quantity to ${newQty} in cart!`);
+    } else {
+      toast.success(`Added ${quantity} x ${product.name} to cart!`);
+    }
   };
 
   const handleBuyNow = () => {

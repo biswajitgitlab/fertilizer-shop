@@ -8,9 +8,11 @@ import { QuickReplies } from './QuickReplies';
 import { ChatMessage } from '../../types';
 import { chatApi } from '../../api/chatApi';
 import { AnimatedSparkles, AnimatedCropDoctor } from '../common/AnimatedIcons';
+import { useCart } from '../../hooks/useCart';
 
 export const ChatWidget: React.FC = () => {
   const { chatOpen, toggleChat, setChatOpen } = useUIStore();
+  const { itemCount } = useCart();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "msg-1",
@@ -79,7 +81,7 @@ export const ChatWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
+    <div className={`fixed ${itemCount > 0 ? 'bottom-[128px]' : 'bottom-20'} sm:bottom-6 right-4 sm:right-6 z-40 transition-all duration-300`}>
       
       {/* Floating Trigger Button */}
       <AnimatePresence>

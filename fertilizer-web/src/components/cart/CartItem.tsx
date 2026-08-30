@@ -5,12 +5,35 @@ import { formatCurrency } from '../../utils/formatters';
 import { QuantitySelector } from './QuantitySelector';
 import { useCart } from '../../hooks/useCart';
 
+import toast from 'react-hot-toast';
+
 export const CartItem: React.FC<{ item: CartItemType }> = ({ item }) => {
   const { updateQty, removeItem } = useCart();
   const { product, quantity } = item;
 
   const isOutOfStock = product.stock <= 0;
   const exceedsStock = quantity > product.stock && !isOutOfStock;
+
+  const handleDecrease = () => {
+    if (quantity <= 1) {
+      removeItem(product.id);
+      toast.success(`Removed ${product.name} from cart`);
+    } else {
+      const newQty = quantity - 1;
+      updateQty(product.id, newQty);
+      toast.success(`Updated ${product.name} quantity to ${newQty}`);
+    }
+  };
+
+  const handleIncrease = () => {
+    if (product.stock > 0 && quantity >= product.stock) {
+      toast.error(`Only ${product.stock} units available in stock`);
+      return;
+    }
+    const newQty = quantity + 1;
+    updateQty(product.id, newQty);
+    toast.success(`Updated ${product.name} quantity to ${newQty}`);
+  };
 
   return (
     <div className={`flex items-start gap-3 p-3 bg-white dark:bg-slate-800/90 rounded-2xl border transition-all ${
@@ -69,8 +92,8 @@ export const CartItem: React.FC<{ item: CartItemType }> = ({ item }) => {
 
           <QuantitySelector
             quantity={quantity}
-            onDecrease={() => updateQty(product.id, quantity - 1)}
-            onIncrease={() => updateQty(product.id, quantity + 1)}
+            onDecrease={handleDecrease}
+            onIncrease={handleIncrease}
             max={product.stock}
             size="sm"
           />
