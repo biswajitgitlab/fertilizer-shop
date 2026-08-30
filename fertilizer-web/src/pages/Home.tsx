@@ -32,6 +32,15 @@ const VIBRANT_GREEN_CROPS = "https://images.unsplash.com/photo-1625246333195-78d
 const VIBRANT_VITAMINS = "/images/categories/plant_growth_vitamins.png";
 const VIBRANT_MICRONUTRIENTS = "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=800";
 
+// High-fidelity dedicated service images
+const SERVICE_AI_DOCTOR = "/images/services/ai_crop_doctor_scan.png";
+const SERVICE_SOIL_LAB = "/images/services/soil_water_testing_lab.png";
+const SERVICE_DOORSTEP_DELIVERY = "/images/services/doorstep_fertilizer_delivery.png";
+const SERVICE_DRONE_SPRAY = "/images/services/agri_drone_spraying.png";
+const SERVICE_CROP_CALENDAR = "/images/services/smart_crop_calendar.png";
+const SERVICE_AGRONOMIST_CALL = "/images/services/agronomist_consultation.png";
+
+
 export const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -398,7 +407,7 @@ export const Home: React.FC = () => {
                 <div className="lg:col-span-5 relative">
                   <div className="relative rounded-2xl overflow-hidden border border-emerald-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
                     <img
-                      src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&q=80&w=800"
+                      src={SERVICE_AI_DOCTOR}
                       alt="AI Leaf Disease Scanner"
                       onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_CROP_SPRAY; }}
                       className="w-full h-full object-cover"
@@ -427,7 +436,7 @@ export const Home: React.FC = () => {
               <div className="space-y-4">
                 <div className="relative rounded-2xl overflow-hidden border border-teal-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
-                    src="https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=800"
+                    src={SERVICE_SOIL_LAB}
                     alt="NABL Soil Testing Lab"
                     onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FERTILIZER_SOIL; }}
                     className="w-full h-full object-cover"
@@ -462,7 +471,7 @@ export const Home: React.FC = () => {
               <div className="space-y-4">
                 <div className="relative rounded-2xl overflow-hidden border border-amber-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
-                    src="https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&q=80&w=800"
+                    src={SERVICE_DOORSTEP_DELIVERY}
                     alt="Bulk Fertilizer Delivery at Farm"
                     onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                     className="w-full h-full object-cover"
@@ -497,7 +506,7 @@ export const Home: React.FC = () => {
               <div className="space-y-4">
                 <div className="relative rounded-2xl overflow-hidden border border-sky-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
-                    src="https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+                    src={SERVICE_DRONE_SPRAY}
                     alt="Precision Agricultural Drone Spraying"
                     onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_CROP_SPRAY; }}
                     className="w-full h-full object-cover"
@@ -559,7 +568,7 @@ export const Home: React.FC = () => {
                 <div className="lg:col-span-5 relative">
                   <div className="relative rounded-2xl overflow-hidden border border-teal-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
                     <img
-                      src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800"
+                      src={SERVICE_CROP_CALENDAR}
                       alt="Personalized Crop Spray Calendar"
                       onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_GREEN_CROPS; }}
                       className="w-full h-full object-cover"
@@ -588,7 +597,7 @@ export const Home: React.FC = () => {
               <div className="space-y-4">
                 <div className="relative rounded-2xl overflow-hidden border border-indigo-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
-                    src="https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=800"
+                    src={SERVICE_AGRONOMIST_CALL}
                     alt="Agronomist Doctor Field Consultation"
                     onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                     className="w-full h-full object-cover"
