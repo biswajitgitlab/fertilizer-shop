@@ -46,11 +46,30 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'price' => $price,
+                'price' => (float)$price,
+                'original_price' => (float)($product->price ?? $price),
                 'image' => $product->images_json[0] ?? null,
+                'images' => $product->images_json ?? [],
                 'qty' => $item['qty'],
+                'stock' => $product->stock_qty,
+                'is_out_of_stock' => $product->stock_qty <= 0,
+                'exceeds_stock' => $item['qty'] > $product->stock_qty,
                 'line_total' => $lineTotal,
                 'bundle_id' => $item['bundle_id'] ?? null,
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'price' => (float)$price,
+                    'originalPrice' => (float)($product->price ?? $price),
+                    'stock' => $product->stock_qty,
+                    'category' => $product->category,
+                    'images' => $product->images_json ?? [],
+                    'unit' => $product->unit ?? '1 Pack',
+                    'rating' => $product->rating ?? 5.0,
+                    'reviewsCount' => $product->reviews_count ?? 0,
+                    'suitableCrops' => $product->suitable_crops_json ?? [],
+                ]
             ];
         }
 

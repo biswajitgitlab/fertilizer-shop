@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { CartItem, Product } from '../types';
+import { cartApi } from '../api/cartApi';
 
 interface CartState {
   items: CartItem[];
@@ -9,13 +10,16 @@ interface CartState {
   discountAmount: number;
   isFreeShippingCoupon: boolean;
   addToCart: (product: Product, quantity?: number) => void;
-  updateQty: (productId: string, quantity: number) => void;
-  removeItem: (productId: string) => void;
+  updateQty: (productId: string | number, quantity: number) => void;
+  removeItem: (productId: string | number) => void;
   clearCart: () => void;
   toggleDrawer: () => void;
   setDrawerOpen: (isOpen: boolean) => void;
   applyCoupon: (code: string) => { success: boolean; message: string };
   removeCoupon: () => void;
+  syncWithServer: () => Promise<void>;
+  hasOutOfStockItems: () => boolean;
+  getOutOfStockItems: () => CartItem[];
   // Computed
   getItemCount: () => number;
   getSubtotal: () => number;
@@ -51,7 +55,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   addToCart: (product, quantity = 1) => {
     set((state) => {
-      const existingIndex = state.items.findIndex(item => item.product.id === product.id);
+      const existingIndex = state.items.findIndex(item => String(item.product.id) === String(product.id));
       let newItems: CartItem[];
       if (existingIndex > -1) {
         newItems = [...state.items];
@@ -62,34 +66,100 @@ export const useCartStore = create<CartState>((set, get) => ({
       saveCart(newItems);
       return { items: newItems, isOpen: true };
     });
+
+    if (localStorage.getItem('token')) {
+      cartApi.addToCart(product.id, quantity);
+    }
   },
 
   updateQty: (productId, quantity) => {
     set((state) => {
       if (quantity <= 0) {
-        const newItems = state.items.filter(item => item.product.id !== productId);
+        const newItems = state.items.filter(item => String(item.product.id) !== String(productId));
         saveCart(newItems);
         return { items: newItems };
       }
       const newItems = state.items.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
+        String(item.product.id) === String(productId) ? { ...item, quantity } : item
       );
       saveCart(newItems);
       return { items: newItems };
     });
+
+    if (localStorage.getItem('token')) {
+      if (quantity <= 0) {
+        cartApi.removeCartItem(productId);
+      } else {
+        cartApi.updateCartItem(productId, quantity);
+      }
+    }
   },
 
   removeItem: (productId) => {
     set((state) => {
-      const newItems = state.items.filter(item => item.product.id !== productId);
+      const newItems = state.items.filter(item => String(item.product.id) !== String(productId));
       saveCart(newItems);
       return { items: newItems };
     });
+
+    if (localStorage.getItem('token')) {
+      cartApi.removeCartItem(productId);
+    }
   },
 
   clearCart: () => {
     localStorage.removeItem('krishi_cart');
     set({ items: [], couponCode: '', discountPercent: 0, discountAmount: 0, isFreeShippingCoupon: false });
+    if (localStorage.getItem('token')) {
+      cartApi.clearCart();
+    }
+  },
+
+  syncWithServer: async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const localItems = get().items;
+      const payloadItems = localItems.map(item => ({
+        product_id: item.product.id,
+        qty: item.quantity
+      }));
+
+      const res = await cartApi.syncCart(payloadItems, get().couponCode);
+      if (res && Array.isArray(res.items)) {
+        const serverHydrated: CartItem[] = res.items.map((srvItem: any) => ({
+          product: {
+            id: srvItem.product_id,
+            name: srvItem.name,
+            slug: srvItem.slug || '',
+            price: srvItem.price,
+            originalPrice: srvItem.original_price || srvItem.price,
+            stock: srvItem.stock !== undefined ? srvItem.stock : 99,
+            category: srvItem.product?.category || 'Fertilizer',
+            images: srvItem.images || [srvItem.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449'],
+            unit: srvItem.product?.unit || '1 Pack',
+            rating: srvItem.product?.rating || 5.0,
+            reviewsCount: srvItem.product?.reviewsCount || 0,
+            suitableCrops: srvItem.product?.suitableCrops || []
+          },
+          quantity: srvItem.qty
+        }));
+
+        set({ items: serverHydrated });
+        saveCart(serverHydrated);
+      }
+    } catch (e) {
+      console.error("Cart sync with server error:", e);
+    }
+  },
+
+  hasOutOfStockItems: () => {
+    return get().items.some(item => (item.product.stock <= 0 || item.quantity > item.product.stock));
+  },
+
+  getOutOfStockItems: () => {
+    return get().items.filter(item => (item.product.stock <= 0 || item.quantity > item.product.stock));
   },
 
   toggleDrawer: () => set((state) => ({ isOpen: !state.isOpen })),

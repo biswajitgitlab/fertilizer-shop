@@ -95,7 +95,15 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
+import { useCartStore } from './store/cartStore';
+
 export function App() {
+  React.useEffect(() => {
+    if (localStorage.getItem('token')) {
+      useCartStore.getState().syncWithServer();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
+import { useCartStore } from '../store/cartStore';
 import { User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
@@ -36,6 +37,7 @@ export const Login: React.FC = () => {
     try {
       const res = await authApi.login({ credential, password });
       login(res.user, res.token);
+      await useCartStore.getState().syncWithServer();
       toast.success(`Welcome back, ${res.user.name}!`);
 
       const rawFrom = location.state?.from?.pathname;

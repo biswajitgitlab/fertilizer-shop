@@ -15,7 +15,7 @@ import { PaymentModal } from '../components/checkout/PaymentModal';
 
 export const Checkout: React.FC = () => {
   const navigate = useNavigate();
-  const { items, subtotal, discount, shippingFee, tax, total, clearCart } = useCart();
+  const { items, subtotal, discount, shippingFee, tax, total, clearCart, hasOutOfStockItems } = useCart();
 
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState<ShippingAddress>({
@@ -41,6 +41,12 @@ export const Checkout: React.FC = () => {
   }
 
   const handlePlaceOrder = async () => {
+    if (hasOutOfStockItems) {
+      toast.error("Some items in your cart are out of stock. Please remove them before placing an order.");
+      navigate('/cart');
+      return;
+    }
+
     setIsPlacingOrder(true);
     try {
       const newOrder = await orderApi.createOrder({

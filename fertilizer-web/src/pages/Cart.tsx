@@ -4,7 +4,7 @@ import { useCart } from '../hooks/useCart';
 import { CartItem } from '../components/cart/CartItem';
 import { formatCurrency } from '../utils/formatters';
 import { Button } from '../components/common/Button';
-import { ShoppingBag, Tag, ArrowRight, ShieldCheck, ArrowLeft, Truck, Sparkles, Check } from 'lucide-react';
+import { ShoppingBag, Tag, ArrowRight, ShieldCheck, ArrowLeft, Truck, Sparkles, Check, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Cart: React.FC = () => {
@@ -19,6 +19,9 @@ export const Cart: React.FC = () => {
     couponCode,
     applyCoupon,
     removeCoupon,
+    removeItem,
+    hasOutOfStockItems,
+    getOutOfStockItems,
     freeShippingThreshold
   } = useCart();
 
@@ -104,6 +107,30 @@ export const Cart: React.FC = () => {
         
         {/* Cart Items Column */}
         <div className="lg:col-span-8 space-y-6">
+          {/* OUT OF STOCK WARNING BANNER */}
+          {hasOutOfStockItems && (
+            <div className="p-4 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 rounded-3xl space-y-3 text-rose-900 dark:text-rose-200 shadow-sm">
+              <div className="flex items-start gap-2.5 text-xs sm:text-sm font-bold">
+                <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-black text-rose-950 dark:text-rose-100">Inventory Alert — Unavailable Items in Cart</h4>
+                  <p className="text-xs text-rose-800 dark:text-rose-300 font-medium">
+                    Some items in your cart are currently out of stock or exceed available quantity. Please remove or adjust unavailable items to proceed with checkout.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  getOutOfStockItems().forEach((item) => removeItem(item.product.id));
+                  toast.success("Removed unavailable items from cart");
+                }}
+                className="text-xs font-black text-white bg-rose-600 hover:bg-rose-700 px-4 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+              >
+                Remove Out of Stock Items Now
+              </button>
+            </div>
+          )}
+
           <div className="space-y-3">
             {items.map((item) => (
               <CartItem key={item.product.id} item={item} />
@@ -245,8 +272,13 @@ export const Cart: React.FC = () => {
             </div>
           </div>
 
-          <Button onClick={() => navigate('/checkout')} className="w-full text-base py-3.5" icon={<ArrowRight className="w-5 h-5" />}>
-            Proceed to Checkout ({formatCurrency(total)})
+          <Button
+            onClick={() => navigate('/checkout')}
+            disabled={hasOutOfStockItems}
+            className="w-full text-base py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            icon={<ArrowRight className="w-5 h-5" />}
+          >
+            {hasOutOfStockItems ? "Remove Out of Stock Items to Checkout" : `Proceed to Checkout (${formatCurrency(total)})`}
           </Button>
 
           <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500 dark:text-slate-400">
