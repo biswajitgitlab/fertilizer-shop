@@ -42,6 +42,7 @@ import { Analytics as AdminAnalytics } from './pages/admin/Analytics';
 import { Inventory as AdminInventory } from './pages/admin/Inventory';
 import { Coupons as AdminCoupons } from './pages/admin/Coupons';
 import { Roles as AdminRoles } from './pages/admin/Roles';
+import { UsersPage as AdminUsers } from './pages/admin/Users';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -140,6 +141,7 @@ export function App() {
             <Route path="/admin/inventory" element={<ProtectedRoute adminOnly><AdminInventory /></ProtectedRoute>} />
             <Route path="/admin/coupons" element={<ProtectedRoute adminOnly><AdminCoupons /></ProtectedRoute>} />
             <Route path="/admin/roles" element={<ProtectedRoute adminOnly><AdminRoles /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
 
             {/* Catch all redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />

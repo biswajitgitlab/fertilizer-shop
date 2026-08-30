@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  Sun, Moon
+  Sun, Moon, UserCheck
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -21,9 +21,10 @@ export const Sidebar: React.FC<{
 
   const links = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Staff Management', path: '/admin/users', icon: UserCheck },
+    { name: 'Customer CRM', path: '/admin/customers', icon: Users },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { name: 'Customers', path: '/admin/customers', icon: Users },
     { name: 'Crop Diagnoses', path: '/admin/diagnoses', icon: Stethoscope },
     { name: 'Sales Analytics', path: '/admin/analytics', icon: BarChart2 },
     { name: 'Inventory', path: '/admin/inventory', icon: Warehouse },
@@ -64,7 +65,7 @@ export const Sidebar: React.FC<{
                 {user?.name || 'Administrator'}
               </p>
               <p className={`text-[10px] truncate ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                {user?.email || 'admin@sarkarfertilizer.com'}
+                {user?.email || 'admin@fertilizershop.com'}
               </p>
             </div>
             <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />

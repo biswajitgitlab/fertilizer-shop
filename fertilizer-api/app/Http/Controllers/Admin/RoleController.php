@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -28,7 +28,7 @@ class RoleController extends Controller
     {
         $roles = Cache::remember('admin_roles_list', 1800, function () {
             return Role::with('permissions')->get()->map(function ($role) {
-                $userCount = User::whereHas('roles', function ($q) use ($role) {
+                $userCount = Admin::whereHas('roles', function ($q) use ($role) {
                     $q->where('id', $role->id);
                 })->orWhere('role', $role->name)->count();
 
@@ -134,32 +134,35 @@ class RoleController extends Controller
     }
 
     /**
-     * List admin team members with their roles.
+     * List admin team members with their roles, role permissions, direct permissions, revoked permissions, and combined net effective permissions.
      */
     public function team()
     {
         $team = Cache::remember('admin_team_list', 300, function () {
-            return User::where('role', '!=', 'Customer')
-                ->orWhereHas('roles', function($q) {
-                    $q->where('name', '!=', 'Customer');
-                })
-                ->get()
-                ->map(function ($user) {
-                    $roleNames = $user->getRoleNames()->toArray();
+            return Admin::all()
+                ->map(function ($admin) {
+                    $roleNames = $admin->getRoleNames()->toArray();
                     if (empty($roleNames)) {
-                        $roleNames = [$user->role ?: 'Admin'];
+                        $roleNames = [$admin->role ?: 'Admin'];
                     }
-                    $permissions = $user->getAllPermissions()->pluck('name')->toArray();
+
+                    $directPermissions = $admin->getDirectPermissions()->pluck('name')->toArray();
+                    $rolePermissions = $admin->getPermissionsViaRoles()->pluck('name')->toArray();
+                    $revokedPermissions = $admin->revoked_permissions ?: [];
+                    $effectivePermissions = $admin->getEffectivePermissions();
 
                     return [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'phone' => $user->phone,
-                        'role' => $user->role ?: ($roleNames[0] ?? 'Admin'),
+                        'id' => $admin->id,
+                        'name' => $admin->name,
+                        'email' => $admin->email,
+                        'phone' => $admin->phone,
+                        'role' => $admin->role ?: ($roleNames[0] ?? 'Admin'),
                         'roles' => $roleNames,
-                        'permissions' => $permissions,
-                        'created_at' => $user->created_at,
+                        'role_permissions' => array_values(array_unique($rolePermissions)),
+                        'direct_permissions' => array_values(array_unique($directPermissions)),
+                        'revoked_permissions' => array_values(array_unique($revokedPermissions)),
+                        'permissions' => array_values(array_unique($effectivePermissions)),
+                        'created_at' => $admin->created_at,
                     ];
                 });
         });
@@ -173,20 +176,50 @@ class RoleController extends Controller
     public function assignRole(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:admins,id',
             'role' => 'required|string',
         ]);
 
-        $user = User::findOrFail($request->user_id);
-        $user->syncRoles([$request->role]);
-        $user->update(['role' => $request->role]);
+        $admin = Admin::findOrFail($request->user_id);
+        $admin->syncRoles([$request->role]);
+        $admin->update(['role' => $request->role, 'revoked_permissions' => []]);
 
         $this->clearRoleCache();
 
         return response()->json([
-            'message' => "Role {$request->role} assigned to {$user->name}",
-            'user' => $user
+            'message' => "Role {$request->role} assigned to {$admin->name}",
+            'user' => $admin
+        ]);
+    }
+
+    /**
+     * Assign/update custom user permissions.
+     */
+    public function updateUserPermissions(Request $request, $id)
+    {
+        $request->validate([
+            'permissions' => 'required|array',
+        ]);
+
+        $admin = Admin::findOrFail($id);
+        $targetAllowed = array_values(array_unique($request->permissions));
+
+        $rolePermissions = $admin->getPermissionsViaRoles()->pluck('name')->toArray();
+
+        $revoked = array_values(array_diff($rolePermissions, $targetAllowed));
+        $extraDirect = array_values(array_diff($targetAllowed, $rolePermissions));
+
+        $admin->syncPermissions($extraDirect);
+        $admin->update(['revoked_permissions' => $revoked]);
+
+        $this->clearRoleCache();
+
+        return response()->json([
+            'message' => "Custom permissions updated for staff member {$admin->name}",
+            'role_permissions' => $rolePermissions,
+            'direct_permissions' => $extraDirect,
+            'revoked_permissions' => $revoked,
+            'effective_permissions' => $admin->getEffectivePermissions(),
         ]);
     }
 }
-

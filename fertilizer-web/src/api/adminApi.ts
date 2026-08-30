@@ -650,6 +650,39 @@ export const adminApi = {
     } catch (e) {
       return { message: `Assigned ${role}` };
     }
+  },
+  updateUserPermissions: async (userId: number | string, permissions: string[]) => {
+    try {
+      const res = await apiClient.put(`/admin/team/${userId}/permissions`, { permissions });
+      return res.data;
+    } catch (e) {
+      return { message: 'Custom user permissions updated', direct_permissions: permissions };
+    }
+  },
+  getUsers: async (params?: { search?: string; role?: string; status?: string; page?: number }) => {
+    try {
+      const res = await apiClient.get('/admin/users', { params });
+      return res.data;
+    } catch (e) {
+      console.warn("Failed to fetch users list, using empty response:", e);
+      return { users: { data: [] }, stats: { total_users: 0, staff_count: 0, customers_count: 0, unverified_count: 0 } };
+    }
+  },
+  createUser: async (userData: any) => {
+    const res = await apiClient.post('/admin/users', userData);
+    return res.data;
+  },
+  getUserDetails: async (id: number | string) => {
+    const res = await apiClient.get(`/admin/users/${id}`);
+    return res.data;
+  },
+  updateUser: async (id: number | string, userData: any) => {
+    const res = await apiClient.put(`/admin/users/${id}`, userData);
+    return res.data;
+  },
+  deleteUser: async (id: number | string) => {
+    const res = await apiClient.delete(`/admin/users/${id}`);
+    return res.data;
   }
 };
 

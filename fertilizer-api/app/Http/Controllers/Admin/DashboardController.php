@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Admin;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -27,9 +28,7 @@ class DashboardController extends Controller
             $totalOrders = Order::count();
 
             // New Customers (This Month)
-            $newCustomers = User::whereHas('roles', function($q) {
-                $q->where('name', 'Customer');
-            })->where('created_at', '>=', $thisMonth)->count();
+            $newCustomers = User::where('created_at', '>=', $thisMonth)->count();
 
             // Low Stock Count (< 10)
             $lowStockCount = Product::where('stock_qty', '<', 10)->count();

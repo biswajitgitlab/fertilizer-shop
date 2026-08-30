@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
-import { ShieldCheck, Plus, Check, Save, UserCheck, Key, Sparkles } from 'lucide-react';
+import { ShieldCheck, Plus, Check, Save, UserCheck, Key, Sparkles, SlidersHorizontal, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface RoleData {
@@ -24,6 +24,8 @@ interface TeamMember {
   name: string;
   email: string;
   role: string;
+  role_permissions?: string[];
+  direct_permissions?: string[];
   permissions?: string[];
 }
 
@@ -35,11 +37,16 @@ export const Roles: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<RoleData | null>(null);
   const [activeTab, setActiveTab] = useState<'matrix' | 'team'>('matrix');
 
-  // Modal / Form state
+  // Modal / Form state for Roles
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState('');
   const [newRolePerms, setNewRolePerms] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Modal / Form state for Per-User Direct Permissions
+  const [selectedUserForPerms, setSelectedUserForPerms] = useState<TeamMember | null>(null);
+  const [userDirectPerms, setUserDirectPerms] = useState<string[]>([]);
+  const [showUserPermsModal, setShowUserPermsModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -134,6 +141,34 @@ export const Roles: React.FC = () => {
     }
   };
 
+  const handleOpenUserPermsModal = (member: TeamMember) => {
+    setSelectedUserForPerms(member);
+    // Initialize with current net allowed effective permissions for this user
+    setUserDirectPerms(member.permissions || []);
+    setShowUserPermsModal(true);
+  };
+
+  const handleToggleUserDirectPerm = (permName: string) => {
+    setUserDirectPerms(prev =>
+      prev.includes(permName) ? prev.filter(p => p !== permName) : [...prev, permName]
+    );
+  };
+
+  const handleSaveUserDirectPerms = async () => {
+    if (!selectedUserForPerms) return;
+    setIsSaving(true);
+    try {
+      await adminApi.updateUserPermissions(selectedUserForPerms.id, userDirectPerms);
+      toast.success(`Custom permissions updated for ${selectedUserForPerms.name}!`);
+      setShowUserPermsModal(false);
+      fetchData();
+    } catch (e) {
+      toast.error("Failed to update custom permissions.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Group permissions by module category safely
   const safePermissions = Array.isArray(permissions) ? permissions : [];
   const groupedPermissions = safePermissions.reduce((acc, perm) => {
@@ -152,10 +187,10 @@ export const Roles: React.FC = () => {
           <div className="min-w-0">
             <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
               <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="truncate">Role-Based Access Control (RBAC)</span>
+              <span className="truncate">Role &amp; Per-User Access Control</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Configure fine-grained permissions across store management, inventory, orders, diagnoses &amp; analytics.
+              Assign core roles and configure custom user-specific direct permission overrides for individual team members.
             </p>
           </div>
 
@@ -178,7 +213,7 @@ export const Roles: React.FC = () => {
                   : 'bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800'
               }`}
             >
-              Team Staff ({team.length})
+              Team Staff &amp; Custom Overrides ({team.length})
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
@@ -233,11 +268,11 @@ export const Roles: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4 min-w-0">
               <div className="min-w-0">
                 <h3 className="text-lg font-black text-slate-900 dark:text-white flex flex-wrap items-center gap-2">
-                  <span>Permission Matrix for:</span>
+                  <span>Permission Matrix for Role:</span>
                   <span className="text-emerald-600 dark:text-emerald-400 truncate">{selectedRole.name}</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Check or uncheck individual permission capabilities below to tailor access rights for this role.
+                  Check or uncheck individual permission capabilities below to tailor access rights for this base role.
                 </p>
               </div>
 
@@ -292,58 +327,202 @@ export const Roles: React.FC = () => {
           </div>
         )}
 
-        {/* Team Roster Tab */}
+        {/* Team Roster Tab with Custom Direct User Permissions */}
         {activeTab === 'team' && (
           <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl overflow-hidden">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between min-w-0">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
                 <UserCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="truncate">Administrative Team &amp; Staff Roster</span>
+                <span className="truncate">Staff Roster &amp; Custom Direct Permissions</span>
               </h3>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+              <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Staff Name</th>
-                    <th className="py-3.5 px-4">Email Address</th>
+                    <th className="py-3.5 px-4">Staff Member</th>
                     <th className="py-3.5 px-4">Assigned Role</th>
+                    <th className="py-3.5 px-4">Role Permissions</th>
+                    <th className="py-3.5 px-4">Custom Direct Permissions</th>
                     <th className="py-3.5 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200 font-medium">
-                  {team.map((member) => (
-                    <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center font-bold shrink-0">
-                          {member.name[0]}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 dark:text-white truncate">{member.name}</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{member.email}</p>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-semibold">{member.email}</td>
-                      <td className="py-3.5 px-4">
-                        <span className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider inline-block truncate max-w-[150px]">
-                          {member.role}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <select
-                          value={member.role}
-                          onChange={(e) => handleAssignUserRole(member.id, e.target.value)}
-                          className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 rounded-xl px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer max-w-[160px] truncate"
-                        >
-                          {roles.map((r) => (
-                            <option key={r.id} value={r.name} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{r.name}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
+                  {team.map((member) => {
+                    const directCount = (member.direct_permissions || []).length;
+                    const roleCount = (member.role_permissions || member.permissions || []).length;
+
+                    return (
+                      <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center font-bold shrink-0">
+                            {member.name[0]}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 dark:text-white truncate">{member.name}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{member.email}</p>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider inline-block truncate max-w-[150px]">
+                            {member.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                            {roleCount} Inherited Perms
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {directCount > 0 ? (
+                            <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                              <SlidersHorizontal className="w-3 h-3" />
+                              {directCount} Custom Direct Override{directCount > 1 ? 's' : ''}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">None (Uses Role Default)</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 flex items-center gap-2">
+                          <select
+                            value={member.role}
+                            onChange={(e) => handleAssignUserRole(member.id, e.target.value)}
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 rounded-xl px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer max-w-[140px] truncate"
+                          >
+                            {roles.map((r) => (
+                              <option key={r.id} value={r.name} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{r.name}</option>
+                            ))}
+                          </select>
+
+                          <button
+                            onClick={() => handleOpenUserPermsModal(member)}
+                            className="bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700"
+                            title="Customize individual permissions for this specific user"
+                          >
+                            <SlidersHorizontal className="w-3.5 h-3.5" />
+                            <span>Custom Perms</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Custom Per-User Direct Permissions Override */}
+        {showUserPermsModal && selectedUserForPerms && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 min-w-0">
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
+                    <SlidersHorizontal className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="truncate">Custom Direct Permissions for: {selectedUserForPerms.name}</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Assigned Role: <strong className="text-emerald-600 dark:text-emerald-400">{selectedUserForPerms.role}</strong>. Select specific permissions below to override or extend permissions for this user.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowUserPermsModal(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold shrink-0 p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Categorized Permissions Grid for User */}
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                {Object.entries(groupedPermissions).map(([category, perms]) => (
+                  <div key={category} className="bg-slate-50/80 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/60 space-y-3">
+                    <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">{category} Capabilities</h4>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {(perms as PermissionItem[]).map((perm) => {
+                        const isRoleDefault = (selectedUserForPerms.role_permissions || []).includes(perm.name);
+                        const isAllowed = userDirectPerms.includes(perm.name);
+                        const isRevoked = isRoleDefault && !isAllowed;
+                        const isExtraGranted = !isRoleDefault && isAllowed;
+
+                        return (
+                          <label
+                            key={perm.id}
+                            className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all cursor-pointer min-w-0 ${
+                              isRevoked
+                                ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300'
+                                : isExtraGranted
+                                ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-200'
+                                : isAllowed
+                                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-500/30 text-emerald-900 dark:text-emerald-300'
+                                : 'bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800/60 text-slate-500 dark:text-slate-400 opacity-60 hover:opacity-100'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isAllowed}
+                              onChange={() => handleToggleUserDirectPerm(perm.name)}
+                              className={`w-4 h-4 rounded border-slate-300 dark:border-slate-700 cursor-pointer shrink-0 ${
+                                isRevoked
+                                  ? 'text-rose-600 focus:ring-rose-500'
+                                  : 'text-emerald-600 focus:ring-emerald-500'
+                              }`}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-bold truncate flex items-center justify-between gap-1">
+                                <span className="truncate">{perm.label}</span>
+                                {isRevoked ? (
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 shrink-0">
+                                    Revoked / Blocked
+                                  </span>
+                                ) : isExtraGranted ? (
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 shrink-0">
+                                    Extra Granted
+                                  </span>
+                                ) : isRoleDefault ? (
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 shrink-0">
+                                    Role Default
+                                  </span>
+                                ) : null}
+                              </p>
+                              <p className="text-[10px] opacity-75 font-mono truncate">{perm.name}</p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {userDirectPerms.length} custom direct override permission(s) selected for {selectedUserForPerms.name}.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserPermsModal(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveUserDirectPerms}
+                    disabled={isSaving}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isSaving ? 'Saving...' : 'Save User Custom Overrides'}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

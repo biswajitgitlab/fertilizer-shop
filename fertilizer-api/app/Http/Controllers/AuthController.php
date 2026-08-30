@@ -3,18 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Admin;
 use App\Jobs\SendWelcomeEmailJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    // POST /api/auth/register
+    // POST /api/auth/register (Storefront Customer Sign-up ONLY)
     public function register(Request $request)
     {
+        // 1. Normalize input parameters
+        if ($request->has('email')) {
+            $request->merge(['email' => strtolower(trim($request->input('email')))]);
+        }
+        if ($request->has('phone')) {
+            $request->merge(['phone' => trim($request->input('phone'))]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|unique:users,phone',
@@ -24,28 +35,56 @@ class AuthController extends Controller
             'farm_size_acres' => 'nullable|numeric',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['role'] = 'Customer';
-        
-        $user = User::create($validated);
-        $user->assignRole('Customer');
+        $normalizedEmail = $validated['email'];
+        $normalizedPhone = $validated['phone'];
 
-        // Dispatch Welcome Email Job to Redis Queue (Async background execution)
-        SendWelcomeEmailJob::dispatch($user);
+        // 2. Redis Distributed Lock
+        $lockKey = 'user_reg_lock_' . md5($normalizedEmail . '_' . $normalizedPhone);
+        $lock = Cache::lock($lockKey, 5);
 
-        // Mock SMS logic
-        $otp = '1234'; // In real life: rand(100000, 999999);
-        Cache::put('otp_' . $user->phone, $otp, now()->addMinutes(10));
-        Log::info("Mock SMS sent to {$user->phone} with OTP: {$otp}");
+        if (!$lock->get()) {
+            return response()->json([
+                'message' => 'Registration is already in progress for this account. Please wait a moment.'
+            ], 429);
+        }
 
-        // Temporary token just to let them proceed to OTP verification or wait until they verify
-        $tempToken = $user->createToken('temp_token', ['verify-otp'])->plainTextToken;
+        try {
+            // 3. Create Storefront Customer Account
+            $user = DB::transaction(function () use ($validated) {
+                $validated['password'] = Hash::make($validated['password']);
+                $validated['role'] = 'Customer';
+                
+                return User::create($validated);
+            });
 
-        return response()->json([
-            'message' => 'User created successfully. OTP sent to phone.',
-            'user' => $user,
-            'temp_token' => $tempToken
-        ], 201);
+            // Dispatch Welcome Email Job
+            SendWelcomeEmailJob::dispatch($user);
+
+            // Mock SMS logic
+            $otp = '1234';
+            Cache::put('otp_' . $user->phone, $otp, now()->addMinutes(10));
+            Log::info("Mock SMS sent to {$user->phone} with OTP: {$otp}");
+
+            $tempToken = $user->createToken('temp_token', ['verify-otp'])->plainTextToken;
+
+            return response()->json([
+                'message' => 'Customer account created successfully. OTP sent to phone.',
+                'user' => $user,
+                'temp_token' => $tempToken
+            ], 201);
+        } catch (QueryException $e) {
+            Log::warning("Duplicate customer registration blocked: " . $e->getMessage());
+            return response()->json([
+                'message' => 'An account with this email address or phone number already exists.',
+                'errors' => [
+                    'email' => ['An account with this email address or phone number already exists.']
+                ]
+            ], 422);
+        } finally {
+            try {
+                $lock->release();
+            } catch (\Exception $e) {}
+        }
     }
 
     // POST /api/auth/verify-otp
@@ -70,7 +109,6 @@ class AuthController extends Controller
         
         Cache::forget('otp_' . $request->phone);
 
-        // Revoke temp tokens
         $user->tokens()->where('name', 'temp_token')->delete();
 
         $token = $user->createToken('access_token')->plainTextToken;
@@ -82,30 +120,36 @@ class AuthController extends Controller
         ]);
     }
 
-    // POST /api/auth/login
+    // POST /api/auth/login (Unified Login for both Admins and Customers)
     public function login(Request $request)
     {
         $request->validate([
-            'login' => 'required|string', // can be phone or email
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        $user = User::where($loginField, $request->login)->first();
+        // 1. Check Admin model first
+        $account = Admin::where($loginField, $request->login)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        // 2. If not admin, check Customer User model
+        if (!$account) {
+            $account = User::where($loginField, $request->login)->first();
+        }
+
+        if (!$account || !Hash::check($request->password, $account->password)) {
             throw ValidationException::withMessages([
                 'login' => ['Invalid credentials.'],
             ]);
         }
 
-        $token = $user->createToken('access_token')->plainTextToken;
+        $token = $account->createToken('access_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Logged in successfully.',
             'access_token' => $token,
-            'user' => $user
+            'user' => $account
         ]);
     }
 

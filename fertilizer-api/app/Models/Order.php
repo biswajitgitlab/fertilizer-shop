@@ -20,9 +20,20 @@ class Order extends Model
         'billing_address_json' => 'array',
     ];
 
+    /**
+     * Relationship to Customer (User model)
+     */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Alias relationship to Customer for expressive domain code
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function items(): HasMany
