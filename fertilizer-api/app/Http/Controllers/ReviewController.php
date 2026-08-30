@@ -6,32 +6,51 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ReviewController extends Controller
 {
     /**
-     * Get reviews and rating summary for a product
+     * Get reviews and rating summary for a product (Cached in Redis)
      * GET /api/products/{id}/reviews
      */
     public function index(Request $request, $productId)
     {
         $product = Product::findOrFail($productId);
-        
-        $reviews = ProductReview::with('user:id,name')
-            ->where('product_id', $product->id)
-            ->latest()
-            ->get();
 
-        $totalReviews = $reviews->count();
-        $avgRating = $totalReviews > 0 ? round($reviews->avg('rating'), 1) : 0.0;
+        $summary = Cache::remember("product_{$product->id}_reviews_summary", 600, function () use ($product) {
+            $reviews = ProductReview::with('user:id,name')
+                ->where('product_id', $product->id)
+                ->latest()
+                ->get();
 
-        $ratingCounts = [
-            5 => $reviews->where('rating', 5)->count(),
-            4 => $reviews->where('rating', 4)->count(),
-            3 => $reviews->where('rating', 3)->count(),
-            2 => $reviews->where('rating', 2)->count(),
-            1 => $reviews->where('rating', 1)->count(),
-        ];
+            $totalReviews = $reviews->count();
+            $avgRating = $totalReviews > 0 ? round($reviews->avg('rating'), 1) : 0.0;
+
+            $ratingCounts = [
+                5 => $reviews->where('rating', 5)->count(),
+                4 => $reviews->where('rating', 4)->count(),
+                3 => $reviews->where('rating', 3)->count(),
+                2 => $reviews->where('rating', 2)->count(),
+                1 => $reviews->where('rating', 1)->count(),
+            ];
+
+            return [
+                'average_rating' => $avgRating,
+                'total_reviews' => $totalReviews,
+                'rating_counts' => $ratingCounts,
+                'reviews' => $reviews->map(function ($review) {
+                    return [
+                        'id' => $review->id,
+                        'user_name' => $review->user ? $review->user->name : 'Farmer Customer',
+                        'rating' => $review->rating,
+                        'comment' => $review->comment,
+                        'verified_purchase' => (bool) $review->verified_purchase,
+                        'created_at' => $review->created_at ? $review->created_at->format('M d, Y') : now()->format('M d, Y'),
+                    ];
+                })->toArray()
+            ];
+        });
 
         $userId = auth()->id() ?? 1; // Default active demo user
         
@@ -59,23 +78,14 @@ class ReviewController extends Controller
         }
 
         return response()->json([
-            'average_rating' => $avgRating,
-            'total_reviews' => $totalReviews,
-            'rating_counts' => $ratingCounts,
+            'average_rating' => $summary['average_rating'],
+            'total_reviews' => $summary['total_reviews'],
+            'rating_counts' => $summary['rating_counts'],
             'user_can_review' => $userCanReview,
             'already_reviewed' => $alreadyReviewed,
             'has_delivered_order' => $hasDeliveredOrder,
             'eligibility_reason' => $eligibilityReason,
-            'reviews' => $reviews->map(function ($review) {
-                return [
-                    'id' => $review->id,
-                    'user_name' => $review->user ? $review->user->name : 'Farmer Customer',
-                    'rating' => $review->rating,
-                    'comment' => $review->comment,
-                    'verified_purchase' => (bool) $review->verified_purchase,
-                    'created_at' => $review->created_at ? $review->created_at->format('M d, Y') : now()->format('M d, Y'),
-                ];
-            })
+            'reviews' => $summary['reviews']
         ]);
     }
 
@@ -117,6 +127,10 @@ class ReviewController extends Controller
             'comment' => $request->comment,
             'verified_purchase' => true,
         ]);
+
+        // Invalidate Redis cache to ensure new review is visible immediately
+        Cache::forget("product_{$product->id}_reviews_summary");
+        Cache::forget("product_{$product->slug}");
 
         return response()->json([
             'status' => 'success',
