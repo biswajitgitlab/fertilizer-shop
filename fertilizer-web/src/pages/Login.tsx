@@ -39,7 +39,7 @@ export const Login: React.FC = () => {
       toast.success(`Welcome back, ${res.user.name}!`);
 
       const rawFrom = location.state?.from?.pathname;
-      const targetPath = (rawFrom === '/checkout' || rawFrom === '/cart') ? rawFrom : '/profile';
+      const targetPath = (rawFrom && rawFrom !== '/login' && rawFrom !== '/register') ? rawFrom : '/';
       navigate(targetPath, { replace: true });
     } catch (err: any) {
       if (err.response?.status === 429) {
