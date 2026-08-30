@@ -141,9 +141,9 @@ export const TrendingProductsSection: React.FC = () => {
 
         {/* Grid Display */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 relative z-10">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="bg-slate-200/70 dark:bg-slate-800/70 rounded-3xl h-80 animate-pulse border border-slate-300/40 dark:border-slate-700/40" />
+              <div key={n} className="bg-slate-200/70 dark:bg-slate-800/70 rounded-2xl sm:rounded-3xl h-64 sm:h-80 animate-pulse border border-slate-300/40 dark:border-slate-700/40" />
             ))}
           </div>
         ) : (
@@ -154,7 +154,7 @@ export const TrendingProductsSection: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10"
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 relative z-10"
             >
               {filteredTrending.map((product, idx) => {
                 const rank = getRankBadge(idx, product.viewsCount);

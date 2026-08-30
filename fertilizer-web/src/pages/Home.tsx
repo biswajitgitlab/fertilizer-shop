@@ -403,9 +403,9 @@ export const Home: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Card 1 Visual Image Thumbnail */}
-                <div className="lg:col-span-5 relative">
-                  <div className="relative rounded-2xl overflow-hidden border border-emerald-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
+                {/* Card 1 Visual Image Thumbnail - Visible on Mobile & Desktop */}
+                <div className="lg:col-span-5 relative w-full">
+                  <div className="relative rounded-2xl overflow-hidden border border-emerald-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-16/10 sm:aspect-16/10 lg:aspect-square">
                     <img
                       src={SERVICE_AI_DOCTOR}
                       alt="AI Leaf Disease Scanner"
@@ -434,6 +434,7 @@ export const Home: React.FC = () => {
             {/* Bento Card 2: Soil Testing Lab */}
             <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-teal-200/80 dark:border-teal-500/30 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-teal-400 transition-all duration-300 shadow-xl">
               <div className="space-y-4">
+                {/* Card Image Thumbnail - Visible on Mobile & Desktop */}
                 <div className="relative rounded-2xl overflow-hidden border border-teal-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
                     src={SERVICE_SOIL_LAB}
@@ -469,6 +470,7 @@ export const Home: React.FC = () => {
             {/* Bento Card 3: Bulk Farm Doorstep Delivery */}
             <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-amber-200/80 dark:border-amber-500/30 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-amber-400 transition-all duration-300 shadow-xl">
               <div className="space-y-4">
+                {/* Card Image Thumbnail - Visible on Mobile & Desktop */}
                 <div className="relative rounded-2xl overflow-hidden border border-amber-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
                     src={SERVICE_DOORSTEP_DELIVERY}
@@ -504,6 +506,7 @@ export const Home: React.FC = () => {
             {/* Bento Card 4: Precision Agri Drone Spray Booking */}
             <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-sky-200/80 dark:border-sky-500/30 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-sky-400 transition-all duration-300 shadow-xl">
               <div className="space-y-4">
+                {/* Card Image Thumbnail - Visible on Mobile & Desktop */}
                 <div className="relative rounded-2xl overflow-hidden border border-sky-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
                     src={SERVICE_DRONE_SPRAY}
@@ -564,9 +567,9 @@ export const Home: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Card 5 Visual Image Thumbnail */}
-                <div className="lg:col-span-5 relative">
-                  <div className="relative rounded-2xl overflow-hidden border border-teal-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-4/3 sm:aspect-16/10 lg:aspect-square">
+                {/* Card 5 Visual Image Thumbnail - Visible on Mobile & Desktop */}
+                <div className="lg:col-span-5 relative w-full">
+                  <div className="relative rounded-2xl overflow-hidden border border-teal-400/40 shadow-2xl group-hover:scale-[1.02] transition-transform duration-500 aspect-16/10 sm:aspect-16/10 lg:aspect-square">
                     <img
                       src={SERVICE_CROP_CALENDAR}
                       alt="Personalized Crop Spray Calendar"
@@ -595,6 +598,7 @@ export const Home: React.FC = () => {
             {/* Bento Card 6: 1-on-1 Agronomist Call */}
             <div className="rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-slate-950/80 border border-indigo-200/80 dark:border-indigo-500/30 backdrop-blur-xl flex flex-col justify-between space-y-5 group hover:border-indigo-400 transition-all duration-300 shadow-xl">
               <div className="space-y-4">
+                {/* Card Image Thumbnail - Visible on Mobile & Desktop */}
                 <div className="relative rounded-2xl overflow-hidden border border-indigo-500/30 aspect-16/9 group-hover:scale-[1.02] transition-transform duration-500">
                   <img
                     src={SERVICE_AGRONOMIST_CALL}
@@ -708,7 +712,7 @@ export const Home: React.FC = () => {
           </div>
 
           {featured.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {featured.map((prod) => (
                 <ProductCard key={prod.id} product={prod} />
               ))}
