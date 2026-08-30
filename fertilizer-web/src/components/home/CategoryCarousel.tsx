@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Sprout, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Category } from '../../types';
@@ -93,18 +92,16 @@ export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories, 
         {categories.map((cat) => {
           const imgUrl = getCategoryImage(cat.name, cat.icon || cat.image);
           return (
-            <motion.div
+            <div
               key={cat.id}
-              whileHover={{ y: -4, scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
               onClick={() => navigate(`/products?category=${cat.slug}`)}
-              className="snap-start shrink-0 w-[calc(100%-1.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-400 transition-all duration-300 shadow-xl cursor-pointer group"
+              className="snap-start shrink-0 w-[calc(100%-1.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-400 transition-colors duration-200 shadow-xl cursor-pointer group"
             >
               <div className="relative aspect-[16/10] overflow-hidden bg-slate-800">
                 <img
                   src={imgUrl}
                   alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-105 contrast-105"
+                  className="w-full h-full object-cover brightness-105 contrast-105"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 dark:opacity-80" />
@@ -119,10 +116,10 @@ export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories, 
                 </h3>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
                   <span>Browse catalog</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </p>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
