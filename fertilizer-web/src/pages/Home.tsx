@@ -89,7 +89,7 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <PageTransition className="space-y-0 pb-0 bg-slate-950 text-slate-900 font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <PageTransition className="space-y-0 pb-0 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
       {/* ─── 1. LIQUID GLASS HERO SECTION ─── */}
       <section
@@ -217,71 +217,70 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
-      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-slate-950 border-y border-white/10 relative overflow-hidden">
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white/90 dark:bg-slate-950 border-y border-emerald-200/60 dark:border-white/10 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 text-xs text-emerald-400 font-black uppercase tracking-wider bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                <AnimatedSprout size={14} className="text-emerald-400" />
+              <div className="inline-flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-wider bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                <AnimatedSprout size={14} className="text-emerald-600 dark:text-emerald-400" />
                 <span>Smart Crop Advisory Grid</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Select Your Crop for Customized Care &amp; Inputs
               </h2>
             </div>
-            <p className="text-xs text-slate-400 font-medium max-w-sm">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium max-w-sm">
               Click any crop to discover tailored NPK schedules, pest control sprays, and high-yield fertilizers.
             </p>
           </div>
 
-          {/* Touch-Friendly Horizontal Scroll Crop Selector Grid (Fixed trailing scroll truncation) */}
+          {/* Touch-Friendly Horizontal Scroll Crop Selector Grid */}
           <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin scrollbar-thumb-emerald-500/30 scrollbar-track-transparent">
             {[
-              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30" },
-              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/20 to-yellow-500/20 border-amber-500/30" },
-              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/20 to-red-500/20 border-rose-500/30" },
-              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/20 to-blue-500/20 border-sky-500/30" },
-              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/20 to-green-600/20 border-emerald-600/30" },
-              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/20 to-orange-600/20 border-amber-600/30" },
-              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/20 to-rose-600/20 border-red-600/30" },
-              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/20 to-amber-500/20 border-yellow-500/30" },
+              { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/10 to-teal-500/10 border-emerald-300 dark:border-emerald-500/30" },
+              { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/10 to-yellow-500/10 border-amber-300 dark:border-amber-500/30" },
+              { name: "Tomato", query: "Tomato", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&auto=format&fit=crop&q=80", color: "from-rose-500/10 to-red-500/10 border-rose-300 dark:border-rose-500/30" },
+              { name: "Cotton", query: "Cotton", img: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&auto=format&fit=crop&q=80", color: "from-sky-500/10 to-blue-500/10 border-sky-300 dark:border-sky-500/30" },
+              { name: "Sugarcane", query: "Sugarcane", img: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=300&auto=format&fit=crop&q=80", color: "from-emerald-600/10 to-green-600/10 border-emerald-300 dark:border-emerald-600/30" },
+              { name: "Potato", query: "Potato", img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&auto=format&fit=crop&q=80", color: "from-amber-600/10 to-orange-600/10 border-amber-300 dark:border-amber-600/30" },
+              { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/10 to-rose-600/10 border-red-300 dark:border-red-600/30" },
+              { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/10 to-amber-500/10 border-yellow-300 dark:border-yellow-500/30" },
             ].map((crop, idx) => (
               <motion.button
                 key={idx}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
-                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-lg transition-all active:scale-95`}
+                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-md transition-all active:scale-95`}
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/20">
+                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-white/20">
                   <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="text-left">
-                  <span className="text-xs font-black text-white block leading-snug whitespace-nowrap">{crop.name}</span>
-                  <span className="text-[10px] text-emerald-400 font-bold whitespace-nowrap">View Recommended</span>
+                  <span className="text-xs font-black text-slate-900 dark:text-white block leading-snug whitespace-nowrap">{crop.name}</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold whitespace-nowrap">View Recommended</span>
                 </div>
               </motion.button>
             ))}
-            {/* Trailing padding element so the last items are NEVER cut off when scrolled to the end */}
             <div className="w-6 shrink-0" aria-hidden="true" />
           </div>
         </div>
       </section>
 
-      {/* ─── 2. VISUAL PHOTO BANNER GRID (VISUAL RECOGNITION FOR ALL USERS) ─── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900">
+      {/* ─── 2. VISUAL PHOTO BANNER GRID ─── */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 space-y-1">
-            <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Visual Quick Categories
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white">Click any picture below to see products</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Click any picture below to see products</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {/* Visual Card 1: Fertilizers */}
-            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
               <img
                 src={VIBRANT_FERTILIZER_SOIL}
                 alt="Fertilizers"
@@ -297,7 +296,7 @@ export const Home: React.FC = () => {
             </Link>
 
             {/* Visual Card 2: Pesticides */}
-            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
               <img
                 src={VIBRANT_CROP_SPRAY}
                 alt="Pesticides"
@@ -313,7 +312,7 @@ export const Home: React.FC = () => {
             </Link>
 
             {/* Visual Card 3: Organic Compost */}
-            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
               <img
                 src={VIBRANT_ORGANIC_COMPOST}
                 alt="Organic Bio Compost"
@@ -329,7 +328,7 @@ export const Home: React.FC = () => {
             </Link>
 
             {/* Visual Card 4: Seeds */}
-            <Link to="/products?category=seeds-tools" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-white/20 shadow-xl">
+            <Link to="/products?category=seeds-tools" className="group relative rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-xl">
               <img
                 src={VIBRANT_SEEDS}
                 alt="High Yield Seeds"
@@ -349,34 +348,34 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 3. BENTO GRID HIGHLIGHTS ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-950 relative">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Smart Platform Services
             </span>
-            <h2 className="text-3xl font-black text-white">Agriculture Services Built for Maximum Yield</h2>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white">Agriculture Services Built for Maximum Yield</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Bento Card 1: AI Clinic */}
-            <div className="md:col-span-2 rounded-3xl p-8 bg-gradient-to-br from-emerald-900/40 to-slate-900/60 border border-emerald-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-emerald-400/50 transition-all">
+            <div className="md:col-span-2 rounded-3xl p-8 bg-white/90 dark:bg-gradient-to-br dark:from-emerald-900/40 dark:to-slate-900/60 border border-emerald-300/80 dark:border-emerald-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-emerald-400 transition-all shadow-xl">
               <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all" />
               <div className="space-y-3 relative z-10">
-                <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-400 font-bold">
-                  <AnimatedCropDoctor size={24} className="text-emerald-400" />
+                <div className="w-12 h-12 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
+                  <AnimatedCropDoctor size={24} className="text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Instant AI Disease Diagnostics</span>
-                <h3 className="text-2xl font-black text-white">Scan Leaf Diseases &amp; Get Treatment Recommendations</h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                <span className="text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">Instant AI Disease Diagnostics</span>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">Scan Leaf Diseases &amp; Get Treatment Recommendations</h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
                   Upload photos of affected leaves or stems. Our AI detects over 150 crop diseases and suggests verified treatments.
                 </p>
               </div>
               <div className="pt-4 relative z-10">
                 <Link
                   to={isAuthenticated ? "/diagnose" : "/login"}
-                  className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
+                  className="inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
                 >
                   <span>Test AI Doctor Now</span>
                   <ArrowRight className="w-4 h-4" />
@@ -385,59 +384,59 @@ export const Home: React.FC = () => {
             </div>
 
             {/* Bento Card 2: 100% Genuine Lab Guarantee */}
-            <div className="rounded-3xl p-8 bg-slate-900/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-teal-400/40 transition-all">
+            <div className="rounded-3xl p-8 bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-teal-400/40 transition-all shadow-xl">
               <div className="space-y-3">
-                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-400 font-bold">
-                  <AnimatedShield size={24} className="text-teal-400" />
+                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold">
+                  <AnimatedShield size={24} className="text-teal-600 dark:text-teal-400" />
                 </div>
-                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">Government Verified</span>
-                <h3 className="text-xl font-black text-white">100% Lab-Tested Inputs</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400 tracking-wider">Government Verified</span>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">100% Lab-Tested Inputs</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Every batch of NPK, Urea, and insecticides undergoes strict NABL quality testing before dispatch.
                 </p>
               </div>
               <div className="pt-2">
-                <span className="text-emerald-400 text-xs font-bold flex items-center gap-1.5">
+                <span className="text-emerald-700 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5">
                   <Zap className="w-4 h-4" /> Zero Adulteration Guarantee
                 </span>
               </div>
             </div>
 
             {/* Bento Card 3: Free Farm Doorstep Delivery */}
-            <div className="rounded-3xl p-8 bg-slate-900/80 border border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-amber-400/40 transition-all">
+            <div className="rounded-3xl p-8 bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 backdrop-blur-xl flex flex-col justify-between space-y-6 group hover:border-amber-400/40 transition-all shadow-xl">
               <div className="space-y-3">
-                <div className="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-400 font-bold">
-                  <AnimatedTruck size={24} className="text-amber-400" />
+                <div className="w-12 h-12 bg-amber-500/20 border border-amber-400/30 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold">
+                  <AnimatedTruck size={24} className="text-amber-600 dark:text-amber-400" />
                 </div>
-                <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">Express Dispatch</span>
-                <h3 className="text-xl font-black text-white">Direct Farm Doorstep Shipping</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">Express Dispatch</span>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">Direct Farm Doorstep Shipping</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Free delivery across Haryana, Punjab &amp; UP for orders above ₹999. Heavy bag bulk dispatch available.
                 </p>
               </div>
               <div className="pt-2">
-                <span className="text-amber-400 text-xs font-bold flex items-center gap-1.5">
+                <span className="text-amber-700 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5">
                   <Activity className="w-4 h-4" /> Live GPS Order Tracking
                 </span>
               </div>
             </div>
 
             {/* Bento Card 4: Farm Calendar Planner */}
-            <div className="md:col-span-2 rounded-3xl p-8 bg-gradient-to-br from-teal-900/40 to-slate-900/60 border border-teal-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-teal-400/50 transition-all">
+            <div className="md:col-span-2 rounded-3xl p-8 bg-white/90 dark:bg-gradient-to-br dark:from-teal-900/40 dark:to-slate-900/60 border border-teal-300/80 dark:border-teal-500/30 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between space-y-6 group hover:border-teal-400 transition-all shadow-xl">
               <div className="space-y-3 relative z-10">
-                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-400 font-bold">
+                <div className="w-12 h-12 bg-teal-500/20 border border-teal-400/30 rounded-2xl flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold">
                   <Calendar className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">Automated Agri Schedule</span>
-                <h3 className="text-2xl font-black text-white">Personalized Fertilizer &amp; Spray Calendar</h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-lg">
+                <span className="text-[10px] font-black uppercase text-teal-700 dark:text-teal-400 tracking-wider">Automated Agri Schedule</span>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">Personalized Fertilizer &amp; Spray Calendar</h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
                   Set your sowing date for Paddy, Wheat, Cotton, or Sugarcane. Get automatic SMS reminders when it's time for basal dosage, top dressing, or Micronutrient sprays.
                 </p>
               </div>
               <div className="pt-4 relative z-10">
                 <Link
                   to={isAuthenticated ? "/planner" : "/login"}
-                  className="inline-flex items-center gap-2 bg-teal-400 hover:bg-teal-300 text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
+                  className="inline-flex items-center gap-2 bg-teal-600 dark:bg-teal-400 hover:bg-teal-500 dark:hover:bg-teal-300 text-white dark:text-slate-950 font-black px-6 py-3 rounded-xl text-xs transition-all shadow-lg"
                 >
                   <span>Open Smart Planner</span>
                   <ArrowRight className="w-4 h-4" />
@@ -450,18 +449,18 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 4. CATEGORIES LIST WITH RICH IMAGE TILES ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900 text-white">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+              <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                 Browse Categories
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">
                 Certified Agricultural Inputs &amp; Crop Care
               </h2>
             </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
+            <Link to="/products" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
               <span>View All Store Categories</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -474,7 +473,7 @@ export const Home: React.FC = () => {
                 <Link
                   key={cat.id}
                   to={`/products?category=${cat.slug}`}
-                  className="group bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden hover:border-emerald-400 transition-all duration-300 flex flex-col justify-between shadow-xl transform hover:-translate-y-1"
+                  className="group bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 transition-all duration-300 flex flex-col justify-between shadow-xl transform hover:-translate-y-1"
                 >
                   <div className="relative aspect-16/10 overflow-hidden bg-slate-800">
                     <img
@@ -483,17 +482,17 @@ export const Home: React.FC = () => {
                       onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80 dark:opacity-100" />
                     <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-500/30">
                       {cat.count || 10}+ Items
                     </span>
                   </div>
 
-                  <div className="p-4 space-y-1 bg-gradient-to-b from-slate-950 to-slate-900">
-                    <h3 className="text-sm font-black text-white line-clamp-1 group-hover:text-emerald-400">
+                  <div className="p-4 space-y-1 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
                       {cat.name}
                     </h3>
-                    <p className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
                       Explore category <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </p>
                   </div>
@@ -505,21 +504,21 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 5. FEATURED HIGH-YIELD FERTILIZERS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-950 relative">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-slate-950 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+              <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
                 Top Rated Inputs
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">
                 Featured High-Yield Fertilizers
               </h2>
-              <p className="text-xs text-slate-400 font-medium mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-1">
                 100% Water Soluble NPK, Urea, DAP &amp; Micronutrients
               </p>
             </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
+            <Link to="/products" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
               <span>View All Products</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -532,11 +531,11 @@ export const Home: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-slate-900/80 rounded-3xl border border-white/10 p-12 text-center space-y-3">
-              <PackageCheck className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-              <h3 className="text-lg font-bold text-white">Loading Store Products...</h3>
-              <p className="text-xs text-slate-400">Browse our complete product catalog below.</p>
-              <Link to="/products" className="inline-block bg-emerald-500 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs">
+            <div className="bg-white dark:bg-slate-900/80 rounded-3xl border border-slate-200 dark:border-white/10 p-12 text-center space-y-3">
+              <PackageCheck className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto animate-bounce" />
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Loading Store Products...</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Browse our complete product catalog below.</p>
+              <Link to="/products" className="inline-block bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs">
                 Browse All Products
               </Link>
             </div>
@@ -545,23 +544,27 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 6. TRENDING & MOST VISITED PRODUCTS ─── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <TrendingProductsSection />
-      </div>
+      <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-amber-500/5 via-orange-500/5 to-transparent dark:from-amber-950/20 dark:via-orange-950/10 dark:to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <TrendingProductsSection />
+        </div>
+      </section>
 
       {/* ─── 6.5 RECENTLY VIEWED PRODUCTS (RETARGETING) ─── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <RecentlyViewedSection />
-      </div>
+      <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-500/5 via-teal-500/5 to-transparent dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <RecentlyViewedSection />
+        </div>
+      </section>
 
       {/* ─── 7. FARMER TESTIMONIALS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-950 text-white relative">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-100/90 dark:bg-slate-950 text-slate-900 dark:text-white relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-10">
           <div className="text-center space-y-2">
-            <span className="text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+            <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Verified Success
             </span>
-            <h2 className="text-3xl font-black">Trusted by Over 50,000 Farmers</h2>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white">Trusted by Over 50,000 Farmers</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -588,16 +591,16 @@ export const Home: React.FC = () => {
                 rating: 5
               }
             ].map((rev, i) => (
-              <div key={i} className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-white/10 p-7 space-y-4 shadow-xl">
+              <div key={i} className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 p-7 space-y-4 shadow-xl">
                 <div className="flex text-amber-400 gap-1">
                   {[...Array(rev.rating)].map((_, idx) => (
                     <Star key={idx} className="w-4 h-4 fill-amber-400" />
                   ))}
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed italic font-medium">"{rev.text}"</p>
-                <div className="pt-4 border-t border-white/10">
-                  <h4 className="text-xs font-bold text-white">{rev.name}</h4>
-                  <p className="text-[11px] text-emerald-400">{rev.location} • <span className="text-amber-300 font-semibold">{rev.crop}</span></p>
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic font-medium">"{rev.text}"</p>
+                <div className="pt-4 border-t border-slate-200 dark:border-white/10">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{rev.name}</h4>
+                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400">{rev.location} • <span className="text-amber-600 dark:text-amber-300 font-semibold">{rev.crop}</span></p>
                 </div>
               </div>
             ))}

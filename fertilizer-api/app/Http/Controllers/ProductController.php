@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
@@ -104,7 +105,29 @@ class ProductController extends Controller
      */
     public function trending()
     {
-        $products = Cache::remember('products_trending', 300, function () {
+        $products = Cache::remember('products_trending', 120, function () {
+            try {
+                // High-performance Redis ZSET ranking query
+                $topIds = Redis::zrevrange('krishi_product_views', 0, 7);
+                if (!empty($topIds)) {
+                    $items = Product::with('category')
+                        ->withAvg('reviews', 'rating')
+                        ->withCount('reviews')
+                        ->whereIn('id', $topIds)
+                        ->get();
+
+                    $sorted = $items->sortBy(function ($prod) use ($topIds) {
+                        return array_search($prod->id, $topIds);
+                    })->values();
+
+                    if ($sorted->count() >= 4) {
+                        return $sorted->toArray();
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Smooth fallback if Redis is disabled or reconnecting
+            }
+
             return Product::with('category')
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
@@ -121,11 +144,29 @@ class ProductController extends Controller
     /**
      * GET /api/products/{slug}
      */
-    public function show($slug)
+    public function show($slug, Request $request)
     {
-        Product::where('slug', $slug)->increment('views_count');
+        $product = Product::where('slug', $slug)->first();
+        if ($product) {
+            $product->increment('views_count');
+            try {
+                // Redis ZSET score increment for sub-millisecond trending queries
+                Redis::zincrby('krishi_product_views', 1, $product->id);
 
-        $data = Cache::remember("product_{$slug}", 600, function () use ($slug) {
+                // If user is authenticated, save recently viewed ID in Redis list
+                $userId = auth('sanctum')->id();
+                if ($userId) {
+                    $key = "krishi_user_{$userId}_recent_views";
+                    Redis::lrem($key, 0, $product->id);
+                    Redis::lpush($key, $product->id);
+                    Redis::ltrim($key, 0, 14);
+                }
+            } catch (\Throwable $e) {
+                // Graceful fallback
+            }
+        }
+
+        $data = Cache::remember("product_{$slug}", 300, function () use ($slug) {
             $product = Product::with(['category', 'reviews.user'])
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
@@ -145,9 +186,8 @@ class ProductController extends Controller
             ];
         });
 
-        $freshProduct = Product::where('slug', $slug)->first();
-        if ($freshProduct && isset($data['product'])) {
-            $data['product']['views_count'] = $freshProduct->views_count;
+        if ($product && isset($data['product'])) {
+            $data['product']['views_count'] = $product->views_count;
         }
 
         return response()->json($data);

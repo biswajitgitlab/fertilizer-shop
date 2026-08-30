@@ -16,13 +16,16 @@ import {
   AnimatedPulseBadge
 } from '../common/AnimatedIcons';
 
+import { Eye } from 'lucide-react';
+
 interface ProductCardProps {
   product: Product;
+  trendingRankLabel?: string;
 }
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600";
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankLabel }) => {
   const { addToCart, items } = useCart();
   const { isAdmin } = useAuth();
   const discount = calculateDiscount(product.price, product.originalPrice);
@@ -77,14 +80,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Ambient Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Floating Top Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-20">
-            <span className="bg-slate-950/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shadow-md flex items-center gap-1">
+          {/* Floating Top Badges (Stacked vertically without overlapping) */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-20 pointer-events-none">
+            {trendingRankLabel && (
+              <span className="bg-amber-500/95 dark:bg-slate-900/95 backdrop-blur-md text-white dark:text-amber-300 border border-amber-400/60 dark:border-amber-500/50 text-[10px] font-black px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 w-max">
+                <Eye className="w-3 h-3 text-white dark:text-amber-400 shrink-0" />
+                <span>{trendingRankLabel}</span>
+              </span>
+            )}
+            <span className="bg-slate-950/90 backdrop-blur-md text-emerald-400 border border-emerald-500/40 text-[10px] font-black px-2.5 py-1 rounded-xl uppercase tracking-wider shadow-md flex items-center gap-1 w-max">
               <AnimatedSparkles size={12} className="text-emerald-400" />
               {typeof product.category === 'object' ? (product.category as any).name : product.category}
             </span>
             {product.npk && (product.npk.n > 0 || product.npk.p > 0 || product.npk.k > 0) && (
-              <span className="bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-0.5 rounded-lg shadow-sm">
+              <span className="bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-0.5 rounded-lg shadow-sm w-max">
                 NPK {product.npk.n}:{product.npk.p}:{product.npk.k}
               </span>
             )}
