@@ -26,7 +26,7 @@ interface ProductCardProps {
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=600";
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankLabel, disableHoverEffect = false }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankLabel }) => {
   const { addToCart, items } = useCart();
   const { isAdmin } = useAuth();
   const discount = calculateDiscount(product.price, product.originalPrice);
@@ -58,30 +58,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankL
   return (
     <div className="w-full h-full">
       <motion.div
-        whileHover={disableHoverEffect ? undefined : { scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className={`group relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-gray-100/90 dark:border-slate-800 shadow-sm sm:shadow-lg ${
-          disableHoverEffect ? '' : 'hover:shadow-xl hover:border-emerald-400/60 dark:hover:border-emerald-500/50'
-        } transition-all duration-200 flex flex-col overflow-hidden h-full`}
+        className="group relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-gray-100/90 dark:border-slate-800 shadow-sm sm:shadow-lg hover:shadow-xl hover:border-emerald-400/60 dark:hover:border-emerald-500/50 hover:shadow-emerald-950/10 dark:hover:shadow-emerald-500/10 transition-all duration-300 flex flex-col overflow-hidden h-full"
       >
         {/* Top Image Container */}
         <Link
           to={`/products/${product.slug}`}
           className="relative block aspect-square overflow-hidden bg-emerald-950/10"
         >
-          <motion.img
+          <img
             src={imgSrc}
             alt={product.name}
             onError={() => setImgSrc(FALLBACK_IMAGE)}
             loading="lazy"
             decoding="async"
-            whileHover={disableHoverEffect ? undefined : { scale: 1.06 }}
-            transition={{ duration: 0.4 }}
             className="w-full h-full object-cover object-center"
           />
 
           {/* Ambient Gradient Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent transition-opacity duration-300 ${disableHoverEffect ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`} />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
           {/* Floating Top Badges */}
           <div className="absolute top-1.5 left-1.5 sm:top-3 sm:left-3 flex flex-col gap-1 z-20 pointer-events-none max-w-[85%]">

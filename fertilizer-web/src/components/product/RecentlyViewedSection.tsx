@@ -105,7 +105,7 @@ export const RecentlyViewedSection: React.FC<{ currentProductId?: string | numbe
               animate={{ opacity: 1, scale: 1 }}
               className="w-64 sm:w-72 shrink-0 snap-start"
             >
-              <ProductCard product={prod} />
+              <ProductCard product={prod} disableHoverEffect={true} />
             </motion.div>
           ))}
         </div>

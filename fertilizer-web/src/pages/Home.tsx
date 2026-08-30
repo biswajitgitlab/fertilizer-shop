@@ -171,66 +171,66 @@ export const Home: React.FC = () => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             
             {/* Visual Card 1: Fertilizers */}
-            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
+            <Link to="/products?category=chemical-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200/80 dark:border-white/20 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/20 hover:border-emerald-400 dark:hover:border-emerald-400 transition-all duration-300 bg-slate-900">
               <img
                 src={VIBRANT_FERTILIZER_SOIL}
                 alt="Fertilizers"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/30 to-transparent opacity-70 group-hover:opacity-95 transition-opacity duration-300" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg z-10">
                 <span className="bg-emerald-500 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Growth Fertilizers</span>
-                <h3 className="text-xs sm:text-base font-black truncate">NPK &amp; Urea Bags</h3>
-                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
+                <h3 className="text-xs sm:text-base font-black truncate group-hover:text-emerald-300 transition-colors">NPK &amp; Urea Bags</h3>
+                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" /></p>
               </div>
             </Link>
 
             {/* Visual Card 2: Pesticides */}
-            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
+            <Link to="/products?category=pesticides-insecticides" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200/80 dark:border-white/20 shadow-lg hover:shadow-2xl hover:shadow-teal-500/20 hover:border-teal-400 dark:hover:border-teal-400 transition-all duration-300 bg-slate-900">
               <img
                 src={VIBRANT_CROP_SPRAY}
                 alt="Pesticides"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-teal-950/80 via-teal-950/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-t from-teal-950/90 via-teal-950/30 to-transparent opacity-70 group-hover:opacity-95 transition-opacity duration-300" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg z-10">
                 <span className="bg-teal-500 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Pest Sprays</span>
-                <h3 className="text-xs sm:text-base font-black truncate">Pesticides &amp; Sprays</h3>
-                <p className="text-[10px] sm:text-xs text-teal-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
+                <h3 className="text-xs sm:text-base font-black truncate group-hover:text-teal-300 transition-colors">Pesticides &amp; Sprays</h3>
+                <p className="text-[10px] sm:text-xs text-teal-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" /></p>
               </div>
             </Link>
 
             {/* Visual Card 3: Organic Compost */}
-            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
+            <Link to="/products?category=organic-bio-fertilizers" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200/80 dark:border-white/20 shadow-lg hover:shadow-2xl hover:shadow-amber-500/20 hover:border-amber-400 dark:hover:border-amber-400 transition-all duration-300 bg-slate-900">
               <img
                 src={VIBRANT_ORGANIC_COMPOST}
                 alt="Organic Bio Compost"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-amber-950/80 via-amber-950/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-t from-amber-950/90 via-amber-950/30 to-transparent opacity-70 group-hover:opacity-95 transition-opacity duration-300" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg z-10">
                 <span className="bg-amber-400 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Bio-Organic Soil</span>
-                <h3 className="text-xs sm:text-base font-black truncate">Bio-Fertilizers</h3>
-                <p className="text-[10px] sm:text-xs text-amber-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
+                <h3 className="text-xs sm:text-base font-black truncate group-hover:text-amber-300 transition-colors">Bio-Fertilizers</h3>
+                <p className="text-[10px] sm:text-xs text-amber-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" /></p>
               </div>
             </Link>
 
             {/* Visual Card 4: Seeds */}
-            <Link to="/products?category=seeds-tools" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200 dark:border-white/20 shadow-lg sm:shadow-xl bg-slate-900">
+            <Link to="/products?category=seeds-tools" className="group relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-4/3 border border-slate-200/80 dark:border-white/20 shadow-lg hover:shadow-2xl hover:shadow-emerald-500/20 hover:border-emerald-400 dark:hover:border-emerald-400 transition-all duration-300 bg-slate-900">
               <img
                 src={VIBRANT_SEEDS}
                 alt="High Yield Seeds"
                 onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/30 to-transparent opacity-70 group-hover:opacity-95 transition-opacity duration-300" />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white space-y-0.5 sm:space-y-1 drop-shadow-lg z-10">
                 <span className="bg-emerald-400 text-slate-950 text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md inline-block">Certified Seeds</span>
-                <h3 className="text-xs sm:text-base font-black truncate">High-Yield Seeds</h3>
-                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" /></p>
+                <h3 className="text-xs sm:text-base font-black truncate group-hover:text-emerald-300 transition-colors">High-Yield Seeds</h3>
+                <p className="text-[10px] sm:text-xs text-emerald-200 font-semibold flex items-center gap-1">Tap to see items <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 transition-transform" /></p>
               </div>
             </Link>
 

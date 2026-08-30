@@ -95,7 +95,7 @@ export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories, 
             <div
               key={cat.id}
               onClick={() => navigate(`/products?category=${cat.slug}`)}
-              className="snap-start shrink-0 w-[calc(100%-1.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-400 transition-colors duration-200 shadow-xl cursor-pointer group"
+              className="snap-start shrink-0 w-[calc(100%-1.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-400 hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 shadow-xl cursor-pointer group"
             >
               <div className="relative aspect-[16/10] overflow-hidden bg-slate-800">
                 <img
@@ -104,7 +104,7 @@ export const CategoryCarousel: React.FC<CategoryCarouselProps> = ({ categories, 
                   className="w-full h-full object-cover brightness-105 contrast-105"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 dark:opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 dark:opacity-80 dark:group-hover:opacity-95 transition-opacity duration-300" />
                 <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-500/30">
                   {cat.count || 10}+ Products
                 </span>
