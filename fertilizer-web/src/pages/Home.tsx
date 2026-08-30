@@ -272,9 +272,9 @@ export const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 space-y-1">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-              Visual Quick Categories
+              Explore By Category
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Click any picture below to see products</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Certified Crop Inputs &amp; Farm Care Essentials</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -126,7 +126,7 @@ export const productApi = {
       const res = await publicApi.get('/analytics/live-stats');
       return res.data;
     } catch (e) {
-      return { searches_today: 1452, total_views: 3840 };
+      return { searches_today: 0, total_views: 0 };
     }
   },
 

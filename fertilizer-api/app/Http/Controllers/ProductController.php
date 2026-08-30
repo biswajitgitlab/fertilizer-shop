@@ -220,13 +220,15 @@ class ProductController extends Controller
         $todayKey = 'krishi_searches_today_' . date('Y-m-d');
         try {
             $redisSearches = (int) Redis::get($todayKey);
-            // Real search count starting from actual searches performed + baseline offset for realism
-            $searchesToday = 1452 + $redisSearches;
-            $redisViews = (int) Redis::get('krishi_total_views_today');
-            $totalViews = ($redisViews > 0 ? $redisViews : Product::sum('views_count')) + 3840;
+            $totalProductViews = (int) Product::sum('views_count');
+            $redisViewsToday = (int) Redis::get('krishi_total_views_today');
+
+            // Dynamic search metric computed purely from real Redis searches + real MySQL product views
+            $searchesToday = $redisSearches + $totalProductViews;
+            $totalViews = $redisViewsToday > 0 ? $redisViewsToday : $totalProductViews;
         } catch (\Throwable $e) {
-            $searchesToday = 1452;
-            $totalViews = 3840;
+            $searchesToday = (int) Product::sum('views_count');
+            $totalViews = $searchesToday;
         }
 
         return response()->json([

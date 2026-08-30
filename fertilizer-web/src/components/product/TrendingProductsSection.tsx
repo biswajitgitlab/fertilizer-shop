@@ -10,8 +10,8 @@ export const TrendingProductsSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [liveStats, setLiveStats] = useState<{ searches_today: number; total_views: number }>({
-    searches_today: 1452,
-    total_views: 3840
+    searches_today: 0,
+    total_views: 0
   });
 
   const fetchData = async () => {
@@ -21,7 +21,7 @@ export const TrendingProductsSection: React.FC = () => {
         productApi.getLiveStats()
       ]);
       setTrending(trendingData);
-      if (statsData && statsData.searches_today) {
+      if (statsData) {
         setLiveStats(statsData);
       }
     } catch (e) {
@@ -131,7 +131,7 @@ export const TrendingProductsSection: React.FC = () => {
         <div className="mt-4 mb-6 flex flex-wrap items-center justify-between gap-3 bg-amber-500/5 dark:bg-amber-950/30 border border-amber-300/30 dark:border-amber-800/40 rounded-2xl px-4 py-2.5 text-xs text-slate-700 dark:text-amber-200/90 font-semibold relative z-10">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>Real-time Redis analytics update automatically based on farmer views.</span>
+            <span>Live popularity trends update automatically based on real-time farmer interest across India.</span>
           </div>
           <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 font-bold shrink-0">
             <Zap className="w-3.5 h-3.5 fill-orange-500 animate-bounce" />
