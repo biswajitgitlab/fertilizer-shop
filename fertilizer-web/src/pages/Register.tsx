@@ -52,7 +52,6 @@ export const Register: React.FC = () => {
       >
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/92 via-emerald-900/85 to-teal-900/88" />
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]" />
 
         {/* Logo */}
         <div className="relative z-10">
@@ -103,7 +102,6 @@ export const Register: React.FC = () => {
       >
         {/* Atmosphere Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/94 via-slate-950/92 to-teal-950/95 backdrop-blur-xs" />
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px]" />
 
         <div className="relative z-10 w-full max-w-md space-y-6">
 

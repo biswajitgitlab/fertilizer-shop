@@ -49,7 +49,6 @@ export const VerifyOtp: React.FC = () => {
     >
       {/* Deep Emerald Atmosphere Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/92 via-slate-950/90 to-teal-950/92 backdrop-blur-xs" />
-      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px]" />
 
       <div className="relative z-10 w-full max-w-md space-y-6">
 
