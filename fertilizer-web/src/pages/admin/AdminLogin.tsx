@@ -6,6 +6,8 @@ import { ShieldCheck, Lock, Mail, ArrowRight, KeyRound, Server, AlertCircle, Arr
 import toast from 'react-hot-toast';
 import { Logo } from '../../components/common/Logo';
 
+import { PasswordInput } from '../../components/common/PasswordInput';
+
 export const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -174,18 +176,22 @@ export const AdminLogin: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Staff Security Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-emerald-500 absolute left-3.5 top-3.5" />
-                <input
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                />
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Staff Security Password</label>
+                <Link
+                  to="/admin/forgot-password"
+                  className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  Forgot Password?
+                </Link>
               </div>
+              <PasswordInput
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full pl-10 pr-10 py-3 text-sm bg-slate-950/80 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+              />
             </div>
 
             <button

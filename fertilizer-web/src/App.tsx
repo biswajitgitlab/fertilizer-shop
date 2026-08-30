@@ -33,6 +33,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 
 // Admin Pages
 import { AdminLogin } from './pages/admin/AdminLogin';
+import { AdminForgotPassword } from './pages/admin/AdminForgotPassword';
 import { Dashboard as AdminDashboard } from './pages/admin/Dashboard';
 import { Products as AdminProducts } from './pages/admin/Products';
 import { ProductForm as AdminProductForm } from './pages/admin/ProductForm';
@@ -68,7 +69,7 @@ const ScrollToTop: React.FC = () => {
 const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isAuthRoute = ['/login', '/register', '/verify-otp', '/forgot-password', '/admin/login'].includes(location.pathname);
+  const isAuthRoute = ['/login', '/register', '/verify-otp', '/forgot-password', '/admin/login', '/admin/forgot-password'].includes(location.pathname);
 
   if (isAdminRoute || isAuthRoute) {
     return <>{children}</>;
@@ -128,8 +129,9 @@ export function App() {
 
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-            {/* Admin Portal Authentication Route */}
+            {/* Admin Portal Authentication Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
 
             {/* Admin Routes — Internal Staff Only */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

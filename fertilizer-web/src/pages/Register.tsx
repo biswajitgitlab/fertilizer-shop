@@ -6,6 +6,8 @@ import { INDIAN_STATES } from '../utils/constants';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
 
+import { PasswordInput } from '../components/common/PasswordInput';
+
 export const Register: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -195,17 +197,13 @@ export const Register: React.FC = () => {
             {/* Password */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Create Password *</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="password"
-                  placeholder="Min 8 characters..."
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                />
-              </div>
+              <PasswordInput
+                placeholder="Min 8 characters..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full pl-10 pr-10 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+              />
             </div>
 
             <button

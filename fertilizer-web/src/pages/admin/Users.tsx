@@ -36,6 +36,8 @@ interface StaffDetailData {
   recent_orders: any[];
 }
 
+import { PasswordInput } from '../../components/common/PasswordInput';
+
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<StaffRecord[]>([]);
   const [stats, setStats] = useState<StaffStats>({ total_users: 0, staff_count: 0, customers_count: 0, unverified_count: 0 });
@@ -538,12 +540,12 @@ export const UsersPage: React.FC = () => {
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                       {editingUser ? 'New Password (Optional)' : 'Staff Password *'}
                     </label>
-                    <input
-                      type="password"
+                    <PasswordInput
+                      icon={null}
                       placeholder={editingUser ? 'Leave blank to keep current' : 'Min 6 characters'}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-3 pr-9 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
                       required={!editingUser}
                     />
                   </div>

@@ -5,6 +5,8 @@ import { ShieldCheck, ArrowLeft, KeyRound, CheckCircle2, Phone, Lock, Sparkles, 
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
 
+import { PasswordInput } from '../components/common/PasswordInput';
+
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
 
@@ -257,32 +259,24 @@ export const ForgotPassword: React.FC = () => {
             <form onSubmit={handleResetPassword} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-emerald-500/30 p-8 shadow-2xl space-y-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">New Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
-                  <input
-                    type="password"
-                    placeholder="Min 8 characters..."
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
+                <PasswordInput
+                  placeholder="Min 8 characters..."
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-10 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Confirm New Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
-                  <input
-                    type="password"
-                    placeholder="Re-enter new password..."
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
-                  />
-                </div>
+                <PasswordInput
+                  placeholder="Re-enter new password..."
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full pl-10 pr-10 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                />
               </div>
 
               <button
