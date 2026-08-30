@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -26,6 +27,13 @@ class AdminAuthController extends Controller
         $admin = Admin::where($loginField, trim($request->login))->first();
 
         if (!$admin || !Hash::check($request->password, $admin->password)) {
+            $customerAccount = User::where($loginField, trim($request->login))->first();
+            if ($customerAccount && Hash::check($request->password, $customerAccount->password)) {
+                throw ValidationException::withMessages([
+                    'login' => ['Customer account detected. Please use the Customer Sign-In page.'],
+                ]);
+            }
+
             throw ValidationException::withMessages([
                 'login' => ['Invalid staff credentials. Access to the Admin Portal is restricted to authorized personnel.'],
             ]);

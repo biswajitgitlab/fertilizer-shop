@@ -134,19 +134,8 @@ class AuthController extends Controller
         // Check if account is an Admin/Staff trying to use Customer login
         $adminAccount = Admin::where($loginField, $loginValue)->first();
         if ($adminAccount && Hash::check($request->password, $adminAccount->password)) {
-            // Staff credentials detected on customer portal — return token & flag
-            $token = $adminAccount->createToken('access_token')->plainTextToken;
-            return response()->json([
-                'message' => 'Staff login recognized.',
-                'access_token' => $token,
-                'user' => [
-                    'id' => $adminAccount->id,
-                    'name' => $adminAccount->name,
-                    'email' => $adminAccount->email,
-                    'phone' => $adminAccount->phone,
-                    'role' => $adminAccount->role ?: 'Admin',
-                ],
-                'is_staff' => true,
+            throw ValidationException::withMessages([
+                'login' => ['Staff/Admin credentials detected. Please log in via the Staff Portal.'],
             ]);
         }
 

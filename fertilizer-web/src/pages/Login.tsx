@@ -38,20 +38,15 @@ export const Login: React.FC = () => {
       login(res.user, res.token);
       toast.success(`Welcome back, ${res.user.name}!`);
 
-      // Staff / Admin users are routed to /admin/dashboard, Customers to Store/Profile/Checkout cleanly
-      const isStaff = res.is_staff || (res.user.role && res.user.role.toLowerCase() !== 'customer');
-      if (isStaff) {
-        navigate('/admin/dashboard', { replace: true });
-      } else {
-        const rawFrom = location.state?.from?.pathname;
-        const targetPath = (rawFrom === '/checkout' || rawFrom === '/cart') ? rawFrom : '/profile';
-        navigate(targetPath, { replace: true });
-      }
+      const rawFrom = location.state?.from?.pathname;
+      const targetPath = (rawFrom === '/checkout' || rawFrom === '/cart') ? rawFrom : '/profile';
+      navigate(targetPath, { replace: true });
     } catch (err: any) {
       if (err.response?.status === 429) {
         toast.error("Too many login attempts! Please wait 1 minute before trying again.");
       } else {
-        toast.error(err.response?.data?.message || "Invalid credentials. Please try again.");
+        const errorMsg = err.response?.data?.errors?.login?.[0] || err.response?.data?.message || "Invalid credentials. Please try again.";
+        toast.error(errorMsg);
       }
     } finally {
       setIsLoading(false);
