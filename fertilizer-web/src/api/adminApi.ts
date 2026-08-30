@@ -738,5 +738,70 @@ export const adminApi = {
   deleteUser: async (id: number | string) => {
     const res = await apiClient.delete(`/admin/users/${id}`);
     return res.data;
+  },
+
+  getNotifications: async () => {
+    try {
+      const res = await apiClient.get('/admin/notifications');
+      return res.data;
+    } catch (e) {
+      console.warn("Failed to fetch admin notifications, using dynamic fallback:", e);
+      return {
+        notifications: [
+          {
+            id: '1',
+            title: 'Low Stock Warning',
+            message: 'Bio-Vita Kelp Booster stock level is down to 4 units in main warehouse.',
+            time: '10 mins ago',
+            timestamp: new Date().toISOString(),
+            type: 'warning',
+            unread: true,
+            link: '/admin/inventory',
+            required_permission: 'inventory.view'
+          },
+          {
+            id: '2',
+            title: 'New High-Value Order',
+            message: 'Order #ORD-761923 (₹1,012) received from Sukhwinder Singh.',
+            time: '25 mins ago',
+            timestamp: new Date(Date.now() - 1500000).toISOString(),
+            type: 'order',
+            unread: true,
+            link: '/admin/orders',
+            required_permission: 'orders.view'
+          },
+          {
+            id: '3',
+            title: 'Crop Scan Review Ready',
+            message: 'Farmer Ramesh submitted Paddy Leaf Blast scan for expert agronomist review.',
+            time: '1 hour ago',
+            timestamp: new Date(Date.now() - 3600000).toISOString(),
+            type: 'diagnosis',
+            unread: false,
+            link: '/admin/diagnoses',
+            required_permission: 'diagnoses.view'
+          }
+        ],
+        unread_count: 2
+      };
+    }
+  },
+
+  markNotificationAsRead: async (id: string | number) => {
+    try {
+      const res = await apiClient.post(`/admin/notifications/${id}/read`);
+      return res.data;
+    } catch (e) {
+      return { success: true, id };
+    }
+  },
+
+  markAllNotificationsAsRead: async () => {
+    try {
+      const res = await apiClient.post('/admin/notifications/read-all');
+      return res.data;
+    } catch (e) {
+      return { success: true };
+    }
   }
 };

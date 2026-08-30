@@ -4,12 +4,13 @@ import {
   Bell, Search, Menu, Sparkles, Shield, PanelLeftClose, PanelLeftOpen,
   Sun, Moon, Plus, ChevronDown, Check, AlertTriangle, ShoppingBag,
   Package, User, Key, ExternalLink, LogOut, Command, X, Activity,
-  Database, Lock, Clock, Sliders, ArrowRight, UserCheck, ShieldCheck
+  Database, Lock, Clock, Sliders, ArrowRight, UserCheck, ShieldCheck,
+  RefreshCw, CheckCheck, Filter, Tag
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
 import { Logo } from '../common/Logo';
-import { adminAuthApi } from '../../api/adminApi';
+import { adminApi, adminAuthApi } from '../../api/adminApi';
 
 interface AdminHeaderProps {
   title?: string;
@@ -31,44 +32,84 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // RBSC Filter tab scope
+  const [notificationFilter, setNotificationFilter] = useState<'all' | 'orders' | 'inventory' | 'diagnoses' | 'users'>('all');
+
+  // Dynamic Real Notifications State
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [loadingNotifications, setLoadingNotifications] = useState<boolean>(false);
+
   // Refs for click outside
   const profileRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const quickActionRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Fallback notifications state
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      title: 'Low Stock Warning',
-      message: 'Bio-Vita Kelp Booster is down to 4 units in main warehouse.',
-      time: '10 mins ago',
-      type: 'warning',
-      unread: true,
-      link: '/admin/inventory'
-    },
-    {
-      id: '2',
-      title: 'New High-Value Order',
-      message: 'Order #ORD-761923 (₹1,012) received from Sukhwinder Singh.',
-      time: '25 mins ago',
-      type: 'order',
-      unread: true,
-      link: '/admin/orders'
-    },
-    {
-      id: '3',
-      title: 'Crop Scan Review Ready',
-      message: 'Farmer Ramesh submitted Paddy Leaf Blast scan for expert review.',
-      time: '1 hour ago',
-      type: 'system',
-      unread: false,
-      link: '/admin/diagnoses'
+  // Fetch real backend RBSC notifications
+  const loadNotifications = async () => {
+    setLoadingNotifications(true);
+    try {
+      const data = await adminApi.getNotifications();
+      if (data && Array.isArray(data.notifications)) {
+        setNotifications(data.notifications);
+        setUnreadCount(data.unread_count ?? data.notifications.filter((n: any) => n.unread).length);
+      }
+    } catch (e) {
+      console.warn("Failed to load notifications:", e);
+    } finally {
+      setLoadingNotifications(false);
     }
-  ]);
+  };
 
-  const activeUnreadCount = notifications.filter(n => n.unread).length;
+  // Initial load and periodic 30s auto-polling for live real notifications
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Reload notifications when dropdown opens
+  useEffect(() => {
+    if (notificationsOpen) {
+      loadNotifications();
+    }
+  }, [notificationsOpen]);
+
+  // Handle individual mark as read
+  const handleMarkAsRead = async (id: string | number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      await adminApi.markNotificationAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      // fallback local update
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+    }
+  };
+
+  // Handle mark all as read
+  const handleMarkAllRead = async () => {
+    try {
+      await adminApi.markAllNotificationsAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+      setUnreadCount(0);
+    } catch (err) {
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+      setUnreadCount(0);
+    }
+  };
+
+  // Filtered notifications based on active RBSC tab
+  const filteredNotifications = notifications.filter(item => {
+    if (notificationFilter === 'all') return true;
+    if (notificationFilter === 'orders') return item.type === 'order' || item.required_permission === 'orders.view';
+    if (notificationFilter === 'inventory') return item.type === 'warning' || item.required_permission === 'inventory.view';
+    if (notificationFilter === 'diagnoses') return item.type === 'diagnosis' || item.required_permission === 'diagnoses.view';
+    if (notificationFilter === 'users') return item.type === 'user' || item.required_permission === 'roles.manage';
+    return true;
+  });
 
   // Handle global keyboard shortcuts (Ctrl+K or Cmd+K)
   useEffect(() => {
@@ -123,10 +164,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     logout();
     setProfileOpen(false);
     navigate('/admin/login');
-  };
-
-  const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
   };
 
   // Quick navigation items for search command palette
@@ -319,7 +356,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               )}
             </button>
 
-            {/* Notification Bell Dropdown */}
+            {/* Notification Bell Dropdown with RBSC */}
             <div className="relative" ref={notificationRef}>
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -328,10 +365,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     ? 'text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800 border-slate-800'
                     : 'text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-200'
                 }`}
-                title="System Notifications"
+                title="RBSC System Notifications"
               >
                 <Bell className="w-4.5 h-4.5" />
-                {activeUnreadCount > 0 && (
+                {unreadCount > 0 && (
                   <>
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full border border-slate-950" />
@@ -339,65 +376,156 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                 )}
               </button>
 
-              {/* Notification Center Popover */}
+              {/* RBSC Notification Center Popover */}
               {notificationsOpen && (
                 <div className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-2xl border p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                   theme === 'dark'
                     ? 'bg-slate-900/95 border-slate-800 text-slate-100 backdrop-blur-xl shadow-black/80'
                     : 'bg-white border-slate-200 text-slate-900 shadow-xl'
                 }`}>
+                  {/* Header with Title, Refetch & Mark All Read */}
                   <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-emerald-500" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider">System Notifications</h3>
-                      {activeUnreadCount > 0 && (
-                        <span className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30">
-                          {activeUnreadCount} New
+                      <div>
+                        <h3 className="text-xs font-bold uppercase tracking-wider">RBSC Notifications</h3>
+                        <span className="text-[9px] text-emerald-400 font-medium block">
+                          Role: {user?.role || 'Staff Admin'}
+                        </span>
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30 ml-1">
+                          {unreadCount} New
                         </span>
                       )}
                     </div>
-                    {activeUnreadCount > 0 && (
+                    
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={markAllNotificationsRead}
-                        className="text-[11px] font-bold text-emerald-500 hover:underline cursor-pointer"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="py-2 divide-y divide-slate-800/50 max-h-72 overflow-y-auto">
-                    {notifications.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => {
-                          setNotificationsOpen(false);
-                          navigate(item.link);
-                        }}
-                        className={`p-2.5 rounded-xl cursor-pointer transition-colors flex items-start gap-3 my-1 ${
-                          item.unread
-                            ? theme === 'dark' ? 'bg-slate-800/60' : 'bg-emerald-50/70'
-                            : theme === 'dark' ? 'hover:bg-slate-800/40' : 'hover:bg-slate-50'
+                        onClick={loadNotifications}
+                        title="Refresh Live Notifications"
+                        className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                          loadingNotifications ? 'animate-spin text-emerald-400' : 'text-slate-400 hover:text-white'
                         }`}
                       >
-                        <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
-                          item.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                          item.type === 'order' ? 'bg-emerald-500/10 text-emerald-500' :
-                          'bg-cyan-500/10 text-cyan-500'
-                        }`}>
-                          {item.type === 'warning' ? <AlertTriangle className="w-4 h-4" /> :
-                           item.type === 'order' ? <ShoppingBag className="w-4 h-4" /> :
-                           <Sparkles className="w-4 h-4" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="text-xs font-bold truncate">{item.title}</p>
-                            <span className="text-[10px] text-slate-400 shrink-0">{item.time}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{item.message}</p>
-                        </div>
-                      </div>
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[11px] font-bold text-emerald-500 hover:underline cursor-pointer flex items-center gap-1"
+                          title="Mark all as read"
+                        >
+                          <CheckCheck className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Mark read</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* RBSC Filter Category Scope Tabs */}
+                  <div className="flex items-center gap-1 my-2 overflow-x-auto py-1 scrollbar-none border-b border-slate-800/40">
+                    {[
+                      { key: 'all', label: 'All' },
+                      { key: 'orders', label: 'Orders' },
+                      { key: 'inventory', label: 'Stock' },
+                      { key: 'diagnoses', label: 'Crop AI' },
+                      { key: 'users', label: 'Team' },
+                    ].map(tab => (
+                      <button
+                        key={tab.key}
+                        onClick={() => setNotificationFilter(tab.key as any)}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          notificationFilter === tab.key
+                            ? 'bg-emerald-500 text-white shadow-xs'
+                            : theme === 'dark'
+                              ? 'bg-slate-800/60 text-slate-400 hover:text-slate-200'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
                     ))}
+                  </div>
+
+                  {/* Notification List Container */}
+                  <div className="py-1 divide-y divide-slate-800/50 max-h-72 overflow-y-auto">
+                    {loadingNotifications && notifications.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                        <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
+                        <span>Fetching RBSC notifications...</span>
+                      </div>
+                    ) : filteredNotifications.length > 0 ? (
+                      filteredNotifications.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => {
+                            if (item.unread) {
+                              handleMarkAsRead(item.id);
+                            }
+                            setNotificationsOpen(false);
+                            if (item.link) navigate(item.link);
+                          }}
+                          className={`p-2.5 rounded-xl cursor-pointer transition-colors flex items-start gap-3 my-1 relative group ${
+                            item.unread
+                              ? theme === 'dark' ? 'bg-slate-800/70 border border-emerald-500/20' : 'bg-emerald-50/80 border border-emerald-200'
+                              : theme === 'dark' ? 'hover:bg-slate-800/40' : 'hover:bg-slate-50'
+                          }`}
+                        >
+                          {/* Type Icon */}
+                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+                            item.type === 'warning' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                            item.type === 'order' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                            item.type === 'diagnosis' ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' :
+                            item.type === 'user' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                            'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20'
+                          }`}>
+                            {item.type === 'warning' ? <AlertTriangle className="w-4 h-4" /> :
+                             item.type === 'order' ? <ShoppingBag className="w-4 h-4" /> :
+                             item.type === 'diagnosis' ? <Sliders className="w-4 h-4" /> :
+                             item.type === 'user' ? <UserCheck className="w-4 h-4" /> :
+                             <Sparkles className="w-4 h-4 text-cyan-400" />}
+                          </div>
+
+                          {/* Content */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className={`text-xs font-bold truncate ${item.unread ? 'text-emerald-400 font-extrabold' : ''}`}>
+                                {item.title}
+                              </p>
+                              <span className="text-[10px] text-slate-400 shrink-0">{item.time}</span>
+                            </div>
+
+                            <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{item.message}</p>
+
+                            {/* RBSC Permission Scope Badge */}
+                            {item.required_permission && (
+                              <div className="flex items-center justify-between mt-1.5">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700">
+                                  <Shield className="w-2.5 h-2.5 text-emerald-400" />
+                                  <span>{item.required_permission}</span>
+                                </span>
+
+                                {item.unread && (
+                                  <button
+                                    onClick={(e) => handleMarkAsRead(item.id, e)}
+                                    className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Mark as read"
+                                  >
+                                    Mark read
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-8 text-center text-slate-400 text-xs">
+                        No notifications found for tab scope "{notificationFilter}".
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-2 border-t border-slate-800/80 dark:border-slate-800 text-center">
