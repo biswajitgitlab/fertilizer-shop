@@ -30,6 +30,7 @@ class CouponController extends Controller
 
         $coupon = Coupon::create($request->all());
         Cache::forget('admin_coupons_list');
+        \App\Services\NotificationService::notifyCouponCreated($coupon);
         return response()->json(['message' => 'Coupon created successfully', 'coupon' => $coupon], 201);
     }
 

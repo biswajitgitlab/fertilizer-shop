@@ -272,6 +272,19 @@ class OrderController extends Controller
 
                 return $createdOrder;
             });
+
+            // Trigger Notification Service (Redis + DB) for new order placement
+            if ($order) {
+                \App\Services\NotificationService::notifyOrderCreated($order);
+
+                // Check low stock for ordered items
+                foreach ($order->items as $item) {
+                    $prod = $item->product;
+                    if ($prod && $prod->stock_qty <= 10) {
+                        \App\Services\NotificationService::notifyLowStock($prod);
+                    }
+                }
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -344,6 +357,8 @@ class OrderController extends Controller
                     }
                 }
             });
+
+            \App\Services\NotificationService::notifyOrderStatusUpdated($order, 'PENDING');
 
             return response()->json(['message' => 'Order cancelled successfully and stock restored', 'order' => $order]);
         }

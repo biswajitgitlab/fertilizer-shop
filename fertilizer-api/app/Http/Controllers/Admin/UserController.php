@@ -133,6 +133,8 @@ class UserController extends Controller
 
             Cache::forget('admin_team_list');
 
+            \App\Services\NotificationService::notifyStaffCreated($admin);
+
             return response()->json([
                 'message' => "Staff member {$admin->name} created successfully with role {$roleName}.",
                 'user' => $admin

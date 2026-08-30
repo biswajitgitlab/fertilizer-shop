@@ -73,6 +73,8 @@ class OrderController extends Controller
         Cache::forget('admin_dashboard_stats');
         Cache::forget('admin_analytics_metrics');
 
+        \App\Services\NotificationService::notifyOrderStatusUpdated($order);
+
         try {
             $order->load('user');
             \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [

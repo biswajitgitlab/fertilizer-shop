@@ -36,6 +36,8 @@ class DiagnosisController extends Controller
 
         $diagnosis->update($data);
 
+        \App\Services\NotificationService::notifyDiagnosisReviewed($diagnosis);
+
         return response()->json($diagnosis);
     }
 }

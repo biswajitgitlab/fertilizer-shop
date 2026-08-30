@@ -46,6 +46,8 @@ class DiagnosisController extends Controller
             'status' => 'PENDING'
         ]);
 
+        \App\Services\NotificationService::notifyDiagnosisSubmitted($diagnosis);
+
         // Trigger n8n webhook for AI analysis
         try {
             Http::post(env('N8N_DIAGNOSIS_WEBHOOK_URL', 'http://localhost:5678/webhook/diagnosis'), [

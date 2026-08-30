@@ -58,6 +58,10 @@ class InventoryController extends Controller
             Cache::forget("product_{$product->slug}");
         }
 
+        if ($product->stock_qty <= 10) {
+            \App\Services\NotificationService::notifyLowStock($product);
+        }
+
         return response()->json(['message' => 'Stock updated successfully', 'product' => $product]);
     }
 

@@ -28,37 +28,46 @@ class AdminNotificationController extends Controller
         $effectivePermissions = $admin->getEffectivePermissions();
         $isSuperAdmin = $admin->hasRole(['Super Admin', 'Admin']) || in_array('roles.manage', $effectivePermissions);
         $readByArray = CacheGetAdminReadIds($admin->id);
+        $readAllTs = (int) Cache::get("admin_read_all_{$admin->id}", 0);
 
         // Seed initial notifications if needed
         $this->ensureInitialAdminNotifications();
 
-        // Leverage Redis caching for notification list (TTL 15 seconds to handle high-frequency 30s polling)
+        // Leverage Redis caching for notification list (TTL 15 seconds)
         $cacheKey = "admin_notifications_{$admin->id}_v2";
 
-        $responsePayload = Cache::remember($cacheKey, 15, function () use ($admin, $effectivePermissions, $isSuperAdmin, $readByArray) {
-            // 1. Fetch persistent database notifications matching Admin RBSC (Role-Based Scope Control)
+        $responsePayload = Cache::remember($cacheKey, 15, function () use ($admin, $effectivePermissions, $isSuperAdmin, $readByArray, $readAllTs) {
+            // 1. Fetch persistent database notifications matching Admin RBSC
             $persistentQuery = Notification::where(function ($query) use ($admin, $effectivePermissions, $isSuperAdmin) {
                 $query->where('admin_id', $admin->id);
 
                 if ($isSuperAdmin) {
                     $query->orWhere(function ($q) {
-                        $q->whereNull('user_id')->whereNotNull('required_permission');
+                        $q->whereNull('user_id');
                     });
                 } else {
                     $query->orWhere(function ($q) use ($effectivePermissions) {
                         $q->whereNull('user_id')
-                          ->whereIn('required_permission', $effectivePermissions);
+                          ->where(function ($permQuery) use ($effectivePermissions) {
+                              $permQuery->whereNull('required_permission')
+                                        ->orWhereIn('required_permission', $effectivePermissions);
+                          });
                     });
                 }
             });
 
             $dbNotifications = $persistentQuery->latest()->take(30)->get();
-
             $formattedList = [];
 
             foreach ($dbNotifications as $item) {
                 $readAdmins = is_array($item->read_by_admins) ? $item->read_by_admins : [];
-                $isRead = !is_null($item->read_at) || in_array($admin->id, $readAdmins) || in_array("db_{$item->id}", $readByArray);
+                $itemTs = $item->created_at ? $item->created_at->timestamp : now()->timestamp;
+
+                $isRead = in_array($admin->id, $readAdmins)
+                    || in_array("db_{$item->id}", $readByArray)
+                    || in_array((string)$item->id, $readByArray)
+                    || ($readAllTs > 0 && $itemTs <= $readAllTs)
+                    || ($item->admin_id === $admin->id && !is_null($item->read_at));
 
                 $formattedList[] = [
                     'id' => "db_{$item->id}",
@@ -67,7 +76,7 @@ class AdminNotificationController extends Controller
                     'message' => $item->body,
                     'time' => $item->created_at ? $item->created_at->diffForHumans() : 'Just now',
                     'timestamp' => $item->created_at ? $item->created_at->toISOString() : now()->toISOString(),
-                    'type' => $item->type,
+                    'type' => $item->type ?: 'info',
                     'unread' => !$isRead,
                     'link' => $item->link ?: '/admin/dashboard',
                     'required_permission' => $item->required_permission ?: 'general',
@@ -75,21 +84,31 @@ class AdminNotificationController extends Controller
                 ];
             }
 
-            // 2. Dynamically compute live real-time system alerts based on current DB state & Admin RBSC
-            $liveAlerts = $this->generateLiveSystemAlerts($admin, $effectivePermissions, $isSuperAdmin, $readByArray);
+            // 2. Compute dynamic live real-time system alerts
+            $liveAlerts = $this->generateLiveSystemAlerts($admin, $effectivePermissions, $isSuperAdmin, $readByArray, $readAllTs);
 
             // Merge DB notifications + Live system alerts
             $allNotifications = array_merge($formattedList, $liveAlerts);
 
+            // Deduplicate by string ID if any overlap
+            $uniqueNotifications = [];
+            $seenIds = [];
+            foreach ($allNotifications as $n) {
+                if (!in_array($n['id'], $seenIds)) {
+                    $seenIds[] = $n['id'];
+                    $uniqueNotifications[] = $n;
+                }
+            }
+
             // Sort by timestamp descending
-            usort($allNotifications, function ($a, $b) {
+            usort($uniqueNotifications, function ($a, $b) {
                 return strcmp($b['timestamp'], $a['timestamp']);
             });
 
-            $unreadCount = count(array_filter($allNotifications, fn($n) => $n['unread']));
+            $unreadCount = count(array_filter($uniqueNotifications, fn($n) => $n['unread']));
 
             return [
-                'notifications' => array_values($allNotifications),
+                'notifications' => array_values($uniqueNotifications),
                 'unread_count' => $unreadCount,
                 'cached_via_redis' => true,
                 'admin' => [
@@ -102,10 +121,20 @@ class AdminNotificationController extends Controller
             ];
         });
 
-        // Ensure live read status state is synced even if main list was cached
+        // Dynamic post-processing: sync read status even if payload came from Redis cache memory
         $notifications = $responsePayload['notifications'] ?? [];
+        $freshReadByArray = CacheGetAdminReadIds($admin->id);
+        $freshReadAllTs = (int) Cache::get("admin_read_all_{$admin->id}", 0);
+
         foreach ($notifications as &$n) {
-            if (in_array($n['id'], $readByArray)) {
+            $numId = str_replace('db_', '', $n['id']);
+            $nTs = strtotime($n['timestamp']);
+
+            if (
+                in_array($n['id'], $freshReadByArray) ||
+                in_array($numId, $freshReadByArray) ||
+                ($freshReadAllTs > 0 && $nTs > 0 && $nTs <= $freshReadAllTs)
+            ) {
                 $n['unread'] = false;
             }
         }
@@ -119,34 +148,50 @@ class AdminNotificationController extends Controller
 
     /**
      * POST /api/admin/notifications/{id}/read
-     * Mark single notification as read for current admin staff and invalidate Redis cache.
+     * Mark single notification as read for current admin staff and update Redis state.
      */
     public function markAsRead(Request $request, $id)
     {
         $admin = $request->user();
+        $strId = (string) $id;
 
-        if (str_starts_with($id, 'db_')) {
-            $numericId = (int) str_replace('db_', '', $id);
+        // Extract numeric ID if database notification
+        $numericId = null;
+        if (str_starts_with($strId, 'db_')) {
+            $numericId = (int) str_replace('db_', '', $strId);
+        } elseif (is_numeric($strId)) {
+            $numericId = (int) $strId;
+        }
+
+        if ($numericId) {
             $notification = Notification::find($numericId);
             if ($notification) {
                 $readAdmins = is_array($notification->read_by_admins) ? $notification->read_by_admins : [];
                 if (!in_array($admin->id, $readAdmins)) {
                     $readAdmins[] = $admin->id;
-                    $notification->update([
-                        'read_by_admins' => $readAdmins,
-                        'read_at' => now(),
-                    ]);
+                    
+                    $updateData = ['read_by_admins' => $readAdmins];
+                    if ($notification->admin_id === $admin->id) {
+                        $updateData['read_at'] = now();
+                    }
+
+                    $notification->update($updateData);
                 }
             }
         }
 
-        // Store read ID in Redis for fast access
-        CacheMarkAdminReadId($admin->id, $id);
+        // Store read IDs in Redis for instant read status resolution
+        CacheMarkAdminReadId($admin->id, $strId);
+        if ($numericId) {
+            CacheMarkAdminReadId($admin->id, "db_{$numericId}");
+            CacheMarkAdminReadId($admin->id, (string)$numericId);
+        }
 
         // Invalidate Redis Notification Cache for this admin
         Cache::forget("admin_notifications_{$admin->id}_v2");
+        Cache::forget("admin_notifications_{$admin->id}");
 
-        return response()->json(['message' => 'Notification marked as read.', 'id' => $id]);
+        return response()->json(['message' => 'Notification marked as read.', 'id' => $strId]);
     }
 
     /**
@@ -157,7 +202,6 @@ class AdminNotificationController extends Controller
     {
         $admin = $request->user();
 
-        // Update persistent DB notifications for this admin or matching permissions
         $effectivePermissions = $admin->getEffectivePermissions();
         $isSuperAdmin = $admin->hasRole(['Super Admin', 'Admin']) || in_array('roles.manage', $effectivePermissions);
 
@@ -174,16 +218,24 @@ class AdminNotificationController extends Controller
             $readAdmins = is_array($item->read_by_admins) ? $item->read_by_admins : [];
             if (!in_array($admin->id, $readAdmins)) {
                 $readAdmins[] = $admin->id;
-                $item->update(['read_by_admins' => $readAdmins, 'read_at' => now()]);
-                CacheMarkAdminReadId($admin->id, "db_{$item->id}");
+                
+                $updateData = ['read_by_admins' => $readAdmins];
+                if ($item->admin_id === $admin->id) {
+                    $updateData['read_at'] = now();
+                }
+
+                $item->update($updateData);
             }
+            CacheMarkAdminReadId($admin->id, "db_{$item->id}");
+            CacheMarkAdminReadId($admin->id, (string)$item->id);
         }
 
-        // Cache global mark-all timestamp in Redis for live dynamic alerts
+        // Store global mark-all timestamp in Redis for live dynamic alerts filtering
         Cache::put("admin_read_all_{$admin->id}", now()->timestamp, 86400 * 7);
 
         // Invalidate Redis Notification Cache
         Cache::forget("admin_notifications_{$admin->id}_v2");
+        Cache::forget("admin_notifications_{$admin->id}");
 
         return response()->json(['message' => 'All system notifications marked as read.']);
     }
@@ -191,22 +243,22 @@ class AdminNotificationController extends Controller
     /**
      * Helper to generate live system alerts scoped by admin permissions (RBSC).
      */
-    private function generateLiveSystemAlerts($admin, array $effectivePermissions, bool $isSuperAdmin, array $readByArray): array
+    private function generateLiveSystemAlerts($admin, array $effectivePermissions, bool $isSuperAdmin, array $readByArray, int $readAllTs): array
     {
         $alerts = [];
-        $readAllTs = Cache::get("admin_read_all_{$admin->id}", 0);
 
-        // Scope 1: Inventory Management (inventory.view / inventory.update_stock / products.edit)
+        // Scope 1: Inventory Management
         if ($isSuperAdmin || in_array('inventory.view', $effectivePermissions) || in_array('products.edit', $effectivePermissions)) {
-            $lowStockProducts = Product::where('stock', '<=', 10)->get();
+            $lowStockProducts = Product::where('stock_qty', '<=', 10)->get();
             foreach ($lowStockProducts as $prod) {
                 $id = "live_inv_{$prod->id}";
-                $isRead = in_array($id, $readByArray) || ($readAllTs > 0);
+                $itemTs = $prod->updated_at ? $prod->updated_at->timestamp : now()->timestamp;
+                $isRead = in_array($id, $readByArray) || ($readAllTs > 0 && $itemTs <= $readAllTs);
 
                 $alerts[] = [
                     'id' => $id,
                     'title' => 'Low Inventory Warning',
-                    'message' => "{$prod->name} stock level is down to {$prod->stock} units.",
+                    'message' => "{$prod->name} stock level is down to {$prod->stock_qty} units.",
                     'time' => $prod->updated_at ? $prod->updated_at->diffForHumans() : 'Active Alert',
                     'timestamp' => $prod->updated_at ? $prod->updated_at->toISOString() : now()->toISOString(),
                     'type' => 'warning',
@@ -218,12 +270,13 @@ class AdminNotificationController extends Controller
             }
         }
 
-        // Scope 2: Orders & Sales Fulfillment (orders.view / orders.update_status)
+        // Scope 2: Orders & Sales Fulfillment
         if ($isSuperAdmin || in_array('orders.view', $effectivePermissions)) {
             $recentOrders = Order::latest()->take(5)->get();
             foreach ($recentOrders as $ord) {
                 $id = "live_ord_{$ord->id}";
-                $isRead = in_array($id, $readByArray) || ($readAllTs > 0);
+                $itemTs = $ord->created_at ? $ord->created_at->timestamp : now()->timestamp;
+                $isRead = in_array($id, $readByArray) || ($readAllTs > 0 && $itemTs <= $readAllTs);
                 $customer = $ord->shipping_address_json['name'] ?? 'Customer';
 
                 $alerts[] = [
@@ -241,17 +294,20 @@ class AdminNotificationController extends Controller
             }
         }
 
-        // Scope 3: Agri AI Crop Diagnoses (diagnoses.view / diagnoses.review)
+        // Scope 3: Agri AI Crop Diagnoses
         if ($isSuperAdmin || in_array('diagnoses.view', $effectivePermissions) || in_array('diagnoses.review', $effectivePermissions)) {
             $pendingDiagnoses = CropDiagnosis::where('admin_reviewed', false)->orWhere('status', 'PENDING')->latest()->take(3)->get();
             foreach ($pendingDiagnoses as $diag) {
                 $id = "live_diag_{$diag->id}";
-                $isRead = in_array($id, $readByArray) || ($readAllTs > 0);
+                $itemTs = $diag->created_at ? $diag->created_at->timestamp : now()->timestamp;
+                $isRead = in_array($id, $readByArray) || ($readAllTs > 0 && $itemTs <= $readAllTs);
+                $crop = $diag->crop_name ?? $diag->crop ?? 'Crop';
+                $stage = $diag->growth_stage ?: 'Unspecified stage';
 
                 $alerts[] = [
                     'id' => $id,
                     'title' => 'Crop Scan Review Required',
-                    'message' => "New scan submitted for {$diag->crop} ({$diag->growth_stage ?: 'Unspecified stage'}). Requires Agronomist review.",
+                    'message' => "New scan submitted for {$crop} ({$stage}). Requires Agronomist review.",
                     'time' => $diag->created_at ? $diag->created_at->diffForHumans() : 'Pending Review',
                     'timestamp' => $diag->created_at ? $diag->created_at->toISOString() : now()->toISOString(),
                     'type' => 'diagnosis',
@@ -263,12 +319,13 @@ class AdminNotificationController extends Controller
             }
         }
 
-        // Scope 4: Team & Staff Management (roles.manage / users.manage)
+        // Scope 4: Team & Staff Management
         if ($isSuperAdmin || in_array('roles.manage', $effectivePermissions) || in_array('users.manage', $effectivePermissions)) {
             $unverifiedAdmins = Admin::where('is_verified', false)->get();
             foreach ($unverifiedAdmins as $unvAdmin) {
                 $id = "live_user_{$unvAdmin->id}";
-                $isRead = in_array($id, $readByArray) || ($readAllTs > 0);
+                $itemTs = $unvAdmin->created_at ? $unvAdmin->created_at->timestamp : now()->timestamp;
+                $isRead = in_array($id, $readByArray) || ($readAllTs > 0 && $itemTs <= $readAllTs);
 
                 $alerts[] = [
                     'id' => $id,
@@ -301,7 +358,7 @@ class AdminNotificationController extends Controller
             'required_permission' => 'inventory.view',
             'type' => 'warning',
             'title' => 'Critical Warehouse Stock Alert',
-            'message' => 'Bio-Vita Seaweed Kelp Booster stock dropped below safety reorder threshold (4 units remaining).',
+            'body' => 'Bio-Vita Seaweed Kelp Booster stock dropped below safety reorder threshold (4 units remaining).',
             'link' => '/admin/inventory',
             'created_at' => now()->subMinutes(15),
         ]);
@@ -310,7 +367,7 @@ class AdminNotificationController extends Controller
             'required_permission' => 'orders.view',
             'type' => 'order',
             'title' => 'High-Value Wholesale Order',
-            'message' => 'Wholesale Order #ORD-761923 (₹1,012) confirmed by Sukhwinder Singh via Online Payment.',
+            'body' => 'Wholesale Order #ORD-761923 (₹1,012) confirmed by Sukhwinder Singh via Online Payment.',
             'link' => '/admin/orders',
             'created_at' => now()->subMinutes(45),
         ]);
@@ -319,7 +376,7 @@ class AdminNotificationController extends Controller
             'required_permission' => 'diagnoses.view',
             'type' => 'diagnosis',
             'title' => 'Paddy Blast Scan Submitted',
-            'message' => 'Farmer Ramesh submitted Paddy Leaf Blast scan for expert agronomist verification.',
+            'body' => 'Farmer Ramesh submitted Paddy Leaf Blast scan for expert agronomist verification.',
             'link' => '/admin/diagnoses',
             'created_at' => now()->subHours(2),
         ]);
@@ -328,7 +385,7 @@ class AdminNotificationController extends Controller
             'required_permission' => 'roles.manage',
             'type' => 'user',
             'title' => 'New Role Assignment Audit',
-            'message' => 'Store Manager role permissions were updated for regional branch personnel.',
+            'body' => 'Store Manager role permissions were updated for regional branch personnel.',
             'link' => '/admin/roles',
             'created_at' => now()->subHours(5),
         ]);
@@ -348,8 +405,8 @@ if (!function_exists('CacheMarkAdminReadId')) {
     {
         $readIds = CacheGetAdminReadIds($adminId);
         if (!in_array($notifId, $readIds)) {
-            $readIds[] = $notifId;
-            Cache::put("admin_read_ids_{$adminId}", $readIds, 86400 * 7);
+            $readIds[] = (string) $notifId;
+            Cache::put("admin_read_ids_{$adminId}", array_values(array_unique($readIds)), 86400 * 7);
         }
     }
 }
