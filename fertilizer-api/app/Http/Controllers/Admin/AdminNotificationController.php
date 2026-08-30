@@ -37,7 +37,7 @@ class AdminNotificationController extends Controller
         $cacheKey = "admin_notifications_{$admin->id}_v2";
 
         $responsePayload = Cache::remember($cacheKey, 15, function () use ($admin, $effectivePermissions, $isSuperAdmin, $readByArray, $readAllTs) {
-            // 1. Fetch persistent database notifications matching Admin RBSC
+            // 1. Fetch persistent database notifications matching Admin Permission Scope
             $persistentQuery = Notification::where(function ($query) use ($admin, $effectivePermissions, $isSuperAdmin) {
                 $query->where('admin_id', $admin->id);
 
@@ -241,7 +241,7 @@ class AdminNotificationController extends Controller
     }
 
     /**
-     * Helper to generate live system alerts scoped by admin permissions (RBSC).
+     * Helper to generate live system alerts scoped by admin staff permissions.
      */
     private function generateLiveSystemAlerts($admin, array $effectivePermissions, bool $isSuperAdmin, array $readByArray, int $readAllTs): array
     {

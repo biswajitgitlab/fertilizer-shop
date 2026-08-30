@@ -365,7 +365,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     ? 'text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800 border-slate-800'
                     : 'text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-200'
                 }`}
-                title="RBSC System Notifications"
+                title="System Notifications & Activity"
               >
                 <Bell className="w-4.5 h-4.5" />
                 {unreadCount > 0 && (
@@ -376,7 +376,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                 )}
               </button>
 
-              {/* RBSC Notification Center Popover */}
+              {/* Notification Center Popover */}
               {notificationsOpen && (
                 <div className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-2xl border p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                   theme === 'dark'
@@ -388,7 +388,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-emerald-500" />
                       <div>
-                        <h3 className="text-xs font-bold uppercase tracking-wider">RBSC Notifications</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-wider">System Activity</h3>
                         <span className="text-[9px] text-emerald-400 font-medium block">
                           Role: {user?.role || 'Staff Admin'}
                         </span>
@@ -424,7 +424,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     </div>
                   </div>
 
-                  {/* RBSC Filter Category Scope Tabs */}
+                  {/* Filter Category Scope Tabs */}
                   <div className="flex items-center gap-1 my-2 overflow-x-auto py-1 scrollbar-none border-b border-slate-800/40">
                     {[
                       { key: 'all', label: 'All' },
@@ -454,7 +454,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     {loadingNotifications && notifications.length === 0 ? (
                       <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
-                        <span>Fetching RBSC notifications...</span>
+                        <span>Updating notifications...</span>
                       </div>
                     ) : filteredNotifications.length > 0 ? (
                       filteredNotifications.map((item) => (

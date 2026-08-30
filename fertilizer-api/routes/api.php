@@ -169,7 +169,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::post('/team/assign-role', [\App\Http\Controllers\Admin\RoleController::class, 'assignRole']);
     Route::put('/team/{id}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updateUserPermissions']);
 
-    // Admin Real Notifications with RBSC
+    // Admin Real Notifications with Permission Scopes
     Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead']);
     Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead']);
