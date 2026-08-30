@@ -163,7 +163,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     }
     logout();
     setProfileOpen(false);
-    navigate('/admin/login');
+    navigate('/admin/login', { replace: true });
   };
 
   // Quick navigation items for search command palette

@@ -3,6 +3,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import { ShieldCheck, Plus, Check, Save, UserCheck, Key, Sparkles, SlidersHorizontal, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '../../store/authStore';
 
 interface RoleData {
   id: number;
@@ -30,6 +31,11 @@ interface TeamMember {
 }
 
 export const Roles: React.FC = () => {
+  const { user: currentUser } = useAuthStore();
+  const currentRole = currentUser?.role || '';
+  const isSuperAdminOrAdmin = ['Super Admin', 'Admin'].includes(currentRole) || 
+    (currentUser?.effective_permissions && (currentUser.effective_permissions.includes('roles.edit') || currentUser.effective_permissions.includes('users.edit')));
+
   const [roles, setRoles] = useState<RoleData[]>([]);
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -77,6 +83,10 @@ export const Roles: React.FC = () => {
   }, []);
 
   const handleTogglePermission = (permName: string) => {
+    if (!isSuperAdminOrAdmin) {
+      toast.error("Access Denied: Only Super Admin and Admin accounts can edit role permissions.");
+      return;
+    }
     if (!selectedRole) return;
     if (selectedRole.name === 'Super Admin' || selectedRole.name === 'Admin') {
       toast.error("Super Admin / Core Admin retains full system permissions by default.");
@@ -215,13 +225,15 @@ export const Roles: React.FC = () => {
             >
               Team Staff &amp; Custom Overrides ({team.length})
             </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 shrink-0" />
-              <span>New Role</span>
-            </button>
+            {isSuperAdminOrAdmin && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 shrink-0" />
+                <span>New Role</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -263,6 +275,13 @@ export const Roles: React.FC = () => {
           })}
         </div>
 
+        {!isSuperAdminOrAdmin && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-2">
+            <Lock className="w-4 h-4 shrink-0 text-amber-500" />
+            <span>Read-Only Mode: Role &amp; RBSC Permission modifications are restricted to Super Admin &amp; Admin accounts only.</span>
+          </div>
+        )}
+
         {activeTab === 'matrix' && selectedRole && (
           <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl p-4 sm:p-6 space-y-6 overflow-hidden">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-4 min-w-0">
@@ -276,14 +295,16 @@ export const Roles: React.FC = () => {
                 </p>
               </div>
 
-              <button
-                onClick={handleSavePermissions}
-                disabled={isSaving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 shrink-0"
-              >
-                <Save className="w-4 h-4 shrink-0" />
-                <span>{isSaving ? 'Saving Changes...' : 'Save Role Matrix'}</span>
-              </button>
+              {isSuperAdminOrAdmin && (
+                <button
+                  onClick={handleSavePermissions}
+                  disabled={isSaving}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  <Save className="w-4 h-4 shrink-0" />
+                  <span>{isSaving ? 'Saving Changes...' : 'Save Role Matrix'}</span>
+                </button>
+              )}
             </div>
 
             {/* Categorized Permissions Checkbox Grid */}
@@ -386,22 +407,25 @@ export const Roles: React.FC = () => {
                         <td className="py-3.5 px-4 flex items-center gap-2">
                           <select
                             value={member.role}
+                            disabled={!isSuperAdminOrAdmin}
                             onChange={(e) => handleAssignUserRole(member.id, e.target.value)}
-                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 rounded-xl px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer max-w-[140px] truncate"
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 rounded-xl px-2.5 py-1 focus:outline-none focus:border-emerald-500 cursor-pointer max-w-[140px] truncate disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             {roles.map((r) => (
                               <option key={r.id} value={r.name} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{r.name}</option>
                             ))}
                           </select>
 
-                          <button
-                            onClick={() => handleOpenUserPermsModal(member)}
-                            className="bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700"
-                            title="Customize individual permissions for this specific user"
-                          >
-                            <SlidersHorizontal className="w-3.5 h-3.5" />
-                            <span>Custom Perms</span>
-                          </button>
+                          {isSuperAdminOrAdmin && (
+                            <button
+                              onClick={() => handleOpenUserPermsModal(member)}
+                              className="bg-slate-100 dark:bg-slate-800 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700"
+                              title="Customize individual permissions for this specific user"
+                            >
+                              <SlidersHorizontal className="w-3.5 h-3.5" />
+                              <span>Custom Perms</span>
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );

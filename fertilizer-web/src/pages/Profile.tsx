@@ -2,10 +2,16 @@ import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/common/Button';
 import { User, Phone, MapPin, ShieldCheck, LogOut, Package, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const Profile: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -36,7 +42,7 @@ export const Profile: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={logout}
+          onClick={handleLogout}
           icon={<LogOut className="w-4 h-4" />}
           className="rounded-xl border-emerald-200 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-800 font-bold"
         >

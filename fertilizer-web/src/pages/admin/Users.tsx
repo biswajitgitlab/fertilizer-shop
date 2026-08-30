@@ -39,8 +39,14 @@ interface StaffDetailData {
 }
 
 import { PasswordInput } from '../../components/common/PasswordInput';
+import { useAuthStore } from '../../store/authStore';
 
 export const UsersPage: React.FC = () => {
+  const { user: currentUser } = useAuthStore();
+  const currentRole = currentUser?.role || '';
+  const isSuperAdminOrAdmin = ['Super Admin', 'Admin'].includes(currentRole) || 
+    (currentUser?.effective_permissions && (currentUser.effective_permissions.includes('roles.edit') || currentUser.effective_permissions.includes('users.edit')));
+
   const [users, setUsers] = useState<StaffRecord[]>([]);
   const [stats, setStats] = useState<StaffStats>({ total_users: 0, staff_count: 0, customers_count: 0, unverified_count: 0 });
   const [rolesList, setRolesList] = useState<string[]>([
@@ -275,13 +281,15 @@ export const UsersPage: React.FC = () => {
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
-            <button
-              onClick={handleOpenCreateModal}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4 shrink-0" />
-              <span>Add New Staff Account</span>
-            </button>
+            {isSuperAdminOrAdmin && (
+              <button
+                onClick={handleOpenCreateModal}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 shrink-0" />
+                <span>Add New Staff Account</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -562,13 +570,15 @@ export const UsersPage: React.FC = () => {
 
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleOpenRbscModal(user)}
-                            className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white cursor-pointer transition-all border border-emerald-300 dark:border-emerald-800"
-                            title="Edit Role & RBSC Permissions Matrix"
-                          >
-                            <Sliders className="w-3.5 h-3.5" />
-                          </button>
+                          {isSuperAdminOrAdmin && (
+                            <button
+                              onClick={() => handleOpenRbscModal(user)}
+                              className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white cursor-pointer transition-all border border-emerald-300 dark:border-emerald-800"
+                              title="Edit Role & RBSC Permissions Matrix"
+                            >
+                              <Sliders className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleViewDetails(user)}
                             className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
@@ -576,20 +586,24 @@ export const UsersPage: React.FC = () => {
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => handleOpenEditModal(user)}
-                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
-                            title="Edit Staff Credentials"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
-                            title="Revoke & Delete Staff Account"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {isSuperAdminOrAdmin && (
+                            <>
+                              <button
+                                onClick={() => handleOpenEditModal(user)}
+                                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
+                                title="Edit Staff Credentials"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(user)}
+                                className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
+                                title="Revoke & Delete Staff Account"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

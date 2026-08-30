@@ -38,12 +38,14 @@ export const Login: React.FC = () => {
       login(res.user, res.token);
       toast.success(`Welcome back, ${res.user.name}!`);
 
-      // Staff / Admin users are routed to /admin/dashboard, Customers to Store/Checkout
+      // Staff / Admin users are routed to /admin/dashboard, Customers to Store/Profile/Checkout cleanly
       const isStaff = res.is_staff || (res.user.role && res.user.role.toLowerCase() !== 'customer');
       if (isStaff) {
-        navigate('/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        const rawFrom = location.state?.from?.pathname;
+        const targetPath = (rawFrom === '/checkout' || rawFrom === '/cart') ? rawFrom : '/profile';
+        navigate(targetPath, { replace: true });
       }
     } catch (err: any) {
       if (err.response?.status === 429) {

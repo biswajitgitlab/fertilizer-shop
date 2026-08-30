@@ -48,7 +48,7 @@ export const Navbar: React.FC = () => {
     logout();
     setUserDropdownOpen(false);
     setMobileMenuOpen(false);
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
   const isActive = (path: string) => location.pathname === path;

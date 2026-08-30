@@ -86,10 +86,34 @@ class UserController extends Controller
     }
 
     /**
+     * Helper to verify current user is Super Admin, Admin, or holds explicit user/role edit permission.
+     */
+    private function checkCanManage(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) return;
+
+        $role = strtolower($user->role ?? '');
+        $isSuperAdminOrAdmin = in_array($role, ['super admin', 'admin', 'superadmin']);
+
+        $hasPerm = method_exists($user, 'hasEffectivePermission')
+            ? ($user->hasEffectivePermission('users.edit') || $user->hasEffectivePermission('roles.edit'))
+            : true;
+
+        if (!$isSuperAdminOrAdmin && !$hasPerm) {
+            abort(response()->json([
+                'message' => 'Forbidden: Only Super Admin & Admin accounts are authorized to create or modify staff accounts, roles, and RBSC permissions.'
+            ], 403));
+        }
+    }
+
+    /**
      * Store a newly created internal staff member in the admins table.
      */
     public function store(Request $request)
     {
+        $this->checkCanManage($request);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:admins,phone',
@@ -184,6 +208,8 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->checkCanManage($request);
+
         $admin = Admin::findOrFail($id);
 
         $request->validate([
@@ -239,6 +265,8 @@ class UserController extends Controller
      */
     public function destroy(Request $request, $id)
     {
+        $this->checkCanManage($request);
+
         $admin = Admin::findOrFail($id);
 
         if ($request->user() && $request->user()->id === $admin->id && get_class($request->user()) === Admin::class) {

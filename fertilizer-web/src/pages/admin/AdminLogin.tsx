@@ -38,7 +38,7 @@ export const AdminLogin: React.FC = () => {
 
       login(res.user, res.access_token);
       toast.success(`Authenticated: Welcome back, ${res.user.name}!`);
-      navigate(from, { replace: true });
+      navigate('/admin/dashboard', { replace: true });
     } catch (err: any) {
       console.error("Admin login error:", err);
       const msg = err.response?.data?.message || err.response?.data?.errors?.login?.[0] || "Invalid staff credentials or unauthorized access.";

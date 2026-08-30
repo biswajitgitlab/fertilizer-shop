@@ -22,6 +22,28 @@ class RoleController extends Controller
     }
 
     /**
+     * Helper to verify current user is Super Admin, Admin, or holds explicit user/role edit permission.
+     */
+    private function checkCanManage(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) return;
+
+        $role = strtolower($user->role ?? '');
+        $isSuperAdminOrAdmin = in_array($role, ['super admin', 'admin', 'superadmin']);
+
+        $hasPerm = method_exists($user, 'hasEffectivePermission')
+            ? ($user->hasEffectivePermission('roles.edit') || $user->hasEffectivePermission('users.edit'))
+            : true;
+
+        if (!$isSuperAdminOrAdmin && !$hasPerm) {
+            abort(response()->json([
+                'message' => 'Forbidden: Only Super Admin & Admin accounts are authorized to modify system roles or permissions.'
+            ], 403));
+        }
+    }
+
+    /**
      * List all roles with assigned permissions and user counts.
      */
     public function index()
@@ -73,6 +95,8 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        $this->checkCanManage($request);
+
         $request->validate([
             'name' => 'required|string|unique:roles,name',
             'permissions' => 'nullable|array',
@@ -101,6 +125,8 @@ class RoleController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->checkCanManage($request);
+
         $role = Role::findOrFail($id);
 
         $request->validate([
@@ -119,8 +145,10 @@ class RoleController extends Controller
     /**
      * Delete custom role.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        $this->checkCanManage($request);
+
         $role = Role::findOrFail($id);
 
         if (in_array($role->name, ['Super Admin', 'Admin', 'Customer'])) {
@@ -175,6 +203,8 @@ class RoleController extends Controller
      */
     public function assignRole(Request $request)
     {
+        $this->checkCanManage($request);
+
         $request->validate([
             'user_id' => 'required|exists:admins,id',
             'role' => 'required|string',
@@ -197,6 +227,8 @@ class RoleController extends Controller
      */
     public function updateUserPermissions(Request $request, $id)
     {
+        $this->checkCanManage($request);
+
         $request->validate([
             'permissions' => 'required|array',
         ]);

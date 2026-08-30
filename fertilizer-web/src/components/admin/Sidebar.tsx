@@ -42,7 +42,7 @@ export const Sidebar: React.FC<{
     }
     logout();
     if (onCloseMobile) onCloseMobile();
-    navigate('/admin/login');
+    navigate('/admin/login', { replace: true });
   };
 
   return (
