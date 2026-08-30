@@ -11,8 +11,11 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     
-    // Dedicated Admin Portal Login
+    // Dedicated Admin Portal Authentication Routes
     Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
+    Route::post('/admin/auth/forgot-password/request', [AdminAuthController::class, 'forgotPasswordRequest']);
+    Route::post('/admin/auth/forgot-password/verify', [AdminAuthController::class, 'verifyForgotPasswordOtp']);
+    Route::post('/admin/auth/forgot-password/reset', [AdminAuthController::class, 'resetPassword']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

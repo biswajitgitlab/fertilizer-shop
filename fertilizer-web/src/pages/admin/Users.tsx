@@ -286,9 +286,92 @@ export const UsersPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Staff Roster Table */}
+        {/* Staff Roster Container: Mobile Cards (sm:hidden) & Desktop Table (hidden sm:block) */}
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl overflow-hidden">
-          <div className="overflow-x-auto">
+          
+          {/* Mobile Staff Cards View (Visible under sm) */}
+          <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/60">
+            {isLoading ? (
+              <div className="py-8 text-center text-xs text-slate-400">Loading staff accounts...</div>
+            ) : users.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">No staff accounts found matching query.</div>
+            ) : (
+              users.map((user) => (
+                <div key={user.id} className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center font-black text-sm uppercase shrink-0">
+                        {user.name[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-extrabold text-sm text-slate-900 dark:text-white truncate">{user.name}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">ID #{user.id}</p>
+                      </div>
+                    </div>
+
+                    <span className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                      {user.role}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 text-xs bg-emerald-50/50 dark:bg-emerald-950/40 p-3 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/40">
+                    <p className="text-slate-800 dark:text-slate-200 font-semibold flex items-center gap-1.5 truncate">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{user.email}</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{user.phone || 'N/A'}</span>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                    <div>
+                      {user.is_verified ? (
+                        <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <XCircle className="w-3 h-3" />
+                          Pending
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleViewDetails(user)}
+                        className="py-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-emerald-500 font-bold text-xs flex items-center gap-1 cursor-pointer"
+                        title="Inspect Capabilities"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        onClick={() => handleOpenEditModal(user)}
+                        className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-500 hover:bg-blue-50 cursor-pointer"
+                        title="Edit Account"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user)}
+                        className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 cursor-pointer"
+                        title="Delete Account"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View (Hidden under sm) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -396,8 +479,8 @@ export const UsersPage: React.FC = () => {
 
         {/* Modal for Creating or Editing Staff Account */}
         {showFormModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 min-w-0">
                 <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
                   <UserPlus className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -516,8 +599,8 @@ export const UsersPage: React.FC = () => {
 
         {/* Modal for Inspecting Staff Permissions */}
         {showDetailModal && userDetailData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full p-6 space-y-6 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center font-black text-lg uppercase shrink-0">

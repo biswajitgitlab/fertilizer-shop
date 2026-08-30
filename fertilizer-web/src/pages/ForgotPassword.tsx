@@ -175,7 +175,7 @@ export const ForgotPassword: React.FC = () => {
                       ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20'
                       : isPast
                       ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/30'
-                      : 'bg-slate-900/60 text-slate-500 border-slate-800'
+                      : 'bg-slate-900/60 text-slate-400 border-emerald-500/20'
                   }`}
                 >
                   {s.label}

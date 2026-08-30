@@ -127,9 +127,9 @@ export const Products: React.FC = () => {
         {/* Mobile Drawer */}
         {mobileFilterOpen && (
           <div className="fixed inset-0 z-50 lg:hidden overflow-hidden">
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setMobileFilterOpen(false)} />
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity" onClick={() => setMobileFilterOpen(false)} />
             <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-              <div className="w-screen max-w-xs bg-white dark:bg-slate-900 p-4 overflow-y-auto">
+              <div className="w-screen max-w-xs bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-l border-emerald-500/20 shadow-2xl p-4 overflow-y-auto">
                 <FilterSidebar
                   categories={categories}
                   selectedCategory={category}

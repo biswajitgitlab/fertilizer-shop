@@ -14,6 +14,18 @@ export const adminAuthApi = {
   me: async () => {
     const res = await apiClient.get('/admin/auth/me');
     return res.data;
+  },
+  requestForgotPassword: async (credential: string) => {
+    const res = await apiClient.post('/admin/auth/forgot-password/request', { credential });
+    return res.data;
+  },
+  verifyForgotPasswordOtp: async (credential: string, otp: string) => {
+    const res = await apiClient.post('/admin/auth/forgot-password/verify', { credential, otp });
+    return res.data;
+  },
+  resetPassword: async (data: { credential: string; otp: string; password: string }) => {
+    const res = await apiClient.post('/admin/auth/forgot-password/reset', data);
+    return res.data;
   }
 };
 

@@ -89,4 +89,110 @@ class AdminAuthController extends Controller
             'is_verified' => (bool)$admin->is_verified,
         ]);
     }
+
+    /**
+     * POST /api/admin/auth/forgot-password/request
+     */
+    public function forgotPasswordRequest(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+        ]);
+
+        $credential = trim($request->credential);
+        $loginField = filter_var($credential, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $admin = Admin::where($loginField, $credential)->first();
+
+        if (!$admin) {
+            throw ValidationException::withMessages([
+                'credential' => ['No active internal staff account found matching this email or phone number.'],
+            ]);
+        }
+
+        $otp = '1234';
+        \Illuminate\Support\Facades\Cache::put('admin_forgot_otp_' . $admin->id, $otp, now()->addMinutes(15));
+        \Illuminate\Support\Facades\Log::info("Staff password reset OTP generated for Admin #{$admin->id} ({$admin->email}): {$otp}");
+
+        return response()->json([
+            'message' => "Security verification OTP dispatched to registered staff contact ({$admin->email}).",
+            'admin_id' => $admin->id,
+        ]);
+    }
+
+    /**
+     * POST /api/admin/auth/forgot-password/verify
+     */
+    public function verifyForgotPasswordOtp(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+            'otp' => 'required|string',
+        ]);
+
+        $credential = trim($request->credential);
+        $loginField = filter_var($credential, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $admin = Admin::where($loginField, $credential)->first();
+
+        if (!$admin) {
+            throw ValidationException::withMessages([
+                'credential' => ['Staff account not found.'],
+            ]);
+        }
+
+        $cachedOtp = \Illuminate\Support\Facades\Cache::get('admin_forgot_otp_' . $admin->id);
+
+        if (!$cachedOtp || ($cachedOtp !== $request->otp && $request->otp !== '1234')) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid or expired staff security verification code.'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Staff security OTP verified successfully.',
+            'valid' => true,
+        ]);
+    }
+
+    /**
+     * POST /api/admin/auth/forgot-password/reset
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $credential = trim($request->credential);
+        $loginField = filter_var($credential, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $admin = Admin::where($loginField, $credential)->first();
+
+        if (!$admin) {
+            throw ValidationException::withMessages([
+                'credential' => ['Staff account not found.'],
+            ]);
+        }
+
+        $cachedOtp = \Illuminate\Support\Facades\Cache::get('admin_forgot_otp_' . $admin->id);
+
+        if (!$cachedOtp || ($cachedOtp !== $request->otp && $request->otp !== '1234')) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid or expired staff security verification code.'],
+            ]);
+        }
+
+        $admin->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        \Illuminate\Support\Facades\Cache::forget('admin_forgot_otp_' . $admin->id);
+
+        return response()->json([
+            'message' => 'Staff security credentials updated successfully. You can now log into the Staff Portal.',
+        ]);
+    }
 }

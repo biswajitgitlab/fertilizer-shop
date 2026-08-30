@@ -289,8 +289,8 @@ export const Roles: React.FC = () => {
             {/* Categorized Permissions Checkbox Grid */}
             <div className="space-y-6">
               {Object.entries(groupedPermissions).map(([category, perms]) => (
-                <div key={category} className="bg-slate-50/80 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800/60 space-y-3 overflow-hidden">
-                  <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-2 min-w-0">
+                <div key={category} className="bg-emerald-50/40 dark:bg-slate-800/60 rounded-2xl p-4 border border-emerald-200/60 dark:border-emerald-500/20 space-y-3 overflow-hidden">
+                  <div className="flex items-center gap-2 border-b border-emerald-200/60 dark:border-slate-700/60 pb-2 min-w-0">
                     <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide truncate">{category} Module Access</h4>
                   </div>

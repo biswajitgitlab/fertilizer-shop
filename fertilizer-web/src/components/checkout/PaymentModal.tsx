@@ -170,8 +170,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-gray-100 overflow-hidden relative">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl w-full max-w-md rounded-3xl shadow-2xl border border-emerald-500/20 text-gray-900 dark:text-white overflow-hidden relative">
         
         {/* Header Bar */}
         <div className="bg-gradient-to-r from-emerald-800 to-teal-900 text-white p-5 space-y-2 relative">

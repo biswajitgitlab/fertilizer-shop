@@ -91,7 +91,7 @@ export const CartDrawer: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
             onClick={toggleDrawer}
           />
 
@@ -101,11 +101,11 @@ export const CartDrawer: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col justify-between border-l border-gray-100 dark:border-slate-800 text-gray-900 dark:text-white relative"
+              className="w-screen max-w-md bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-2xl flex flex-col justify-between border-l border-emerald-500/20 text-gray-900 dark:text-white relative"
             >
               
               {/* Header */}
-              <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-emerald-950 text-white shrink-0">
+              <div className="p-4 sm:p-5 border-b border-emerald-500/20 flex items-center justify-between bg-gradient-to-r from-emerald-900/90 via-teal-900/90 to-slate-900/90 backdrop-blur-xl text-white shrink-0">
                 <div className="flex items-center gap-2">
                   <AnimatedCart size={22} className="text-emerald-400" active />
                   <h2 className="text-base font-bold">Shopping Cart</h2>

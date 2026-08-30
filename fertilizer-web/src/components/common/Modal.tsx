@@ -40,15 +40,15 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4 text-center">
         <div
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
           onClick={onClose}
         />
-        <div className={`relative w-full ${maxWidths[maxWidth]} transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-2xl transition-all z-10 border border-gray-100`}>
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        <div className={`relative w-full ${maxWidths[maxWidth]} transform overflow-hidden rounded-3xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl p-6 text-left shadow-2xl transition-all z-10 border border-emerald-500/20 text-gray-900 dark:text-white`}>
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4 mb-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
             <button
               onClick={onClose}
-              className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              className="rounded-xl p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-600 dark:hover:text-slate-200 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

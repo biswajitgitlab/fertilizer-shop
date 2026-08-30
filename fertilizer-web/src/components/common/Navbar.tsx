@@ -311,23 +311,23 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Navigation Drawer — only for non-admin */}
         {!isAdmin && mobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 dark:border-slate-800 py-3 space-y-3 animate-fade-in bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
+          <div className="lg:hidden border-b border-emerald-500/20 py-4 px-4 space-y-3 animate-fade-in bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl text-gray-900 dark:text-white shadow-2xl rounded-b-3xl">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder={t('search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200/80 dark:border-slate-700 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-inner"
               />
-              <Search className="w-4 h-4 text-gray-400 dark:text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3 top-3" />
             </form>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800/80 hover:text-emerald-700 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200/50 transition-all"
               >
                 <Sprout className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{t('nav_home')}</span>
@@ -335,7 +335,7 @@ export const Navbar: React.FC = () => {
               <Link
                 to="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800/80 hover:text-emerald-700 dark:hover:text-emerald-400 border border-transparent hover:border-emerald-200/50 transition-all"
               >
                 <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{t('nav_products')}</span>
@@ -343,15 +343,15 @@ export const Navbar: React.FC = () => {
               <Link
                 to="/diagnose"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/60 dark:bg-emerald-950/60"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 dark:bg-emerald-950/60 border border-emerald-500/20 shadow-xs"
               >
-                <Stethoscope className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Stethoscope className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
                 <span>AI Crop Doctor &amp; Diagnosis</span>
               </Link>
               <Link
                 to="/planner"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/60 dark:bg-amber-950/60"
+                className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-950/60 border border-amber-500/20 shadow-xs"
               >
                 <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span>Farm Crop Planner</span>
@@ -362,7 +362,7 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/profile"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-all"
                   >
                     <User className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                     <span>My Profile</span>
@@ -370,14 +370,14 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/orders"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-all"
                   >
                     <Package className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                     <span>My Orders</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                    className="w-full text-left flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-all"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Log Out</span>
@@ -388,14 +388,14 @@ export const Navbar: React.FC = () => {
                   <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center bg-emerald-600 text-white font-semibold py-2 rounded-xl text-sm"
+                    className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-2xl text-xs shadow-md shadow-emerald-600/20 transition-all"
                   >
                     Log In
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 text-center bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 font-semibold py-2 rounded-xl text-sm"
+                    className="flex-1 text-center bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 font-bold py-2.5 rounded-2xl text-xs border border-gray-200 dark:border-slate-700 transition-all"
                   >
                     Register
                   </Link>

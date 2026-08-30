@@ -174,14 +174,14 @@ export const Customers: React.FC = () => {
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl overflow-hidden">
           
           {/* Mobile Customer Cards View (Visible under sm) */}
-          <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/60">
+          <div className="block sm:hidden divide-y divide-emerald-100/60 dark:divide-slate-800/50">
             {isLoading ? (
               <div className="py-8 text-center text-xs text-slate-400">Loading farmer directory...</div>
             ) : customers.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400">No registered customers found.</div>
             ) : (
               customers.map((c) => (
-                <div key={c.id} className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <div key={c.id} className="p-4 space-y-3 hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 flex items-center justify-center font-black text-sm uppercase shrink-0">
@@ -206,15 +206,15 @@ export const Customers: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50/70 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-150 dark:border-slate-800/60">
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-emerald-50/50 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Region</span>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block uppercase">Region</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
                         {c.farm_location || 'Not Specified'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Land Holding</span>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block uppercase">Land Holding</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200 block">
                         {c.farm_size_acres ? `${c.farm_size_acres} Acres` : 'Not Specified'}
                       </span>
@@ -443,7 +443,7 @@ export const Customers: React.FC = () => {
                 
                 {/* CRM Key Metrics Cards */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                  <div className="bg-slate-50/80 dark:bg-slate-950/80 p-2.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-center relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+                  <div className="bg-emerald-50/60 dark:bg-emerald-950/40 p-2.5 sm:p-4 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/40 text-center relative overflow-hidden group hover:border-emerald-500/50 transition-all">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-1 sm:mb-2 font-bold">
                       <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
@@ -451,7 +451,7 @@ export const Customers: React.FC = () => {
                     <p className="text-base sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">{selectedCustomer.stats.orders_count}</p>
                   </div>
 
-                  <div className="bg-slate-50/80 dark:bg-slate-950/80 p-2.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-center relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+                  <div className="bg-blue-50/60 dark:bg-blue-950/30 p-2.5 sm:p-4 rounded-2xl border border-blue-200/60 dark:border-blue-800/40 text-center relative overflow-hidden group hover:border-blue-500/50 transition-all">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-1 sm:mb-2 font-bold">
                       <Sprout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
@@ -461,7 +461,7 @@ export const Customers: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="bg-slate-50/80 dark:bg-slate-950/80 p-2.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-center relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+                  <div className="bg-amber-50/60 dark:bg-amber-950/30 p-2.5 sm:p-4 rounded-2xl border border-amber-200/60 dark:border-amber-800/40 text-center relative overflow-hidden group hover:border-amber-500/50 transition-all">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-1 sm:mb-2 font-bold">
                       <Stethoscope className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
@@ -479,7 +479,7 @@ export const Customers: React.FC = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Farm Location Card */}
-                      <div className="bg-slate-50/90 dark:bg-slate-950/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-start gap-3">
+                      <div className="bg-emerald-50/40 dark:bg-slate-800/80 p-4 rounded-2xl border border-emerald-200/60 dark:border-emerald-500/20 flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
                           <MapPin className="w-4 h-4" />
                         </div>
@@ -495,7 +495,7 @@ export const Customers: React.FC = () => {
                       </div>
 
                       {/* Land Holding Card */}
-                      <div className="bg-slate-50/90 dark:bg-slate-950/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-start gap-3">
+                      <div className="bg-blue-50/40 dark:bg-slate-800/80 p-4 rounded-2xl border border-blue-200/60 dark:border-emerald-500/20 flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">
                           <Sprout className="w-4 h-4" />
                         </div>
@@ -511,7 +511,7 @@ export const Customers: React.FC = () => {
                       </div>
 
                       {/* Preferred Language */}
-                      <div className="bg-slate-50/90 dark:bg-slate-950/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-start gap-3">
+                      <div className="bg-purple-50/40 dark:bg-slate-800/80 p-4 rounded-2xl border border-purple-200/60 dark:border-emerald-500/20 flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 shrink-0">
                           <Globe className="w-4 h-4" />
                         </div>
@@ -524,7 +524,7 @@ export const Customers: React.FC = () => {
                       </div>
 
                       {/* Registration Date */}
-                      <div className="bg-slate-50/90 dark:bg-slate-950/90 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-start gap-3">
+                      <div className="bg-teal-50/40 dark:bg-slate-800/80 p-4 rounded-2xl border border-teal-200/60 dark:border-emerald-500/20 flex items-start gap-3">
                         <div className="p-2.5 rounded-xl bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 shrink-0">
                           <Calendar className="w-4 h-4" />
                         </div>
@@ -549,7 +549,7 @@ export const Customers: React.FC = () => {
                         {selectedCustomer.orders.map((o: any, idx: number) => (
                           <div
                             key={o.id || idx}
-                            className="bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between gap-3 text-xs hover:border-emerald-500/40 transition-all"
+                            className="bg-emerald-50/30 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-between gap-3 text-xs hover:border-emerald-500/40 transition-all"
                           >
                             <div className="space-y-0.5 min-w-0">
                               <p className="font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
@@ -573,7 +573,7 @@ export const Customers: React.FC = () => {
                         ))}
                       </div>
                     ) : (
-                      <div className="bg-slate-50 dark:bg-slate-950 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                      <div className="bg-slate-50 dark:bg-slate-800/80 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-center space-y-2">
                         <ShoppingBag className="w-8 h-8 text-slate-400 mx-auto" />
                         <p className="text-xs font-bold text-slate-500">No storefront orders found for this buyer yet.</p>
                       </div>
@@ -584,11 +584,11 @@ export const Customers: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 bg-slate-50/80 dark:bg-slate-950/80 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-xs">
+              <div className="p-4 bg-white dark:bg-slate-900 border-t border-emerald-200/60 dark:border-emerald-500/20 flex items-center justify-between text-xs">
                 <span className="text-slate-400 font-medium">Customer CRM Record ID #{selectedCustomer.customer.id}</span>
                 <button
                   onClick={() => setShowDetailModal(false)}
-                  className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-md"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-md shadow-emerald-600/20"
                 >
                   Close Profile
                 </button>
