@@ -209,6 +209,22 @@ class UserController extends Controller
             $admin->syncRoles([$roleObj]);
         }
 
+        if ($request->has('permissions') && is_array($request->permissions)) {
+            $targetAllowed = array_values(array_unique($request->permissions));
+            $rolePermissions = $admin->getPermissionsViaRoles()->pluck('name')->toArray();
+            if (empty($rolePermissions) && !empty($admin->role)) {
+                $rObj = Role::where('name', $admin->role)->first();
+                if ($rObj) {
+                    $rolePermissions = $rObj->permissions()->pluck('name')->toArray();
+                }
+            }
+            $revoked = array_values(array_diff($rolePermissions, $targetAllowed));
+            $extraDirect = array_values(array_diff($targetAllowed, $rolePermissions));
+
+            $admin->syncPermissions($extraDirect);
+            $data['revoked_permissions'] = $revoked;
+        }
+
         $admin->update($data);
         Cache::forget('admin_team_list');
 

@@ -3,7 +3,8 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import {
   Users as UsersIcon, UserPlus, Search, Filter, ShieldCheck, ShieldAlert,
-  Edit, Trash2, Eye, CheckCircle, XCircle, Phone, Mail, RefreshCw, KeyRound
+  Edit, Trash2, Eye, CheckCircle, XCircle, Phone, Mail, RefreshCw, KeyRound,
+  Sliders, Check, RotateCcw, Lock, Sparkles
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -16,6 +17,7 @@ interface StaffRecord {
   roles?: string[];
   is_verified: boolean;
   effective_permissions_count?: number;
+  effective_permissions?: string[];
   created_at: string;
 }
 
@@ -41,7 +43,10 @@ import { PasswordInput } from '../../components/common/PasswordInput';
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<StaffRecord[]>([]);
   const [stats, setStats] = useState<StaffStats>({ total_users: 0, staff_count: 0, customers_count: 0, unverified_count: 0 });
-  const [rolesList, setRolesList] = useState<string[]>(['Super Admin', 'Admin', 'Store Manager', 'Customer Support', 'Warehouse Manager', 'Field Officer']);
+  const [rolesList, setRolesList] = useState<string[]>([
+    'Super Admin', 'Admin', 'Store Manager', 'Customer Support', 'Warehouse Manager', 'Field Officer', 'Staff'
+  ]);
+  const [showDemoAccounts, setShowDemoAccounts] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters
@@ -55,6 +60,13 @@ export const UsersPage: React.FC = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [userDetailData, setUserDetailData] = useState<StaffDetailData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // RBSC Role & Permission Editor Modal State
+  const [showRbscModal, setShowRbscModal] = useState(false);
+  const [rbscUser, setRbscUser] = useState<StaffRecord | null>(null);
+  const [rbscRole, setRbscRole] = useState<string>('Staff');
+  const [rbscPerms, setRbscPerms] = useState<string[]>([]);
+  const [systemPermissions, setSystemPermissions] = useState<any[]>([]);
 
   // Form inputs
   const [formData, setFormData] = useState({
@@ -171,6 +183,42 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const handleOpenRbscModal = async (user: StaffRecord) => {
+    setRbscUser(user);
+    setRbscRole(user.role || 'Admin');
+    try {
+      const [details, perms] = await Promise.all([
+        adminApi.getUserDetails(user.id),
+        adminApi.getPermissions()
+      ]);
+      setSystemPermissions(perms || []);
+      const activePerms = details?.user?.effective_permissions || user.effective_permissions || [];
+      setRbscPerms(activePerms);
+      setShowRbscModal(true);
+    } catch (e) {
+      toast.error("Failed to load user permissions matrix.");
+    }
+  };
+
+  const handleSaveRbsc = async () => {
+    if (!rbscUser) return;
+    setIsSaving(true);
+    try {
+      await adminApi.updateUser(rbscUser.id, {
+        role: rbscRole,
+        permissions: rbscPerms,
+      });
+      toast.success(`Role & RBSC permissions updated for ${rbscUser.name}!`);
+      setShowRbscModal(false);
+      fetchUsers();
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || "Failed to update user RBSC permissions.";
+      toast.error(msg);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteUser = async (user: StaffRecord) => {
     if (!window.confirm(`Are you sure you want to revoke and delete staff account for "${user.name}"?`)) return;
 
@@ -183,6 +231,17 @@ export const UsersPage: React.FC = () => {
       toast.error(msg);
     }
   };
+
+  const demoAccounts = [
+    { name: 'Super Admin (Executive)', role: 'Super Admin', email: 'superadmin@fertilizershop.com', pass: 'admin123', perms: 'All 35 Perms', badge: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300' },
+    { name: 'Admin SarkarFertilizer', role: 'Admin', email: 'admin@fertilizershop.com', pass: 'admin123', perms: 'All 35 Perms', badge: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300' },
+    { name: 'Vikram Singh', role: 'Store Manager', email: 'store.manager@fertilizershop.com', pass: 'staff123', perms: '13 Perms', badge: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300' },
+    { name: 'Ananya Sharma', role: 'Customer Support', email: 'support@fertilizershop.com', pass: 'staff123', perms: '6 Perms', badge: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300' },
+    { name: 'Rajesh Kumar', role: 'Warehouse Manager', email: 'warehouse@fertilizershop.com', pass: 'staff123', perms: '6 Perms', badge: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300' },
+    { name: 'Priya Verma', role: 'Field Officer', email: 'field.officer@fertilizershop.com', pass: 'staff123', perms: '5 Perms', badge: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-300' },
+    { name: 'Amit Das', role: 'Staff', email: 'staff@fertilizershop.com', pass: 'staff123', perms: '5 Perms', badge: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300' },
+    { name: 'Ramesh Patel', role: 'Customer', email: 'ramesh.patel@agri.com', pass: 'password123', perms: 'Storefront Portal', badge: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300' },
+  ];
 
   return (
     <AdminLayout title="Staff & Internal User Management">
@@ -200,7 +259,15 @@ export const UsersPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => setShowDemoAccounts(!showDemoAccounts)}
+              className="px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>{showDemoAccounts ? 'Hide Demo Roster' : 'Show Demo Roster'}</span>
+            </button>
+
             <button
               onClick={fetchUsers}
               className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
@@ -217,6 +284,53 @@ export const UsersPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Demo Staff & Admin User Credentials Hub */}
+        {showDemoAccounts && (
+          <div className="bg-gradient-to-br from-emerald-950/90 via-slate-900/90 to-teal-950/90 backdrop-blur-md rounded-3xl border border-emerald-500/30 p-5 shadow-xl space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <ShieldAlert className="w-5 h-5 text-emerald-400 shrink-0" />
+                <h3 className="text-sm font-black tracking-wide text-white uppercase truncate">System Demo Users Roster &amp; RBAC Credentials</h3>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
+                8 Demo Accounts Ready
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {demoAccounts.map((account, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-900/80 hover:bg-slate-800/90 rounded-2xl p-3.5 border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${account.badge}`}>
+                      {account.role}
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400">{account.perms}</span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-black text-white truncate">{account.name}</h4>
+                    <p className="text-[11px] font-mono text-slate-300 truncate">{account.email}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 font-mono">Pass: <strong className="text-emerald-400">{account.pass}</strong></p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${account.email} | ${account.pass}`);
+                      toast.success(`Copied credentials for ${account.name}!`);
+                    }}
+                    className="w-full text-[10px] font-bold py-1 px-2 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/30 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>Copy Credentials</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Roster Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -449,6 +563,13 @@ export const UsersPage: React.FC = () => {
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1.5">
                           <button
+                            onClick={() => handleOpenRbscModal(user)}
+                            className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white cursor-pointer transition-all border border-emerald-300 dark:border-emerald-800"
+                            title="Edit Role & RBSC Permissions Matrix"
+                          >
+                            <Sliders className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             onClick={() => handleViewDetails(user)}
                             className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
                             title="Inspect Staff Capabilities"
@@ -645,6 +766,244 @@ export const UsersPage: React.FC = () => {
                   Close Window
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Editing User Role & RBSC Direct Permissions */}
+        {showRbscModal && rbscUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-3xl w-full p-5 sm:p-6 space-y-5 shadow-2xl animate-scale-in text-slate-900 dark:text-white max-h-[92vh] overflow-y-auto">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-lg">
+                    <Sliders className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>RBSC Role &amp; Permissions Matrix</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 uppercase">
+                        {rbscUser.name}
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Configure staff role assignment and override granular system capabilities.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRbscModal(false)}
+                  className="text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs font-bold p-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Role Selection Bar */}
+              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Assigned Administrative Staff Role
+                </label>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <select
+                    value={rbscRole}
+                    onChange={(e) => setRbscRole(e.target.value)}
+                    className="w-full sm:w-64 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  >
+                    {rolesList.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (rbscRole === 'Super Admin' || rbscRole === 'Admin') {
+                          const allNames = (systemPermissions || []).map(p => p.name);
+                          setRbscPerms(allNames.length > 0 ? allNames : [
+                            'products.view', 'products.create', 'products.edit', 'products.delete',
+                            'orders.view', 'orders.edit', 'orders.status', 'orders.delete',
+                            'users.view', 'users.create', 'users.edit', 'users.delete',
+                            'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
+                            'customers.view', 'customers.edit', 'customers.delete',
+                            'analytics.view', 'analytics.export',
+                            'notifications.view', 'notifications.send',
+                            'inventory.view', 'inventory.update',
+                            'crop_plans.view', 'crop_plans.manage'
+                          ]);
+                        } else {
+                          setRbscPerms([
+                            'products.view', 'orders.view', 'customers.view', 'notifications.view', 'inventory.view'
+                          ]);
+                        }
+                        toast.success(`Reset capabilities to default for ${rbscRole}`);
+                      }}
+                      className="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Reset Role Defaults</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allNames = (systemPermissions && systemPermissions.length > 0) ? systemPermissions.map(p => p.name) : [
+                          'products.view', 'products.create', 'products.edit', 'products.delete',
+                          'orders.view', 'orders.edit', 'orders.status', 'orders.delete',
+                          'users.view', 'users.create', 'users.edit', 'users.delete',
+                          'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
+                          'customers.view', 'customers.edit', 'customers.delete',
+                          'analytics.view', 'analytics.export',
+                          'notifications.view', 'notifications.send',
+                          'inventory.view', 'inventory.update',
+                          'crop_plans.view', 'crop_plans.manage'
+                        ];
+                        setRbscPerms(allNames);
+                        toast.success("Granted all 35 permissions!");
+                      }}
+                      className="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Grant All</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Granular Module Permission Matrix */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+                    Granular Capability Overrides ({rbscPerms.length} Active)
+                  </h4>
+                  <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-bold">
+                    Effective RBAC Guard Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto p-1">
+                  {Object.entries(
+                    (systemPermissions && systemPermissions.length > 0)
+                      ? systemPermissions.reduce((acc: any, p: any) => {
+                          const grp = p.group || 'System Capabilities';
+                          if (!acc[grp]) acc[grp] = [];
+                          acc[grp].push(p);
+                          return acc;
+                        }, {})
+                      : {
+                          'Products Module': [
+                            { name: 'products.view', label: 'View Products Catalog' },
+                            { name: 'products.create', label: 'Create New Products' },
+                            { name: 'products.edit', label: 'Edit Products & Pricing' },
+                            { name: 'products.delete', label: 'Delete Products' },
+                          ],
+                          'Orders Module': [
+                            { name: 'orders.view', label: 'View Customer Orders' },
+                            { name: 'orders.edit', label: 'Edit Order Items' },
+                            { name: 'orders.status', label: 'Update Fulfill Status' },
+                            { name: 'orders.delete', label: 'Cancel & Delete Orders' },
+                          ],
+                          'Staff & Admin Users': [
+                            { name: 'users.view', label: 'View Staff Roster' },
+                            { name: 'users.create', label: 'Create Staff Accounts' },
+                            { name: 'users.edit', label: 'Edit Staff Credentials' },
+                            { name: 'users.delete', label: 'Delete Staff Accounts' },
+                          ],
+                          'Roles & Permissions': [
+                            { name: 'roles.view', label: 'View Roles Matrix' },
+                            { name: 'roles.create', label: 'Create Custom Roles' },
+                            { name: 'roles.edit', label: 'Edit Role Permissions' },
+                            { name: 'roles.delete', label: 'Delete System Roles' },
+                          ],
+                          'Customers CRM': [
+                            { name: 'customers.view', label: 'View Farmer Profiles' },
+                            { name: 'customers.edit', label: 'Edit Farmer Accounts' },
+                            { name: 'customers.delete', label: 'Delete Farmer Records' },
+                          ],
+                          'Analytics & Reports': [
+                            { name: 'analytics.view', label: 'View Sales Analytics' },
+                            { name: 'analytics.export', label: 'Export Reports' },
+                          ],
+                          'Sentinel Alerts': [
+                            { name: 'notifications.view', label: 'View Privileged Notices' },
+                            { name: 'notifications.send', label: 'Dispatch System Alerts' },
+                          ],
+                          'Inventory Control': [
+                            { name: 'inventory.view', label: 'View Stock Inventory' },
+                            { name: 'inventory.update', label: 'Update Stock Levels' },
+                          ],
+                          'Crop Plans & Triage': [
+                            { name: 'crop_plans.view', label: 'View Crop Plans' },
+                            { name: 'crop_plans.manage', label: 'Manage Crop Plans' },
+                          ],
+                        }
+                  ).map(([groupName, permsArr]: [string, any]) => (
+                    <div key={groupName} className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-3 border border-slate-200 dark:border-slate-800 space-y-2">
+                      <h5 className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{groupName}</h5>
+                      <div className="space-y-1.5">
+                        {permsArr.map((perm: any) => {
+                          const isChecked = rbscPerms.includes(perm.name);
+                          return (
+                            <label
+                              key={perm.name}
+                              className="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-900 transition-all cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    setRbscPerms(prev =>
+                                      isChecked
+                                        ? prev.filter(p => p !== perm.name)
+                                        : [...prev, perm.name]
+                                    );
+                                  }}
+                                  className="w-4 h-4 rounded text-emerald-600 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:ring-emerald-500 shrink-0 cursor-pointer"
+                                />
+                                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{perm.label || perm.name}</span>
+                              </div>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-mono shrink-0 ${isChecked ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                                {isChecked ? 'ALLOWED' : 'DENIED'}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-3">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {rbscPerms.length} capabilities will be granted to {rbscUser.name}.
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowRbscModal(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveRbsc}
+                    disabled={isSaving}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-black shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Sliders className="w-4 h-4" />
+                    <span>{isSaving ? 'Saving Matrix...' : 'Save RBSC Permissions'}</span>
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
         )}

@@ -160,6 +160,39 @@ export const AdminLogin: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800 p-8 shadow-2xl space-y-5">
+            
+            {/* Quick Demo Staff Credential Selector */}
+            <div className="space-y-2 pb-2 border-b border-slate-800">
+              <label className="block text-[11px] font-extrabold text-emerald-400 uppercase tracking-wider flex items-center justify-between">
+                <span>⚡ Quick Demo Staff Sign-In</span>
+                <span className="text-[10px] text-slate-400 font-normal">Click to fill</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {[
+                  { label: '👑 Super Admin', login: 'superadmin@fertilizershop.com', pass: 'admin123' },
+                  { label: '🛡️ System Admin', login: 'admin@fertilizershop.com', pass: 'admin123' },
+                  { label: '🏪 Store Manager', login: 'store.manager@fertilizershop.com', pass: 'staff123' },
+                  { label: '🎧 Support Lead', login: 'support@fertilizershop.com', pass: 'staff123' },
+                  { label: '📦 Warehouse', login: 'warehouse@fertilizershop.com', pass: 'staff123' },
+                  { label: '🌾 Field Officer', login: 'field.officer@fertilizershop.com', pass: 'staff123' },
+                ].map((demo, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setCredential(demo.login);
+                      setPassword(demo.pass);
+                      toast.success(`Demo credentials set for ${demo.label}`);
+                    }}
+                    className="text-[10px] font-bold py-1.5 px-2 rounded-lg bg-slate-950/90 hover:bg-emerald-950/80 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all text-left truncate cursor-pointer"
+                    title={`${demo.login} (${demo.pass})`}
+                  >
+                    {demo.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Corporate Email / Mobile</label>
               <div className="relative">

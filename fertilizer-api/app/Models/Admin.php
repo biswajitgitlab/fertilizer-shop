@@ -13,6 +13,7 @@ class Admin extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $table = 'admins';
+    protected $guard_name = 'web';
 
     protected $fillable = [
         'name',
@@ -45,11 +46,17 @@ class Admin extends Authenticatable
      */
     public function getEffectivePermissions(): array
     {
-        if ($this->hasRole(['Super Admin', 'Admin'])) {
+        if ($this->hasRole(['Super Admin', 'Admin']) || in_array($this->role, ['Super Admin', 'Admin'])) {
             return \Spatie\Permission\Models\Permission::pluck('name')->toArray();
         }
 
         $allGranted = $this->getAllPermissions()->pluck('name')->toArray();
+        if (empty($allGranted) && !empty($this->role)) {
+            $roleObj = \Spatie\Permission\Models\Role::where('name', $this->role)->first();
+            if ($roleObj) {
+                $allGranted = $roleObj->permissions()->pluck('name')->toArray();
+            }
+        }
         $revoked = $this->revoked_permissions ?: [];
 
         return array_values(array_diff($allGranted, $revoked));
@@ -60,7 +67,7 @@ class Admin extends Authenticatable
      */
     public function hasEffectivePermission(string $permission): bool
     {
-        if ($this->hasRole(['Super Admin', 'Admin'])) {
+        if ($this->hasRole(['Super Admin', 'Admin']) || in_array($this->role, ['Super Admin', 'Admin'])) {
             return true;
         }
 
@@ -69,6 +76,6 @@ class Admin extends Authenticatable
             return false;
         }
 
-        return $this->hasPermissionTo($permission);
+        return in_array($permission, $this->getEffectivePermissions());
     }
 }
