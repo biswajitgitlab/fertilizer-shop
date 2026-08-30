@@ -12,30 +12,30 @@
   }
 
   body {
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #f0fdf4;
+    color: #064e3b;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html.dark body {
-    background-color: #020617;
-    color: #f8fafc;
+    background-color: #022c22;
+    color: #ecfdf5;
   }
 }
 
 @layer utilities {
   .liquid-glass {
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(240, 253, 244, 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid rgba(16, 185, 129, 0.3);
   }
 
   .dark .liquid-glass {
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(2, 44, 34, 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(16, 185, 129, 0.25);
   }
 
   .liquid-glass-dark {
@@ -46,18 +46,18 @@
   }
 
   .liquid-glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.85) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(236, 253, 245, 0.85) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(16, 185, 129, 0.25);
     box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.08);
   }
 
   .dark .liquid-glass-card {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.85) 100%);
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.65) 0%, rgba(2, 44, 34, 0.85) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(51, 65, 85, 0.6);
+    border: 1px solid rgba(16, 185, 129, 0.3);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
