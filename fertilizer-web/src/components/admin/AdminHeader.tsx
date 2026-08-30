@@ -158,7 +158,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
         <div className="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
           
-          {/* LEFT SECTION: Hamburger, Collapse, Title & Live Status */}
+          {/* LEFT SECTION: Mobile Hamburger, Logo, Title & Live Status */}
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {/* Mobile Sidebar Hamburger Toggle */}
             <button
@@ -174,49 +174,18 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Desktop Collapse Sidebar Toggle */}
-            <button
-              onClick={toggleSidebarCollapsed}
-              title={sidebarCollapsed ? "Expand Navigation Sidebar" : "Collapse Navigation Sidebar"}
-              className={`hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all duration-200 border cursor-pointer group ${
-                theme === 'dark'
-                  ? 'text-slate-300 hover:text-emerald-400 bg-slate-900/80 hover:bg-slate-800 border-slate-800'
-                  : 'text-slate-600 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 border-slate-200'
-              }`}
-            >
-              {sidebarCollapsed ? (
-                <PanelLeftOpen className="w-4 h-4 text-emerald-500 transition-transform group-hover:scale-110" />
-              ) : (
-                <PanelLeftClose className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-              )}
-              <span className="text-[11px] font-bold tracking-tight uppercase hidden xl:inline">
-                {sidebarCollapsed ? "Expand" : "Collapse"}
-              </span>
-            </button>
-
             {/* Mobile Brand Icon */}
             <div className="lg:hidden shrink-0">
               <Logo variant="icon" size="sm" />
             </div>
 
-            {/* Breadcrumb & Title Indicator */}
+            {/* Live System Status Badge */}
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                <span className="hover:text-emerald-500 cursor-pointer transition-colors">Admin</span>
-                <span>/</span>
-              </div>
-              <h1 className={`text-base sm:text-lg font-black tracking-tight truncate flex items-center gap-2.5 ${
-                theme === 'dark' ? 'text-white' : 'text-slate-900'
-              }`}>
-                <span className="truncate">{title}</span>
-
-                {/* Live System Badge */}
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 uppercase tracking-wider shadow-xs shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 absolute" />
-                  <span className="ml-2">Live System</span>
-                </span>
-              </h1>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 uppercase tracking-wider shadow-xs shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 absolute" />
+                <span className="ml-2">Live System</span>
+              </span>
             </div>
           </div>
 

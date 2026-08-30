@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  Sun, Moon, UserCheck
+  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -16,7 +16,7 @@ export const Sidebar: React.FC<{
   collapsed?: boolean;
 }> = ({ onCloseMobile, collapsed }) => {
   const { user, logout } = useAuthStore();
-  const { theme, toggleTheme, sidebarCollapsed } = useUIStore();
+  const { theme, toggleTheme, sidebarCollapsed, toggleSidebarCollapsed } = useUIStore();
   const navigate = useNavigate();
 
   const isCollapsed = collapsed !== undefined ? collapsed : sidebarCollapsed;
@@ -51,10 +51,27 @@ export const Sidebar: React.FC<{
     } ${isCollapsed ? 'items-center' : ''}`}>
       <div className="space-y-4 w-full">
         {/* Admin Brand Logo Header */}
-        <div className={`flex items-center ${isCollapsed ? 'justify-center py-3' : 'justify-start px-2 py-3'} border-b ${
+        <div className={`flex items-center ${isCollapsed ? 'justify-center py-3' : 'justify-between px-2 py-3'} border-b ${
           theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'
         }`}>
           <Logo variant="sidebar" collapsed={isCollapsed} />
+          {!onCloseMobile && (
+            <button
+              onClick={toggleSidebarCollapsed}
+              title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              className={`p-1.5 rounded-xl transition-all border cursor-pointer hidden lg:flex items-center justify-center ${
+                theme === 'dark'
+                  ? 'text-slate-400 hover:text-emerald-400 hover:bg-slate-800 border-slate-800/80'
+                  : 'text-slate-500 hover:text-emerald-600 hover:bg-slate-100 border-slate-200'
+              }`}
+            >
+              {isCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Admin User Profile Card */}
