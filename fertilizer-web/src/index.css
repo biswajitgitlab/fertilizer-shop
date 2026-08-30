@@ -121,6 +121,17 @@
   }
 }
 
+@keyframes toast-slide-right-to-left {
+  0% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 /* React Hot Toast Icon & Container Animations */
 div[role="status"] svg,
 div[role="status"] > div:first-child {

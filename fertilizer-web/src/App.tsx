@@ -138,6 +138,7 @@ export function App() {
               fontSize: '0.875rem',
               fontWeight: '600',
               padding: '12px 18px',
+              animation: 'toast-slide-right-to-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             },
             success: {
               duration: 1800,
@@ -147,7 +148,6 @@ export function App() {
               },
               style: {
                 border: '1px solid rgba(16, 185, 129, 0.5)',
-                animation: 'toast-pulse-success 2.5s infinite ease-in-out',
               },
             },
             error: {
@@ -158,7 +158,6 @@ export function App() {
               },
               style: {
                 border: '1px solid rgba(244, 63, 94, 0.5)',
-                animation: 'toast-pulse-error 2.5s infinite ease-in-out',
               },
             },
           }}
