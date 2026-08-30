@@ -16,6 +16,7 @@ export interface Product {
   stock: number;
   rating: number;
   reviewsCount: number;
+  viewsCount?: number;
   isFeatured?: boolean;
   isTrending?: boolean;
   images: string[];

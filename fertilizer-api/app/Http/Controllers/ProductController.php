@@ -104,16 +104,12 @@ class ProductController extends Controller
      */
     public function trending()
     {
-        $products = Cache::remember('products_trending', 1800, function () {
+        $products = Cache::remember('products_trending', 300, function () {
             return Product::with('category')
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
-                ->withCount(['orderItems' => function ($query) {
-                    $query->whereHas('order', function($q) {
-                        $q->where('created_at', '>=', now()->subDays(30));
-                    });
-                }])
-                ->orderByDesc('order_items_count')
+                ->orderByDesc('views_count')
+                ->latest()
                 ->take(8)
                 ->get()
                 ->toArray();
@@ -127,7 +123,9 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        $data = Cache::remember("product_{$slug}", 3600, function () use ($slug) {
+        Product::where('slug', $slug)->increment('views_count');
+
+        $data = Cache::remember("product_{$slug}", 600, function () use ($slug) {
             $product = Product::with(['category', 'reviews.user'])
                 ->withAvg('reviews', 'rating')
                 ->withCount('reviews')
@@ -146,6 +144,11 @@ class ProductController extends Controller
                 'related' => $relatedProducts->toArray()
             ];
         });
+
+        $freshProduct = Product::where('slug', $slug)->first();
+        if ($freshProduct && isset($data['product'])) {
+            $data['product']['views_count'] = $freshProduct->views_count;
+        }
 
         return response()->json($data);
     }

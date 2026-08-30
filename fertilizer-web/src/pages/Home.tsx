@@ -9,6 +9,8 @@ import { Product, Category } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { PageTransition } from '../components/common/PageTransition';
+import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
+import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import {
   AnimatedLeaf,
   AnimatedSprout,
@@ -542,45 +544,15 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ─── 6. TRENDING BIO-ENHANCERS & SPRAYS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900 relative">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-teal-400 text-xs font-black uppercase tracking-widest bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
-                Farmer Choices
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mt-2">
-                Trending Bio-Enhancers &amp; Sprays
-              </h2>
-              <p className="text-xs text-slate-400 font-medium mt-1">
-                Most bought pest sprays and plant growth tonics this week
-              </p>
-            </div>
-            <Link to="/products" className="text-xs font-bold text-teal-400 hover:underline flex items-center gap-1 shrink-0">
-              <span>Explore All</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
+      {/* ─── 6. TRENDING & MOST VISITED PRODUCTS ─── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <TrendingProductsSection />
+      </div>
 
-          {trending.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {trending.map((prod) => (
-                <ProductCard key={prod.id} product={prod} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-slate-950/80 rounded-3xl border border-white/10 p-12 text-center space-y-3">
-              <Bug className="w-12 h-12 text-teal-400 mx-auto animate-bounce" />
-              <h3 className="text-lg font-bold text-white">Loading Sprays &amp; Tonics...</h3>
-              <p className="text-xs text-slate-400">Browse our complete product catalog below.</p>
-              <Link to="/products" className="inline-block bg-teal-400 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs">
-                Browse All
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
+      {/* ─── 6.5 RECENTLY VIEWED PRODUCTS (RETARGETING) ─── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <RecentlyViewedSection />
+      </div>
 
       {/* ─── 7. FARMER TESTIMONIALS ─── */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-950 text-white relative">

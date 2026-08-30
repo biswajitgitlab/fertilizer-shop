@@ -32,6 +32,7 @@ export const mapProduct = (p: any): any => {
     usageInstructions: p.usage_instructions || p.usageInstructions || '',
     rating,
     reviewsCount,
+    viewsCount: p.views_count !== undefined ? Number(p.views_count) : (Number(p.viewsCount) || 0),
     unit: p.unit || '',
   };
 };

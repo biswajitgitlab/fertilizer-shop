@@ -13,6 +13,8 @@ import { formatCurrency, calculateDiscount } from '../utils/formatters';
 import { ShieldCheck, Truck, Headphones, ShoppingCart, CheckCircle2, Star, UserCheck, MessageSquare, Send, Lock, Check, Edit3 } from 'lucide-react';
 import { apiClient } from '../api/axiosInstances';
 import toast from 'react-hot-toast';
+import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
+import { useRecentlyViewedStore } from '../store/recentlyViewedStore';
 
 interface ReviewItem {
   id: number;
@@ -59,6 +61,9 @@ export const ProductDetail: React.FC = () => {
         if (!slug) return;
         const data = await productApi.getProductBySlug(slug);
         setProduct(data);
+        if (data) {
+          useRecentlyViewedStore.getState().addRecentlyViewed(data);
+        }
         const rel = await productApi.getRelated(data.category, data.id);
         setRelated(rel);
 
@@ -511,6 +516,8 @@ export const ProductDetail: React.FC = () => {
         </div>
       )}
 
+      {/* Recently Viewed Products by User */}
+      <RecentlyViewedSection currentProductId={product?.id} />
     </div>
   );
 };
