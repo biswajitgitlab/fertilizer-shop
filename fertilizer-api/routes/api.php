@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
@@ -101,9 +103,6 @@ Route::get('/webhooks/payment/mock', function (\Illuminate\Http\Request $request
 
 Route::post('/webhooks/n8n/diagnosis-result', [\App\Http\Controllers\Webhook\N8nWebhookController::class, 'handleDiagnosisResult']);
 Route::post('/webhooks/n8n/chat-reply', [\App\Http\Controllers\Webhook\N8nWebhookController::class, 'handleChatReply']);
-
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ProductController;
 
 // Public Routes (AI Chat throttled to 20 requests/min)
 Route::middleware('throttle:chat')->group(function () {

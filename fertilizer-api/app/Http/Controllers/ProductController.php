@@ -31,7 +31,8 @@ class ProductController extends Controller
 
         if ($request->filled('category')) {
             $query->whereHas('category', function($q) use ($request) {
-                $q->where('slug', $request->category);
+                $q->where('slug', $request->category)
+                  ->orWhere('name', 'like', "%{$request->category}%");
             });
         }
         
@@ -44,12 +45,65 @@ class ProductController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $search = trim($request->search);
+            $searchLower = mb_strtolower($search);
+
+            // Agricultural Synonyms & Term Expansion
+            $synonyms = [$searchLower];
+            
+            if (in_array($searchLower, ['urea', 'neem urea', 'nitrogen'])) {
+                $synonyms = array_merge($synonyms, ['urea', 'nitrogen', 'chemical', 'fertilizer']);
+            } elseif (in_array($searchLower, ['dap', 'di-ammonium', 'phosphate'])) {
+                $synonyms = array_merge($synonyms, ['dap', 'phosphate', 'chemical', 'fertilizer']);
+            } elseif (in_array($searchLower, ['mop', 'potash'])) {
+                $synonyms = array_merge($synonyms, ['mop', 'potash', 'potassium', 'chemical']);
+            } elseif (in_array($searchLower, ['rice', 'paddy', 'basmati'])) {
+                $synonyms = array_merge($synonyms, ['rice', 'paddy', 'basmati']);
+            } elseif (in_array($searchLower, ['maize', 'corn'])) {
+                $synonyms = array_merge($synonyms, ['maize', 'corn']);
+            } elseif (in_array($searchLower, ['npk', '19:19:19', '19-19-19', '19 19 19'])) {
+                $synonyms = array_merge($synonyms, ['npk', '19:19:19', 'water soluble', 'fertilizer']);
+            } elseif (in_array($searchLower, ['insecticide', 'insecticides', 'pest', 'pesticide', 'pesticides', 'bug', 'bugs'])) {
+                $synonyms = array_merge($synonyms, ['insecticide', 'pesticide', 'confidor', 'imidacloprid', 'bio-neem', 'insect']);
+            } elseif (in_array($searchLower, ['herbicide', 'herbicides', 'weed', 'weedicide', 'weedicides'])) {
+                $synonyms = array_merge($synonyms, ['herbicide', 'weed', 'glycel', 'glyphosate']);
+            } elseif (in_array($searchLower, ['fungicide', 'fungicides', 'fungus', 'blight', 'spot', 'blast'])) {
+                $synonyms = array_merge($synonyms, ['fungicide', 'saaf', 'carbendazim', 'mancozeb', 'blight']);
+            } elseif (in_array($searchLower, ['organic', 'bio', 'vermicompost', 'compost', 'humic'])) {
+                $synonyms = array_merge($synonyms, ['organic', 'bio', 'vermicompost', 'humic', 'tatva']);
+            } elseif (in_array($searchLower, ['vitamin', 'vitamins', 'tonic', 'growth', 'booster', 'kelp', 'seaweed'])) {
+                $synonyms = array_merge($synonyms, ['vitamin', 'tonic', 'growth', 'booster', 'seaweed', 'biovita']);
+            } elseif (in_array($searchLower, ['zinc', 'edta', 'micronutrient', 'micronutrients'])) {
+                $synonyms = array_merge($synonyms, ['zinc', 'chelated', 'micronutrient', 'edta', 'aries']);
+            } elseif (in_array($searchLower, ['seed', 'seeds', 'tools', 'tool'])) {
+                $synonyms = array_merge($synonyms, ['seed', 'seeds', 'basmati', 'pusa', 'nuziveedu', 'mahyco', 'wheat']);
+            }
+
+            $query->where(function($q) use ($search, $synonyms) {
+                // Primary exact/partial search
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
                   ->orWhere('short_desc', 'like', "%{$search}%")
-                  ->orWhere('suitable_crops_json', 'like', "%{$search}%");
+                  ->orWhere('suitable_crops_json', 'like', "%{$search}%")
+                  ->orWhere('composition_json', 'like', "%{$search}%")
+                  ->orWhereHas('category', function($catQuery) use ($search) {
+                      $catQuery->where('name', 'like', "%{$search}%")
+                               ->orWhere('slug', 'like', "%{$search}%");
+                  });
+
+                // Synonym matches
+                foreach ($synonyms as $term) {
+                    if (!empty($term)) {
+                        $q->orWhere('name', 'like', "%{$term}%")
+                          ->orWhere('description', 'like', "%{$term}%")
+                          ->orWhere('short_desc', 'like', "%{$term}%")
+                          ->orWhere('suitable_crops_json', 'like', "%{$term}%")
+                          ->orWhereHas('category', function($catQuery) use ($term) {
+                              $catQuery->where('name', 'like', "%{$term}%")
+                                       ->orWhere('slug', 'like', "%{$term}%");
+                          });
+                    }
+                }
             });
 
             // Track real search analytics in Redis
@@ -57,17 +111,26 @@ class ProductController extends Controller
                 $todayKey = 'krishi_searches_today_' . date('Y-m-d');
                 Redis::incr($todayKey);
                 Redis::incr('krishi_searches_total');
-                Redis::zincrby('krishi_top_search_queries', 1, Str::lower(trim($search)));
+                Redis::zincrby('krishi_top_search_queries', 1, Str::lower($search));
             } catch (\Throwable $e) {}
         }
 
         if ($request->filled('crop')) {
-            $crop = $request->crop;
-            $query->where(function($q) use ($crop) {
-                $q->where('suitable_crops_json', 'like', "%{$crop}%")
-                  ->orWhere('name', 'like', "%{$crop}%")
-                  ->orWhere('description', 'like', "%{$crop}%")
-                  ->orWhere('short_desc', 'like', "%{$crop}%");
+            $crop = trim($request->crop);
+            $cropSynonyms = [$crop];
+            if (in_array(mb_strtolower($crop), ['rice', 'paddy'])) {
+                $cropSynonyms = ['rice', 'paddy'];
+            } elseif (in_array(mb_strtolower($crop), ['maize', 'corn'])) {
+                $cropSynonyms = ['maize', 'corn'];
+            }
+
+            $query->where(function($q) use ($crop, $cropSynonyms) {
+                foreach ($cropSynonyms as $c) {
+                    $q->orWhere('suitable_crops_json', 'like', "%{$c}%")
+                      ->orWhere('name', 'like', "%{$c}%")
+                      ->orWhere('description', 'like', "%{$c}%")
+                      ->orWhere('short_desc', 'like', "%{$c}%");
+                }
             });
 
             // Track real search analytics for crop filter
@@ -75,16 +138,18 @@ class ProductController extends Controller
                 $todayKey = 'krishi_searches_today_' . date('Y-m-d');
                 Redis::incr($todayKey);
                 Redis::incr('krishi_searches_total');
-                Redis::zincrby('krishi_top_search_queries', 1, Str::lower(trim($crop)));
+                Redis::zincrby('krishi_top_search_queries', 1, Str::lower($crop));
             } catch (\Throwable $e) {}
         }
 
         $sort = $request->input('sort', 'newest');
         switch ($sort) {
             case 'price_asc':
+            case 'price-low':
                 $query->orderBy('price', 'asc');
                 break;
             case 'price_desc':
+            case 'price-high':
                 $query->orderBy('price', 'desc');
                 break;
             case 'newest':
@@ -93,7 +158,7 @@ class ProductController extends Controller
                 break;
         }
 
-        $products = $query->paginate(15);
+        $products = $query->paginate(24);
         return response()->json($products);
     }
 

@@ -55,12 +55,16 @@ export const productApi = {
       }
       if (params?.search) {
         const q = String(params.search).toLowerCase();
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(q) || 
-          p.description.toLowerCase().includes(q) ||
-          (p.shortDescription && p.shortDescription.toLowerCase().includes(q)) ||
-          (Array.isArray(p.suitableCrops) && p.suitableCrops.some((c: string) => c.toLowerCase().includes(q)))
-        );
+        let terms = [q];
+        if (['urea', 'nitrogen'].includes(q)) terms.push('urea', 'nitrogen');
+        if (['dap', 'phosphate'].includes(q)) terms.push('dap', 'phosphate');
+        if (['potash', 'mop'].includes(q)) terms.push('potash', 'mop');
+        if (['paddy', 'rice'].includes(q)) terms.push('paddy', 'rice');
+
+        filtered = filtered.filter(p => {
+          const text = `${p.name} ${p.category} ${p.categorySlug} ${p.description} ${p.shortDescription || ''} ${(p.suitableCrops || []).join(' ')}`.toLowerCase();
+          return terms.some(t => text.includes(t));
+        });
       }
       if (params?.crop) {
         const cVal = String(params.crop).toLowerCase();
@@ -70,8 +74,8 @@ export const productApi = {
           p.description.toLowerCase().includes(cVal)
         );
       }
-      if (params?.sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
-      if (params?.sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
+      if (params?.sort === 'price_asc' || params?.sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
+      if (params?.sort === 'price_desc' || params?.sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
       if (params?.sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
 
       return { products: filtered, total: filtered.length, categories: CATEGORIES };

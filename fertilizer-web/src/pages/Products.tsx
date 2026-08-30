@@ -25,6 +25,24 @@ export const Products: React.FC = () => {
     setSearchInput(search);
   }, [search]);
 
+  // Live debounced search input update as user types
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const trimmed = searchInput.trim();
+      if (trimmed !== search) {
+        const newParams = new URLSearchParams(searchParams);
+        if (trimmed) {
+          newParams.set('search', trimmed);
+        } else {
+          newParams.delete('search');
+        }
+        setSearchParams(newParams, { replace: true });
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchInput, search, searchParams, setSearchParams]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
