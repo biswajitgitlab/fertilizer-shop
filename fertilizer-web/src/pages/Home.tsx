@@ -11,6 +11,8 @@ import { useAuthStore } from '../store/authStore';
 import { PageTransition } from '../components/common/PageTransition';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
+import { HeroCarousel } from '../components/home/HeroCarousel';
+import { CategoryCarousel } from '../components/home/CategoryCarousel';
 import {
   AnimatedLeaf,
   AnimatedSprout,
@@ -100,129 +102,9 @@ export const Home: React.FC = () => {
   return (
     <PageTransition className="space-y-0 pb-0 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
-      {/* ─── 1. LIQUID GLASS HERO SECTION ─── */}
-      <section
-        className="relative pt-24 pb-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
-        style={{
-          backgroundImage: `url('${VIBRANT_FARM_HERO}')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Dark overlay & Ambient Liquid Glow Blobs */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-slate-950/90 to-teal-950/92" />
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-emerald-500/25 rounded-full blur-3xl glow-blob pointer-events-none" />
-        <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl glow-blob pointer-events-none" />
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]" />
-        
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-7 space-y-7 text-center lg:text-left"
-          >
-            
-            {/* Top Liquid Badge */}
-            <div className="inline-flex items-center gap-2.5 bg-emerald-500/15 backdrop-blur-xl border border-emerald-400/30 text-emerald-300 text-xs font-black px-4 py-2 rounded-full shadow-lg">
-              <AnimatedSparkles size={16} className="text-emerald-400" />
-              <span>Government Certified Genuine Agricultural Inputs</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-none text-white">
-              Smarter Harvests.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-emerald-200">
-                Liquid Certified Care.
-              </span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-emerald-100/90 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-medium">
-              100% Genuine NPK Fertilizers, Insecticides, Herbicides, Fungicides, Bio-Enhancers, and High-Yield Seeds delivered directly to your farm.
-            </p>
-
-            {/* Liquid Glass Search Bar */}
-            <form onSubmit={handleHeroSearch} className="max-w-xl mx-auto lg:mx-0 p-2 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/25 shadow-2xl flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Search NPK 19:19:19, Urea, Insecticide, Bio-Vita..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/95 backdrop-blur-md text-slate-900 font-semibold rounded-2xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-500 transition-all"
-                />
-                <div className="absolute left-3.5 top-3.5">
-                  <AnimatedSearch size={20} className="text-emerald-700" />
-                </div>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 cursor-pointer"
-              >
-                Search Store
-              </motion.button>
-            </form>
-
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Link
-                  to="/products"
-                  className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-7 py-3.5 rounded-2xl text-sm transition-all shadow-xl shadow-emerald-500/25"
-                >
-                  <AnimatedSprout size={18} className="text-slate-950" />
-                  <span>Browse Store Products</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
-                <Link
-                  to={isAuthenticated ? "/diagnose" : "/login"}
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white backdrop-blur-xl border border-white/30 font-bold px-7 py-3.5 rounded-2xl text-sm transition-all"
-                >
-                  <AnimatedCropDoctor size={18} className="text-emerald-400" />
-                  <span>Try AI Crop Doctor</span>
-                </Link>
-              </motion.div>
-            </div>
-
-          </motion.div>
-
-          {/* Liquid Glass Feature Hero Card */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-5 relative hidden lg:block"
-          >
-            <div className="relative mx-auto max-w-sm aspect-4/5 rounded-3xl overflow-hidden shadow-2xl border border-white/20 p-2 bg-white/10 backdrop-blur-2xl">
-              <img
-                src={VIBRANT_GREEN_CROPS}
-                alt="Fertilizer Farmer"
-                onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                className="w-full h-full object-cover rounded-2xl"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-              
-              {/* Floating Status Pill */}
-              <div className="absolute top-6 right-6 bg-slate-950/80 backdrop-blur-xl text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                <AnimatedPulseBadge text="Govt Verified" color="emerald" />
-              </div>
-
-              {/* Liquid Card Bottom Detail */}
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/15 backdrop-blur-2xl border border-white/30 text-white space-y-1.5 shadow-2xl">
-                <div className="flex items-center justify-between text-[10px] uppercase font-black text-emerald-400">
-                  <span>100% Water Soluble</span>
-                  <span className="bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-md font-bold">NPK 19:19:19</span>
-                </div>
-                <p className="text-sm font-black">KrishiGold NPK Fertilizer Bag</p>
-                <p className="text-xs text-emerald-100/90 font-medium">Delivered to 12,500+ Farms this month</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+      {/* ─── 1. LIQUID GLASS HERO SPOTLIGHT CAROUSEL ─── */}
+      <section className="pt-20 sm:pt-24 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <HeroCarousel />
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
@@ -636,57 +518,9 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 4. CATEGORIES LIST WITH RICH IMAGE TILES ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                Browse Categories
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-2">
-                Certified Agricultural Inputs &amp; Crop Care
-              </h2>
-            </div>
-            <Link to="/products" className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0">
-              <span>View All Store Categories</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-            {categories.map((cat) => {
-              const catImg = getCategoryImage(cat.name, cat.icon || cat.image);
-              return (
-                <Link
-                  key={cat.id}
-                  to={`/products?category=${cat.slug}`}
-                  className="group bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 transition-all duration-300 flex flex-col justify-between shadow-xl transform hover:-translate-y-1"
-                >
-                  <div className="relative aspect-16/10 overflow-hidden bg-slate-800">
-                    <img
-                      src={catImg}
-                      alt={cat.name}
-                      onError={(e) => { (e.target as HTMLImageElement).src = VIBRANT_FARM_HERO; }}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80 dark:opacity-100" />
-                    <span className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md text-emerald-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-emerald-500/30">
-                      {cat.count || 10}+ Items
-                    </span>
-                  </div>
-
-                  <div className="p-4 space-y-1 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900">
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                      {cat.name}
-                    </h3>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
-                      Explore category <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-100/80 dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <CategoryCarousel categories={categories} getCategoryImage={getCategoryImage} />
         </div>
       </section>
 
@@ -797,7 +631,7 @@ export const Home: React.FC = () => {
 
       {/* ─── 8. FINAL CALLOUT ─── */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
+        <div className="absolute top-10 left-1/3 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="max-w-3xl mx-auto relative z-10 space-y-6">
           <span className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black px-4 py-1.5 rounded-full">

@@ -146,6 +146,33 @@ export const ProductDetail: React.FC = () => {
 
   const discount = calculateDiscount(product.price, product.originalPrice);
 
+  const productSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.images && product.images.length > 0 ? product.images : [product.image],
+    "description": product.description,
+    "sku": `FERT-PROD-${product.id}`,
+    "brand": {
+      "@type": "Brand",
+      "name": "KrishiGold Agri"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+    },
+    ...(ratingStats.total_reviews > 0 ? {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": ratingStats.average_rating,
+        "reviewCount": ratingStats.total_reviews
+      }
+    } : {})
+  };
+
   const handleAddToCart = () => {
     addToCart(product, quantity);
     toast.success(`Added ${quantity} x ${product.name} to cart!`);
@@ -158,6 +185,11 @@ export const ProductDetail: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      {/* JSON-LD Technical SEO Schema for Google Rich Cards */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 font-medium">
