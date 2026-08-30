@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Jobs\SendWelcomeEmailJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
@@ -28,6 +29,9 @@ class AuthController extends Controller
         
         $user = User::create($validated);
         $user->assignRole('Customer');
+
+        // Dispatch Welcome Email Job to Redis Queue (Async background execution)
+        SendWelcomeEmailJob::dispatch($user);
 
         // Mock SMS logic
         $otp = '1234'; // In real life: rand(100000, 999999);
