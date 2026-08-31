@@ -225,7 +225,7 @@ export function App() {
             <Route path="/admin/batches" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminBatches /></ProtectedRoute>} />
             <Route path="/admin/farmers" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminFarmers /></ProtectedRoute>} />
             <Route path="/admin/settlements" element={<ProtectedRoute adminOnly requiredPermission="financial.reports"><AdminSettlements /></ProtectedRoute>} />
-            <Route path="/admin/warehouse-zones" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminWarehouseZones /></ProtectedRoute>} />
+            <Route path="/admin/warehouse-zones" element={<ProtectedRoute adminOnly requiredPermission="warehouse_zones.view"><AdminWarehouseZones /></ProtectedRoute>} />
 
             {/* HTTP Error Status Routes */}
             <Route path="/401" element={<Unauthorized />} />

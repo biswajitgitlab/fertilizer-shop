@@ -35,7 +35,7 @@ export const Sidebar: React.FC<{
     { name: 'Enterprise Reports (RBSC)', path: '/admin/reports', icon: FileText, perm: 'analytics.view' },
     { name: 'Security Audit Logs', path: '/admin/audit-logs', icon: ShieldCheck, perm: 'security.audit' },
     { name: 'FEFO Lot Batches', path: '/admin/batches', icon: Warehouse, perm: 'inventory.view' },
-    { name: 'Warehouse Zones', path: '/admin/warehouse-zones', icon: Warehouse, perm: 'inventory.view' },
+    { name: 'Warehouse Zones', path: '/admin/warehouse-zones', icon: Warehouse, perm: 'warehouse_zones.view' },
     { name: 'Farmer KCC Verification', path: '/admin/farmers', icon: UserCheck, perm: 'users.view' },
     { name: 'COD Driver Settlements', path: '/admin/settlements', icon: Tag, perm: 'financial.reports' },
     { name: 'Inventory', path: '/admin/inventory', icon: Warehouse, perm: 'inventory.view' },

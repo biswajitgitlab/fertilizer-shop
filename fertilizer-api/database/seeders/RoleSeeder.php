@@ -52,9 +52,12 @@ class RoleSeeder extends Seeder
             // Notifications (Sentinel Alerts) Module
             'notifications.view',
             'notifications.send',
-            // Inventory Module
+            // Inventory & Warehouse Module
             'inventory.view',
             'inventory.update',
+            'inventory.edit',
+            'warehouse_zones.view',
+            'warehouse_zones.edit',
             // Crop Plans & Triage Module
             'crop_plans.view',
             'crop_plans.manage',
@@ -74,13 +77,13 @@ class RoleSeeder extends Seeder
                 'customers.view', 'customers.edit', 'customers.delete',
                 'analytics.view', 'analytics.export',
                 'notifications.view', 'notifications.send',
-                'inventory.view', 'inventory.update',
+                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
                 'crop_plans.view', 'crop_plans.manage',
             ],
             'Store Manager' => [
                 'products.view', 'products.create', 'products.edit', 'products.delete',
                 'orders.view', 'orders.edit', 'orders.status', 'orders.delete',
-                'inventory.view', 'inventory.update',
+                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
                 'customers.view', 'analytics.view', 'notifications.view'
             ],
             'Customer Support' => [
@@ -89,7 +92,7 @@ class RoleSeeder extends Seeder
                 'notifications.view', 'products.view'
             ],
             'Warehouse Manager' => [
-                'inventory.view', 'inventory.update',
+                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
                 'products.view', 'orders.view', 'orders.status',
                 'notifications.view'
             ],

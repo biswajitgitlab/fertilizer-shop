@@ -167,10 +167,10 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::post('/settlements/{id}/settle', [\App\Http\Controllers\Admin\SettlementController::class, 'settle'])->middleware('rbsc:financial.reports');
 
     // Warehouse Zones CRUD
-    Route::get('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'index'])->middleware('rbsc:inventory.view');
-    Route::post('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'store'])->middleware('rbsc:inventory.edit');
-    Route::put('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'update'])->middleware('rbsc:inventory.edit');
-    Route::delete('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'destroy'])->middleware('rbsc:inventory.edit');
+    Route::get('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'index'])->middleware('rbsc:warehouse_zones.view');
+    Route::post('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'store'])->middleware('rbsc:warehouse_zones.edit');
+    Route::put('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'update'])->middleware('rbsc:warehouse_zones.edit');
+    Route::delete('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'destroy'])->middleware('rbsc:warehouse_zones.edit');
 
     // Inventory & Warehouse Management
     Route::get('/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->middleware('rbsc:inventory.view');
