@@ -101,7 +101,7 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <PageTransition className="space-y-0 pb-0 bg-emerald-50/60 dark:bg-[#022c22] text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
+    <PageTransition className="space-y-0 pb-0 bg-emerald-50/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
       {/* ─── 1. LIQUID GLASS HERO SPOTLIGHT CAROUSEL ─── */}
       <section className="pt-20 sm:pt-24 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -109,7 +109,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
-      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-emerald-50/90 dark:bg-[#022c22] border-y border-emerald-200/60 dark:border-emerald-800/40 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-emerald-50/90 dark:bg-emerald-950 border-y border-emerald-200/60 dark:border-emerald-800/40 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
@@ -159,7 +159,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 2. VISUAL PHOTO BANNER GRID ─── */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-[#043427] transition-colors duration-300">
+      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-emerald-900/80 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6 sm:mb-8 space-y-1">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -239,21 +239,21 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 3. HIGH-YIELD SMART FARMING SERVICES CAROUSEL ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-[#022c22] relative transition-colors duration-300">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <ServicesCarousel isAuthenticated={isAuthenticated} />
         </div>
       </section>
 
       {/* ─── 4. CATEGORIES LIST WITH RICH IMAGE TILES ─── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-[#043427] text-emerald-950 dark:text-emerald-50 transition-colors duration-300">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-emerald-900/80 text-emerald-950 dark:text-emerald-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           <CategoryCarousel categories={categories} getCategoryImage={getCategoryImage} />
         </div>
       </section>
 
       {/* ─── 5. FEATURED HIGH-YIELD FERTILIZERS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-[#022c22] relative transition-colors duration-300">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -280,7 +280,7 @@ export const Home: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white dark:bg-[#043427]/80 rounded-3xl border border-emerald-200 dark:border-emerald-800/40 p-12 text-center space-y-3">
+            <div className="bg-white dark:bg-emerald-900/80 rounded-3xl border border-emerald-200 dark:border-emerald-800/40 p-12 text-center space-y-3">
               <PackageCheck className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto animate-bounce" />
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Loading Store Products...</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">Browse our complete product catalog below.</p>
@@ -307,7 +307,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 7. FARMER TESTIMONIALS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-100/60 dark:bg-[#022c22] text-emerald-950 dark:text-emerald-50 relative transition-colors duration-300">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-100/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 relative transition-colors duration-300">
         <div className="max-w-7xl mx-auto space-y-10">
           <div className="text-center space-y-2">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -340,7 +340,7 @@ export const Home: React.FC = () => {
                 rating: 5
               }
             ].map((rev, i) => (
-              <div key={i} className="bg-white/90 dark:bg-[#043427]/80 backdrop-blur-xl rounded-3xl border border-emerald-200/80 dark:border-emerald-800/40 p-7 space-y-4 shadow-xl">
+              <div key={i} className="bg-white/90 dark:bg-emerald-900/80 backdrop-blur-xl rounded-3xl border border-emerald-200/80 dark:border-emerald-800/40 p-7 space-y-4 shadow-xl">
                 <div className="flex text-amber-400 gap-1">
                   {[...Array(rev.rating)].map((_, idx) => (
                     <Star key={idx} className="w-4 h-4 fill-amber-400" />
@@ -358,7 +358,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 8. FINAL CALLOUT ─── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-[#022c22] to-teal-950 text-center relative overflow-hidden">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 text-center relative overflow-hidden">
         {/* High Quality Authentic Fern Frond Leaves Photo Background Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"

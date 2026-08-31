@@ -14,26 +14,26 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
   return (
     <div className={`h-screen w-screen font-sans relative overflow-hidden flex transition-colors duration-300 ${
       theme === 'dark'
-        ? 'bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white'
-        : 'bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white'
+        ? 'bg-emerald-950 text-slate-100 selection:bg-emerald-500 selection:text-white'
+        : 'bg-emerald-50/70 text-slate-900 selection:bg-emerald-600 selection:text-white'
     }`}>
       
       {/* Background Mesh Gradients */}
       <div className={`fixed top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[130px] pointer-events-none z-0 ${
-        theme === 'dark' ? 'bg-emerald-500/10' : 'bg-emerald-400/15'
+        theme === 'dark' ? 'bg-emerald-500/15' : 'bg-emerald-400/20'
       }`} />
       <div className={`fixed bottom-0 right-1/4 w-[700px] h-[700px] rounded-full blur-[150px] pointer-events-none z-0 ${
-        theme === 'dark' ? 'bg-teal-500/10' : 'bg-teal-300/20'
+        theme === 'dark' ? 'bg-emerald-600/10' : 'bg-emerald-300/25'
       }`} />
       <div className={`fixed top-1/3 right-10 w-[400px] h-[400px] rounded-full blur-[110px] pointer-events-none z-0 ${
-        theme === 'dark' ? 'bg-cyan-500/10' : 'bg-cyan-300/15'
+        theme === 'dark' ? 'bg-emerald-400/10' : 'bg-emerald-200/30'
       }`} />
 
       {/* Desktop Fixed Sidebar */}
       <aside className={`hidden lg:flex lg:flex-col shrink-0 ${sidebarCollapsed ? 'w-20' : 'w-64'} h-full z-20 transition-all duration-300 ${
         theme === 'dark'
-          ? 'border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl'
-          : 'border-r border-slate-200 bg-white shadow-xs'
+          ? 'border-r border-slate-800/80 bg-emerald-950/95 backdrop-blur-xl'
+          : 'border-r border-slate-200 bg-white/90 backdrop-blur-md shadow-xs'
       }`}>
         <Sidebar collapsed={sidebarCollapsed} />
       </aside>
@@ -46,7 +46,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode; title?: string }
             onClick={() => setMobileSidebarOpen(false)}
           />
           <div className={`relative w-72 max-w-xs z-10 shadow-2xl border-r h-full overflow-x-hidden overflow-y-auto animate-in slide-in-from-left duration-200 ${
-            theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+            theme === 'dark' ? 'bg-emerald-950 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <Sidebar onCloseMobile={() => setMobileSidebarOpen(false)} collapsed={false} />
           </div>

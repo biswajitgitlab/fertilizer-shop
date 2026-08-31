@@ -94,7 +94,7 @@ export const TrendingProductsSection: React.FC = () => {
 
   return (
     <section className="py-6 sm:py-8 space-y-4">
-      <div className="relative rounded-2xl sm:rounded-3xl bg-emerald-50/90 dark:bg-[#043427]/90 backdrop-blur-xl border border-amber-200/60 dark:border-emerald-800/50 p-4 sm:p-7 shadow-xl shadow-amber-900/5 transition-all duration-300">
+      <div className="relative rounded-2xl sm:rounded-3xl bg-emerald-50/90 dark:bg-emerald-900/90 backdrop-blur-xl border border-amber-200/60 dark:border-emerald-800/50 p-4 sm:p-7 shadow-xl shadow-amber-900/5 transition-all duration-300">
         
         {/* Ambient Glow */}
         <div className="absolute top-0 right-1/4 w-72 h-72 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-3xl pointer-events-none" />

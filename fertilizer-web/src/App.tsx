@@ -59,6 +59,8 @@ import { AdminSettings } from './pages/admin/AdminSettings';
 // Error Status Pages
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
 
+import { useSiteSettingsStore } from './store/siteSettingsStore';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -73,6 +75,7 @@ const ScrollToTop: React.FC = () => {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
+    useSiteSettingsStore.getState().applyThemeToDOM(pathname);
   }, [pathname]);
 
   return null;
@@ -82,6 +85,10 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isCustomerAuthRoute = ['/login', '/register', '/verify-otp', '/forgot-password'].includes(location.pathname);
+
+  React.useEffect(() => {
+    useSiteSettingsStore.getState().applyThemeToDOM(location.pathname);
+  }, [location.pathname]);
 
   if (isAdminRoute) {
     return <>{children}</>;
@@ -98,11 +105,11 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <>
-      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-[#022c22] dark:via-[#043427] dark:to-[#022c22] text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-24 md:pb-0 transition-colors duration-300 overflow-x-clip">
+      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-emerald-950 text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-24 md:pb-0 transition-colors duration-300 overflow-x-clip">
         {/* Global Fresh & Deep Leaf Decorative Glow Blobs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-400/25 dark:bg-emerald-600/15 rounded-full blur-3xl pointer-events-none glow-blob" />
-        <div className="absolute top-1/3 -right-20 w-96 h-96 bg-lime-300/30 dark:bg-teal-800/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-teal-200/35 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-5s' }} />
+        <div className="absolute top-1/3 -right-20 w-96 h-96 bg-emerald-300/30 dark:bg-emerald-800/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
+        <div className="absolute bottom-10 left-10 w-80 h-80 bg-emerald-200/35 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-5s' }} />
         
         {/* High Quality Authentic Fern Frond Leaves Background Overlay */}
         <div 
@@ -134,6 +141,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ScrollToTop />
         <Toaster
           position="top-right"
           toastOptions={{

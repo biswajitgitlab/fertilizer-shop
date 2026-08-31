@@ -1,5 +1,43 @@
 @import "tailwindcss";
 
+@theme {
+  --color-emerald-50: var(--color-primary-50, #f0fdf4);
+  --color-emerald-100: var(--color-primary-100, #dcfce7);
+  --color-emerald-200: var(--color-primary-200, #bbf7d0);
+  --color-emerald-300: var(--color-primary-300, #86efac);
+  --color-emerald-400: var(--color-primary-400, #34d399);
+  --color-emerald-500: var(--color-primary-500, #10b981);
+  --color-emerald-600: var(--color-primary-600, #059669);
+  --color-emerald-700: var(--color-primary-700, #047857);
+  --color-emerald-800: var(--color-primary-800, #065f46);
+  --color-emerald-900: var(--color-primary-900, #064e3b);
+  --color-emerald-950: var(--color-primary-950, #022c22);
+
+  --color-green-50: var(--color-primary-50, #f0fdf4);
+  --color-green-100: var(--color-primary-100, #dcfce7);
+  --color-green-200: var(--color-primary-200, #bbf7d0);
+  --color-green-300: var(--color-primary-300, #86efac);
+  --color-green-400: var(--color-primary-400, #34d399);
+  --color-green-500: var(--color-primary-500, #10b981);
+  --color-green-600: var(--color-primary-600, #059669);
+  --color-green-700: var(--color-primary-700, #047857);
+  --color-green-800: var(--color-primary-800, #065f46);
+  --color-green-900: var(--color-primary-900, #064e3b);
+  --color-green-950: var(--color-primary-950, #022c22);
+
+  --color-teal-50: var(--color-primary-50, #f0fdf4);
+  --color-teal-100: var(--color-primary-100, #dcfce7);
+  --color-teal-200: var(--color-primary-200, #bbf7d0);
+  --color-teal-300: var(--color-primary-300, #86efac);
+  --color-teal-400: var(--color-primary-400, #34d399);
+  --color-teal-500: var(--color-primary-500, #10b981);
+  --color-teal-600: var(--color-primary-600, #059669);
+  --color-teal-700: var(--color-primary-700, #047857);
+  --color-teal-800: var(--color-primary-800, #065f46);
+  --color-teal-900: var(--color-primary-900, #064e3b);
+  --color-teal-950: var(--color-primary-950, #022c22);
+}
+
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -12,14 +50,14 @@
   }
 
   body {
-    background-color: #f0fdf4;
-    color: #064e3b;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    background-color: var(--color-emerald-50, #f0fdf4);
+    color: var(--color-emerald-900, #064e3b);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   html.dark body {
-    background-color: #022c22;
-    color: #ecfdf5;
+    background-color: var(--color-emerald-950, #022c22);
+    color: var(--color-emerald-50, #ecfdf5);
   }
 }
 
@@ -28,28 +66,28 @@
     background: rgba(240, 253, 244, 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid var(--color-emerald-500);
   }
 
   .dark .liquid-glass {
     background: rgba(2, 44, 34, 0.85);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    border: 1px solid var(--color-emerald-500);
   }
 
   .liquid-glass-dark {
     background: rgba(6, 78, 59, 0.45);
     backdrop-filter: blur(20px) saturate(190%);
     -webkit-backdrop-filter: blur(20px) saturate(190%);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid var(--color-emerald-500);
   }
 
   .liquid-glass-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(236, 253, 245, 0.85) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    border: 1px solid var(--color-emerald-500);
     box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.08);
   }
 
@@ -57,7 +95,7 @@
     background: linear-gradient(135deg, rgba(6, 78, 59, 0.65) 0%, rgba(2, 44, 34, 0.85) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid var(--color-emerald-500);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
@@ -66,7 +104,7 @@
   }
 
   .planner-grid-pattern {
-    background-image: radial-gradient(#10b981 1.2px, transparent 1.2px);
+    background-image: radial-gradient(var(--color-emerald-500) 1.2px, transparent 1.2px);
     background-size: 28px 28px;
   }
 
@@ -209,6 +247,3 @@ div[role="status"] > div:first-child {
 .animate-validation-bounce {
   animation: validation-bounce 2s ease-in-out infinite;
 }
-
-
-

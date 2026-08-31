@@ -35,7 +35,7 @@ const FernFrondSVG: React.FC<{ className?: string }> = ({ className }) => (
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#011e17] text-emerald-100/90 pt-16 pb-12 border-t border-emerald-800/40 relative overflow-hidden">
+    <footer className="bg-emerald-950 text-emerald-100/90 pt-16 pb-12 border-t border-emerald-800/40 relative overflow-hidden">
       {/* High Quality Authentic Fern Frond Leaves Photo Background Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"

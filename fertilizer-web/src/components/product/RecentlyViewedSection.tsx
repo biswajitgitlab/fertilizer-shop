@@ -32,7 +32,7 @@ export const RecentlyViewedSection: React.FC<{ currentProductId?: string | numbe
 
   return (
     <section className="py-8 space-y-4">
-      <div className="relative rounded-3xl bg-emerald-50/90 dark:bg-[#043427]/90 backdrop-blur-xl border border-emerald-200/60 dark:border-emerald-800/50 p-6 sm:p-8 shadow-xl shadow-emerald-900/5 transition-all duration-300">
+      <div className="relative rounded-3xl bg-emerald-50/90 dark:bg-emerald-900/90 backdrop-blur-xl border border-emerald-200/60 dark:border-emerald-800/50 p-6 sm:p-8 shadow-xl shadow-emerald-900/5 transition-all duration-300">
         
         {/* Glow accent */}
         <div className="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl pointer-events-none" />
