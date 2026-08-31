@@ -11,35 +11,67 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
         $status = $request->input('status', '');
         $paymentStatus = $request->input('payment_status', '');
-        $page = $request->input('page', 1);
-        $dateRange = $request->input('date_range', '');
+        $search = strtolower(trim($request->get('search', '')));
 
-        $cacheKey = "admin_orders_p{$page}_st_{$status}_pay_{$paymentStatus}_d_" . md5($dateRange);
+        $cacheKey = "orders:p{$page}:pp{$perPage}:st{$status}:ps{$paymentStatus}:s{$search}";
 
-        $orders = Cache::remember($cacheKey, 180, function () use ($request) {
+        try {
+            $cacheStore = Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $status, $paymentStatus, $search) {
             $query = Order::with(['user', 'items.product', 'payment']);
 
-            if ($request->filled('status')) {
-                $query->where('status', strtoupper($request->status));
+            if (!empty($status)) {
+                $query->where('status', strtoupper($status));
             }
 
-            if ($request->filled('payment_status')) {
-                $query->where('payment_status', strtoupper($request->payment_status));
+            if (!empty($paymentStatus)) {
+                $query->where('payment_status', strtoupper($paymentStatus));
             }
 
-            if ($request->filled('date_range')) {
-                $dates = explode(',', $request->date_range);
-                if (count($dates) == 2) {
-                    $query->whereBetween('created_at', [$dates[0], $dates[1]]);
-                }
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('order_number', 'like', "%{$search}%")
+                      ->orWhere('id', 'like', "%{$search}%")
+                      ->orWhere('tracking_number', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                      });
+                });
             }
 
-            return $query->orderBy('created_at', 'desc')->paginate(50);
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
         });
 
-        return response()->json($orders);
+        if (!$request->has('page') && !$request->has('search') && !$request->has('per_page')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     public function show($id)

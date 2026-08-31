@@ -426,24 +426,34 @@ export const adminApi = {
     }
 
     let fetchedOrders: Order[] = [];
+    let meta = { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+
     try {
       const res = await apiClient.get('/admin/orders', { params: cleanParams });
       const rawData = res.data;
       const rawOrders = rawData.data || (Array.isArray(rawData) ? rawData : (rawData.orders || []));
+      if (rawData.meta) {
+        meta = rawData.meta;
+      }
       if (Array.isArray(rawOrders) && rawOrders.length > 0) {
         fetchedOrders = rawOrders.map(normalizeAdminOrder);
+        if (!rawData.meta) {
+          meta = { current_page: 1, last_page: 1, per_page: cleanParams.per_page || 10, total: rawOrders.length };
+        }
       }
     } catch (e) {
       console.warn("Failed to fetch admin orders from backend, using fallback dataset:", e);
     }
 
-    if (fetchedOrders.length === 0 && !cleanParams.status) {
+    if (fetchedOrders.length === 0 && !cleanParams.status && !cleanParams.search) {
       fetchedOrders = DEMO_FALLBACK_ORDERS;
+      meta = { current_page: 1, last_page: 1, per_page: 10, total: DEMO_FALLBACK_ORDERS.length };
     } else if (fetchedOrders.length === 0 && cleanParams.status) {
       fetchedOrders = DEMO_FALLBACK_ORDERS.filter(o => o.status.toUpperCase() === cleanParams.status);
+      meta = { current_page: 1, last_page: 1, per_page: 10, total: fetchedOrders.length };
     }
 
-    return { orders: fetchedOrders };
+    return { orders: fetchedOrders, meta };
   },
 
   updateOrderStatus: async (id: string, status: string, trackingNumber?: string) => {
@@ -476,28 +486,36 @@ export const adminApi = {
     }
   },
 
-  getCustomers: async (params?: { search?: string }) => {
+  getCustomers: async (params?: any) => {
     let list: any[] = [];
+    let meta = { current_page: 1, last_page: 1, per_page: 10, total: 0 };
     try {
       const res = await apiClient.get('/admin/customers', { params });
       const raw = res.data;
       const rawList = raw.data || (Array.isArray(raw) ? raw : []);
+      if (raw.meta) {
+        meta = raw.meta;
+      }
       if (Array.isArray(rawList) && rawList.length > 0) {
         list = rawList;
+        if (!raw.meta) {
+          meta = { current_page: 1, last_page: 1, per_page: params?.per_page || 10, total: rawList.length };
+        }
       }
     } catch (e) {
       console.warn("Failed to fetch admin customers, using fallback list:", e);
     }
 
-    if (list.length === 0) {
+    if (list.length === 0 && (!params || !params.search)) {
       list = [
         { id: 1, name: 'Ramesh Kumar (Farmer)', email: 'ramesh@example.com', phone: '9876543210', is_verified: true, farm_location: 'Karnal, Haryana', farm_size_acres: 12, created_at: new Date().toISOString() },
         { id: 2, name: 'Biswajit Sarkar', email: 'biswajit@example.com', phone: '7863955493', is_verified: true, farm_location: 'Nilokheri, Haryana', farm_size_acres: 8, created_at: new Date().toISOString() },
         { id: 3, name: 'Sukhwinder Singh', email: 'sukhwinder@example.com', phone: '9812345678', is_verified: false, farm_location: 'Ambala, Punjab', farm_size_acres: 15, created_at: new Date().toISOString() },
         { id: 4, name: 'Gurpreet Kaur', email: 'gurpreet@example.com', phone: '9729102938', is_verified: true, farm_location: 'Kurukshetra, Haryana', farm_size_acres: 5, created_at: new Date().toISOString() }
       ];
+      meta = { current_page: 1, last_page: 1, per_page: 10, total: list.length };
     }
-    return list;
+    return { data: list, meta };
   },
   getCustomerDetails: async (id: number | string) => {
     try {

@@ -152,7 +152,11 @@ export const useCartStore = create<CartState>((set, get) => ({
         set({ items: serverHydrated });
         saveCart(serverHydrated);
       }
-    } catch (e) {
+    } catch (e: any) {
+      if (e.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
       console.error("Cart sync with server error:", e);
     }
   },

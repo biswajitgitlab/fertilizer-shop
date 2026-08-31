@@ -11,8 +11,13 @@ class CartController extends Controller
 {
     private function getCart()
     {
+        $userId = auth()->id();
+        if (!$userId || !\App\Models\User::where('id', $userId)->exists()) {
+            return null;
+        }
+
         return Cart::firstOrCreate(
-            ['user_id' => auth()->id()],
+            ['user_id' => $userId],
             ['items_json' => []]
         );
     }
@@ -116,6 +121,18 @@ class CartController extends Controller
     public function index(Request $request)
     {
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json([
+                'items' => [],
+                'summary' => [
+                    'subtotal' => 0,
+                    'discount' => 0,
+                    'tax' => 0,
+                    'shipping' => 0,
+                    'total' => 0,
+                ]
+            ]);
+        }
         return response()->json($this->calculateCart($cart, $request->query('coupon')));
     }
 
@@ -128,6 +145,10 @@ class CartController extends Controller
         ]);
 
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json(['message' => 'Unauthenticated or invalid user.'], 401);
+        }
+
         $items = $cart->items_json ?? [];
         
         $found = false;
@@ -159,6 +180,10 @@ class CartController extends Controller
         ]);
 
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json(['message' => 'Unauthenticated or invalid user.'], 401);
+        }
+
         $items = $cart->items_json ?? [];
 
         foreach ($items as &$item) {
@@ -176,6 +201,10 @@ class CartController extends Controller
     public function remove($item_id, Request $request)
     {
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json(['message' => 'Unauthenticated or invalid user.'], 401);
+        }
+
         $items = $cart->items_json ?? [];
 
         $items = array_filter($items, function($item) use ($item_id) {
@@ -190,6 +219,9 @@ class CartController extends Controller
     public function clear()
     {
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json(['message' => 'Unauthenticated or invalid user.'], 401);
+        }
         $cart->update(['items_json' => []]);
         return response()->json(['message' => 'Cart cleared']);
     }
@@ -224,6 +256,10 @@ class CartController extends Controller
         }
 
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json(['message' => 'Unauthenticated or invalid user.'], 401);
+        }
+
         $calculation = $this->calculateCart($cart, $request->code);
         
         if ($calculation['summary']['subtotal'] < $coupon->min_order) {
@@ -242,14 +278,34 @@ class CartController extends Controller
     {
         $request->validate([
             'items' => 'array',
-            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_id' => 'required|integer',
             'items.*.qty' => 'required|integer|min:1',
-            'items.*.bundle_id' => 'nullable|exists:product_bundles,id'
+            'items.*.bundle_id' => 'nullable|integer'
         ]);
 
         $cart = $this->getCart();
+        if (!$cart) {
+            return response()->json([
+                'items' => [],
+                'summary' => [
+                    'subtotal' => 0,
+                    'discount' => 0,
+                    'tax' => 0,
+                    'shipping' => 0,
+                    'total' => 0,
+                ]
+            ], 401);
+        }
+
+        // Filter incoming items to only those that exist in database
+        $incomingItems = $request->input('items', []);
+        $productIds = array_column($incomingItems, 'product_id');
+        $validProductIds = Product::whereIn('id', $productIds)->pluck('id')->toArray();
+
         $existingItems = collect($cart->items_json ?? []);
-        $newItems = $request->input('items', []);
+        $newItems = array_filter($incomingItems, function($i) use ($validProductIds) {
+            return in_array($i['product_id'], $validProductIds);
+        });
 
         foreach ($newItems as $newItem) {
             $bundleId = $newItem['bundle_id'] ?? null;

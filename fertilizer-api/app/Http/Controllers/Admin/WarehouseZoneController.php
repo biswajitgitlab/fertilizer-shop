@@ -10,8 +10,53 @@ class WarehouseZoneController extends Controller
 {
     public function index(Request $request)
     {
-        $zones = WarehouseZone::withCount('batches')->orderBy('code', 'asc')->get();
-        return response()->json($zones);
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
+
+        $cacheKey = "zones:p{$page}:pp{$perPage}:s{$search}";
+
+        try {
+            $cacheStore = \Illuminate\Support\Facades\Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = \Illuminate\Support\Facades\Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search) {
+            $query = WarehouseZone::withCount('batches');
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('code', 'like', "%{$search}%")
+                      ->orWhere('name', 'like', "%{$search}%")
+                      ->orWhere('category_type', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('code', 'asc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
+        });
+
+        if (!$request->has('page') && !$request->has('search')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     public function store(Request $request)

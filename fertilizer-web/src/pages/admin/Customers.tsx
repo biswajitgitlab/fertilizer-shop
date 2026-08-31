@@ -2,26 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import {
-  Search,
-  Sprout,
-  ShoppingBag,
-  Stethoscope,
-  Phone,
-  Mail,
-  MapPin,
-  Eye,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  X,
-  Calendar,
-  Globe,
-  Layers,
-  ShieldCheck,
-  Copy,
-  Check,
-  FileText,
-  ExternalLink
+  Search, Sprout, ShoppingBag, Stethoscope, Phone, Mail, MapPin, Eye,
+  CheckCircle, XCircle, RefreshCw, X, Calendar, Globe, Layers, ShieldCheck,
+  Copy, Check, FileText, ChevronLeft, ChevronRight, Cpu
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -49,8 +32,13 @@ interface CustomerDetailData {
 
 export const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
-  const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Pagination & Search State
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 10, total: 0 });
 
   // Detail Modal State
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDetailData | null>(null);
@@ -62,9 +50,10 @@ export const Customers: React.FC = () => {
   const fetchCustomers = async () => {
     setIsLoading(true);
     try {
-      const res = await adminApi.getCustomers({ search });
+      const res = await adminApi.getCustomers({ page, per_page: perPage, search });
       if (res?.data) {
         setCustomers(res.data);
+        if (res.meta) setMeta(res.meta);
       } else if (Array.isArray(res)) {
         setCustomers(res);
       } else {
@@ -80,6 +69,14 @@ export const Customers: React.FC = () => {
 
   useEffect(() => {
     fetchCustomers();
+  }, [page, perPage]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchCustomers();
+    }, 400);
+    return () => clearTimeout(timer);
   }, [search]);
 
   const handleInspectCustomer = async (c: CustomerRecord) => {
@@ -88,7 +85,6 @@ export const Customers: React.FC = () => {
     try {
       const data = await adminApi.getCustomerDetails(c.id);
       
-      // Ensure merged customer data falls back smoothly if fields are missing
       const mergedCustomer: CustomerRecord = {
         ...c,
         ...(data?.customer || {}),
@@ -133,10 +129,15 @@ export const Customers: React.FC = () => {
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-hidden relative">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="min-w-0 z-10">
-            <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
-              <Sprout className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="truncate">Farmer Network &amp; Buyer Directory</span>
-            </h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 truncate">
+                <Sprout className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">Farmer Network &amp; Buyer Directory</span>
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                <Cpu className="w-3.5 h-3.5" /> Redis Cache Active
+              </span>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Storefront buyers, farm locations, acreage holding, and order history metrics.
             </p>
@@ -151,22 +152,42 @@ export const Customers: React.FC = () => {
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
             <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3.5 py-2 rounded-xl">
-              {customers.length} Registered Farmers
+              {meta.total || customers.length} Registered Farmers
             </span>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <div className="relative w-full sm:w-80">
             <input
               type="text"
               placeholder="Search farmer name, phone, or region..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
             <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl px-3 py-2 font-bold focus:outline-none cursor-pointer"
+            >
+              <option value={10}>10 / page</option>
+              <option value={25}>25 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
           </div>
         </div>
 
@@ -262,9 +283,16 @@ export const Customers: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200 font-medium">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">Loading farmer directory...</td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-36"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-40"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-28"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-20"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-20"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-24"></div></td>
+                    </tr>
+                  ))
                 ) : customers.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-slate-400">No registered customers found.</td>
@@ -340,6 +368,37 @@ export const Customers: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Server-Side Pagination Bar */}
+        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-slate-500 font-medium">
+            Showing Page <span className="font-bold text-slate-900 dark:text-white">{meta.current_page}</span> of <span className="font-bold text-slate-900 dark:text-white">{meta.last_page}</span> ({meta.total} Total Farmers)
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page <= 1 || isLoading}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous</span>
+            </button>
+
+            <span className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-mono font-bold">
+              {page} / {meta.last_page}
+            </span>
+
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, meta.last_page))}
+              disabled={page >= meta.last_page || isLoading}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -602,4 +661,3 @@ export const Customers: React.FC = () => {
     </AdminLayout>
   );
 };
-

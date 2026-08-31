@@ -21,68 +21,93 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $search = trim($request->input('search', ''));
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
         $role = $request->input('role', '');
         $status = $request->input('status', '');
 
-        $query = Admin::query();
+        $cacheKey = "users:p{$page}:pp{$perPage}:r{$role}:st{$status}:s{$search}";
 
-        // Search by name, email, or phone
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+        try {
+            $cacheStore = Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search, $role, $status) {
+            $query = Admin::query();
+
+            // Search by name, email, or phone
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by role
+            if (!empty($role) && $role !== 'ALL') {
+                $query->where(function ($q) use ($role) {
+                    $q->where('role', $role)
+                      ->orWhereHas('roles', function ($rq) use ($role) {
+                          $rq->where('name', $role);
+                      });
+                });
+            }
+
+            // Filter by verification status
+            if ($status === 'VERIFIED') {
+                $query->where('is_verified', true);
+            } elseif ($status === 'UNVERIFIED') {
+                $query->where('is_verified', false);
+            }
+
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $admins = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            $formattedAdmins = $admins->map(function ($admin) {
+                $roles = $admin->getRoleNames()->toArray();
+                return [
+                    'id' => $admin->id,
+                    'name' => $admin->name,
+                    'email' => $admin->email,
+                    'phone' => $admin->phone,
+                    'role' => $admin->role ?: ($roles[0] ?? 'Admin'),
+                    'roles' => empty($roles) ? [$admin->role ?: 'Admin'] : $roles,
+                    'is_verified' => (bool)$admin->is_verified,
+                    'effective_permissions_count' => count($admin->getEffectivePermissions()),
+                    'created_at' => $admin->created_at,
+                ];
             });
-        }
 
-        // Filter by role
-        if (!empty($role) && $role !== 'ALL') {
-            $query->where(function ($q) use ($role) {
-                $q->where('role', $role)
-                  ->orWhereHas('roles', function ($rq) use ($role) {
-                      $rq->where('name', $role);
-                  });
-            });
-        }
+            // Summary stats
+            $stats = [
+                'total_users' => Admin::count() + User::count(),
+                'staff_count' => Admin::count(),
+                'customers_count' => User::count(),
+                'unverified_count' => User::where('is_verified', false)->count(),
+            ];
 
-        // Filter by verification status
-        if ($status === 'VERIFIED') {
-            $query->where('is_verified', true);
-        } elseif ($status === 'UNVERIFIED') {
-            $query->where('is_verified', false);
-        }
-
-        $admins = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        // Map roles and permission counts for UI
-        $admins->getCollection()->transform(function ($admin) {
-            $roles = $admin->getRoleNames()->toArray();
             return [
-                'id' => $admin->id,
-                'name' => $admin->name,
-                'email' => $admin->email,
-                'phone' => $admin->phone,
-                'role' => $admin->role ?: ($roles[0] ?? 'Admin'),
-                'roles' => empty($roles) ? [$admin->role ?: 'Admin'] : $roles,
-                'is_verified' => (bool)$admin->is_verified,
-                'effective_permissions_count' => count($admin->getEffectivePermissions()),
-                'created_at' => $admin->created_at,
+                'users' => $formattedAdmins,
+                'stats' => $stats,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
             ];
         });
 
-        // Summary stats
-        $stats = [
-            'total_users' => Admin::count() + User::count(),
-            'staff_count' => Admin::count(),
-            'customers_count' => User::count(),
-            'unverified_count' => User::where('is_verified', false)->count(),
-        ];
-
-        return response()->json([
-            'users' => $admins,
-            'stats' => $stats,
-        ]);
+        return response()->json($result);
     }
 
     /**

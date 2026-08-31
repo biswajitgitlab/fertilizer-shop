@@ -12,21 +12,49 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $page = $request->input('page', 1);
-        $search = $request->input('search', '');
-        $cacheKey = "admin_inventory_list_p{$page}_s_" . md5($search);
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
 
-        $products = Cache::remember($cacheKey, 180, function () use ($request) {
-            $query = Product::select('id', 'name', 'stock_qty', 'price', 'is_active');
+        $cacheKey = "inventory:p{$page}:pp{$perPage}:s{$search}";
 
-            if ($request->has('search') && !empty($request->search)) {
-                $query->where('name', 'like', "%{$request->search}%");
+        try {
+            $cacheStore = Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $search) {
+            $query = Product::with('category')->select('id', 'name', 'category_id', 'stock_qty', 'price', 'is_active');
+
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
             }
 
-            return $query->orderBy('stock_qty', 'asc')->paginate(20);
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('stock_qty', 'asc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
         });
 
-        return response()->json($products);
+        if (!$request->has('page') && !$request->has('search')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     public function update(Request $request, $id)

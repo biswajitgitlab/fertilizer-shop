@@ -3,7 +3,10 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient as api } from '../../api/axiosInstances';
 import { SearchableSelect } from '../../components/common/SearchableSelect';
-import { PackageCheck, Plus, RefreshCw, Warehouse, Save, X, Lock, Edit3, AlertCircle } from 'lucide-react';
+import {
+  PackageCheck, Plus, RefreshCw, Warehouse, Save, X, Lock, Edit3,
+  Search, Filter, ChevronLeft, ChevronRight, Cpu
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Batches: React.FC = () => {
@@ -13,6 +16,13 @@ export const Batches: React.FC = () => {
   const [zones, setZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  // Pagination & Filter State
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 10, total: 0 });
 
   // Edit Batch Modal state
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
@@ -43,13 +53,26 @@ export const Batches: React.FC = () => {
     setLoading(true);
     try {
       const [batchRes, prodRes, zoneRes] = await Promise.all([
-        api.get('/admin/batches'),
+        api.get('/admin/batches', {
+          params: { page, per_page: perPage, search, status: statusFilter }
+        }),
         api.get('/products'),
         api.get('/admin/warehouse-zones'),
       ]);
-      setBatches(batchRes.data || []);
+
+      const rawBatches = batchRes.data;
+      if (rawBatches && Array.isArray(rawBatches.data)) {
+        setBatches(rawBatches.data);
+        setMeta(rawBatches.meta || { current_page: 1, last_page: 1, per_page: perPage, total: rawBatches.data.length });
+      } else {
+        setBatches(Array.isArray(rawBatches) ? rawBatches : []);
+        setMeta({ current_page: 1, last_page: 1, per_page: perPage, total: Array.isArray(rawBatches) ? rawBatches.length : 0 });
+      }
+
       setProducts(prodRes.data.data || prodRes.data || []);
-      setZones(zoneRes.data || []);
+      
+      const rawZones = zoneRes.data;
+      setZones(Array.isArray(rawZones?.data) ? rawZones.data : (Array.isArray(rawZones) ? rawZones : []));
     } catch (err) {
       console.error('Failed to fetch batches', err);
     } finally {
@@ -59,7 +82,16 @@ export const Batches: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [page, perPage, statusFilter]);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchData();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,10 +196,15 @@ export const Batches: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <PackageCheck className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
-              FEFO Product Batch Manager
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <PackageCheck className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+                FEFO Product Batch Manager
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center gap-1">
+                <Cpu className="w-3.5 h-3.5" /> Redis Cache Active
+              </span>
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Lot-level shelf-life tracking, moisture analysis &amp; RBSC batch control
             </p>
@@ -175,17 +212,66 @@ export const Batches: React.FC = () => {
           <div className="flex gap-2">
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Lot Batch
             </button>
             <button
               onClick={fetchData}
-              className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
+          </div>
+        </div>
+
+        {/* Search & Filter Bar */}
+        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <input
+              type="text"
+              placeholder="Search batch code, product, zone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-medium"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2">
+              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent text-slate-700 dark:text-slate-300 font-bold focus:outline-none cursor-pointer"
+              >
+                <option value="">All Batch Statuses</option>
+                <option value="SAFE">SAFE</option>
+                <option value="FEFO_DISPATCH_PRIORITY">FEFO DISPATCH PRIORITY</option>
+                <option value="CRITICAL_EXPIRY_RISK">CRITICAL EXPIRY RISK</option>
+                <option value="EXPIRED">EXPIRED</option>
+              </select>
+            </div>
+
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl px-3 py-2 font-bold focus:outline-none cursor-pointer"
+            >
+              <option value={10}>10 / page</option>
+              <option value={25}>25 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
           </div>
         </div>
 
@@ -207,12 +293,21 @@ export const Batches: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
                 {loading ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">Loading product batches...</td>
-                  </tr>
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-24"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-40"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-20"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-16"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-28"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-12"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-24"></div></td>
+                      <td className="py-3.5 px-4"><div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-16 ml-auto"></div></td>
+                    </tr>
+                  ))
                 ) : batches.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">No lot batches registered.</td>
+                    <td colSpan={8} className="py-8 text-center text-slate-400 font-medium">No lot batches found.</td>
                   </tr>
                 ) : (
                   batches.map((b: any, i: number) => {
@@ -276,6 +371,37 @@ export const Batches: React.FC = () => {
           </div>
         </div>
 
+        {/* Server-Side Pagination Bar */}
+        <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-slate-500 font-medium">
+            Showing Page <span className="font-bold text-slate-900 dark:text-white">{meta.current_page}</span> of <span className="font-bold text-slate-900 dark:text-white">{meta.last_page}</span> ({meta.total} Total Batches)
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page <= 1 || loading}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous</span>
+            </button>
+
+            <span className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-mono font-bold">
+              {page} / {meta.last_page}
+            </span>
+
+            <button
+              onClick={() => setPage((prev) => Math.min(prev + 1, meta.last_page))}
+              disabled={page >= meta.last_page || loading}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1 cursor-pointer"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
         {/* Create Batch Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -288,7 +414,7 @@ export const Batches: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -298,98 +424,103 @@ export const Batches: React.FC = () => {
                 <SearchableSelect
                   label="Select Chemical / Fertilizer Product"
                   required
+                  placeholder="Search chemical catalog by name..."
                   options={productOptions}
                   value={formData.product_id}
-                  onChange={(val) => handleProductChange(String(val))}
-                  placeholder="Type product name to search catalog..."
+                  onChange={handleProductChange}
                 />
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Batch Lot Code *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. BATCH-2026-UREA-01"
-                    value={formData.batch_code}
-                    onChange={(e) => setFormData({ ...formData, batch_code: e.target.value })}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-mono font-bold"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Batch Lot Code</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. BATCH-NPK-9901"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                      value={formData.batch_code}
+                      onChange={(e) => setFormData({ ...formData, batch_code: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Assigned Warehouse Zone</label>
+                    <div className="relative">
+                      <select
+                        disabled
+                        value={formData.warehouse_zone}
+                        className="w-full p-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-mono font-bold text-slate-500 cursor-not-allowed opacity-80"
+                      >
+                        {zones.map((z: any) => (
+                          <option key={z.id || z.code} value={z.code}>
+                            {z.code} - {z.name} ({z.category_type || 'General'})
+                          </option>
+                        ))}
+                      </select>
+                      <Lock className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3" />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Manufacture Date *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Manufactured Date</label>
                     <input
                       type="date"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={formData.manufactured_date}
                       onChange={(e) => setFormData({ ...formData, manufactured_date: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Expiry Date *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Expiration Date</label>
                     <input
                       type="date"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={formData.expiry_date}
                       onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Moisture % *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Moisture Level (%)</label>
                     <input
                       type="number"
                       step="0.01"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={formData.moisture_pct}
                       onChange={(e) => setFormData({ ...formData, moisture_pct: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Stock Packs *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Stock Quantity (Packs)</label>
                     <input
                       type="number"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-bold"
                       value={formData.stock_qty}
                       onChange={(e) => setFormData({ ...formData, stock_qty: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
 
-                <SearchableSelect
-                  label="Warehouse Storage Zone (Auto-Assigned)"
-                  disabled
-                  options={zones.map(z => ({
-                    value: z.code,
-                    label: `${z.code} - ${z.name}`,
-                    sublabel: z.category_type ? `Category: ${z.category_type}` : undefined
-                  }))}
-                  value={formData.warehouse_zone}
-                  onChange={() => {}}
-                  placeholder="Select warehouse storage zone..."
-                />
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-2 flex justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold transition hover:bg-slate-200"
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer"
                   >
-                    <Save className="w-4 h-4" />
-                    <span>Save Batch Lot</span>
+                    Register Batch
                   </button>
                 </div>
               </form>
@@ -397,7 +528,7 @@ export const Batches: React.FC = () => {
           </div>
         )}
 
-        {/* Edit Batch Modal (RBSC Protected) */}
+        {/* Edit Batch Modal */}
         {editingBatch && (
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6">
@@ -405,116 +536,95 @@ export const Batches: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <Edit3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    Edit Batch #{editingBatch.batch_code}
+                    Modify Batch Metadata &amp; Stock
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Product: {editingBatch.product?.name || editingBatch.product_name}</p>
+                  <p className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    {editingBatch.batch_code} ({editingBatch.product?.name || editingBatch.product_name})
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setEditingBatch(null)}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <form onSubmit={handleUpdateBatch} className="space-y-4 text-xs">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Batch Stock Packs *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Batch Stock Packs</label>
                     <input
                       type="number"
                       required
-                      min="0"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={editFormData.stock_qty}
                       onChange={(e) => setEditFormData({ ...editFormData, stock_qty: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-bold"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">FEFO Batch Status *</label>
-                    <select
-                      value={editFormData.status}
-                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-bold"
-                    >
-                      <option value="SAFE">SAFE</option>
-                      <option value="FEFO_DISPATCH_PRIORITY">FEFO DISPATCH PRIORITY</option>
-                      <option value="CRITICAL_EXPIRY_RISK">CRITICAL EXPIRY RISK</option>
-                      <option value="QUARANTINED">QUARANTINED</option>
-                      <option value="EXPIRED">EXPIRED</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Expiry Date *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Batch Expiry Date</label>
                     <input
                       type="date"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={editFormData.expiry_date}
                       onChange={(e) => setEditFormData({ ...editFormData, expiry_date: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Moisture % *</label>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Moisture Level (%)</label>
                     <input
                       type="number"
                       step="0.01"
                       required
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                       value={editFormData.moisture_pct}
                       onChange={(e) => setEditFormData({ ...editFormData, moisture_pct: e.target.value })}
-                      className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Status Override</label>
+                    <select
+                      value={editFormData.status}
+                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-bold"
+                    >
+                      <option value="SAFE">SAFE</option>
+                      <option value="FEFO_DISPATCH_PRIORITY">FEFO DISPATCH PRIORITY</option>
+                      <option value="CRITICAL_EXPIRY_RISK">CRITICAL EXPIRY RISK</option>
+                      <option value="EXPIRED">EXPIRED</option>
+                      <option value="QUARANTINED">QUARANTINED</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Warehouse Zone Dropdown */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Warehouse Storage Zone *</label>
-                  <select
-                    value={editFormData.warehouse_zone}
-                    onChange={(e) => setEditFormData({ ...editFormData, warehouse_zone: e.target.value })}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-bold"
-                  >
-                    {zones.map((z) => (
-                      <option key={z.id} value={z.code}>
-                        {z.code} - {z.name} ({z.category_type || 'General'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center gap-2 text-[11px]">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Modifying batch stock automatically re-syncs the Product catalog stock and logs an RBSC audit entry.</span>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-3 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
                   <button
                     type="button"
                     onClick={() => setEditingBatch(null)}
-                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold transition hover:bg-slate-200"
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md"
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
-                    <span>Update Batch</span>
+                    Save &amp; Synchronize Stock
                   </button>
                 </div>
               </form>
             </div>
           </div>
         )}
+
       </div>
     </AdminLayout>
   );
 };
-
-export default Batches;

@@ -50,10 +50,10 @@ import { Roles as AdminRoles } from './pages/admin/Roles';
 import { UsersPage as AdminUsers } from './pages/admin/Users';
 import { Reports as AdminReports } from './pages/admin/Reports';
 import AdminAuditLogs from './pages/admin/AuditLogs';
-import AdminBatches from './pages/admin/Batches';
+import { Batches as AdminBatches } from './pages/admin/Batches';
 import AdminFarmers from './pages/admin/Farmers';
 import AdminSettlements from './pages/admin/Settlements';
-import AdminWarehouseZones from './pages/admin/WarehouseZones';
+import { WarehouseZones as AdminWarehouseZones } from './pages/admin/WarehouseZones';
 
 // Error Status Pages
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';

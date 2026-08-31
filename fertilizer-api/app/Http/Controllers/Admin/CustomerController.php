@@ -16,11 +16,19 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $page = $request->input('page', 1);
-        $search = trim($request->input('search', ''));
-        $cacheKey = "admin_customers_p{$page}_s_" . md5($search);
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
 
-        $customers = Cache::remember($cacheKey, 120, function () use ($request, $search) {
+        $cacheKey = "customers:p{$page}:pp{$perPage}:s{$search}";
+
+        try {
+            $cacheStore = Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search) {
             $query = User::query();
 
             if (!empty($search)) {
@@ -32,10 +40,30 @@ class CustomerController extends Controller
                 });
             }
 
-            return $query->orderBy('created_at', 'desc')->paginate(30);
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
         });
 
-        return response()->json($customers);
+        if (!$request->has('page') && !$request->has('search') && !$request->has('per_page')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     /**
