@@ -805,46 +805,46 @@ export const adminApi = {
     }
   },
 
-  // Enterprise RBSC Reports API Endpoints
-  getRegulatoryReport: async () => {
+  // Enterprise RBSC Reports API Endpoints (Redis Cached & Paginated)
+  getRegulatoryReport: async (params?: any) => {
     try {
-      const res = await apiClient.get('/admin/reports/regulatory');
+      const res = await apiClient.get('/admin/reports/regulatory', { params });
       return res.data;
     } catch (e) {
       console.warn("Regulatory report error, returning fallback:", e);
       return null;
     }
   },
-  getFefoReport: async () => {
+  getFefoReport: async (params?: any) => {
     try {
-      const res = await apiClient.get('/admin/reports/fefo-inventory');
+      const res = await apiClient.get('/admin/reports/fefo-inventory', { params });
       return res.data;
     } catch (e) {
       console.warn("FEFO report error, returning fallback:", e);
       return null;
     }
   },
-  getDiseaseOutbreakReport: async () => {
+  getDiseaseOutbreakReport: async (params?: any) => {
     try {
-      const res = await apiClient.get('/admin/reports/disease-outbreak');
+      const res = await apiClient.get('/admin/reports/disease-outbreak', { params });
       return res.data;
     } catch (e) {
       console.warn("Outbreak report error, returning fallback:", e);
       return null;
     }
   },
-  getSecurityAuditReport: async () => {
+  getSecurityAuditReport: async (params?: any) => {
     try {
-      const res = await apiClient.get('/admin/reports/security-audit');
+      const res = await apiClient.get('/admin/reports/security-audit', { params });
       return res.data;
     } catch (e) {
       console.warn("Security audit report error, returning fallback:", e);
       return null;
     }
   },
-  getFinancialReconcileReport: async () => {
+  getFinancialReconcileReport: async (params?: any) => {
     try {
-      const res = await apiClient.get('/admin/reports/financial-reconcile');
+      const res = await apiClient.get('/admin/reports/financial-reconcile', { params });
       return res.data;
     } catch (e) {
       console.warn("Financial report error, returning fallback:", e);

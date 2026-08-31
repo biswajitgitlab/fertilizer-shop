@@ -7,7 +7,9 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\CropDiagnosis;
-use App\Models\Notification;
+use App\Models\ProductBatch;
+use App\Models\AuditLog;
+use App\Models\DriverSettlement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -16,16 +18,51 @@ use Carbon\Carbon;
 class ReportController extends Controller
 {
     /**
+     * Helper to generate dynamic, parameter-aware Redis cache keys.
+     */
+    private function buildCacheKey(string $prefix, Request $request): string
+    {
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 10);
+        $search = strtolower(trim($request->get('search', '')));
+        $status = $request->get('status', '');
+        $dateFrom = $request->get('date_from', '');
+        $dateTo = $request->get('date_to', '');
+
+        return "report:{$prefix}:p{$page}:pp{$perPage}:s{$search}:st{$status}:df{$dateFrom}:dt{$dateTo}";
+    }
+
+    /**
+     * Helper to safely fetch from Redis cache (falls back gracefully to default cache driver).
+     */
+    private function rememberInRedis(string $key, int $ttlSeconds, callable $callback)
+    {
+        try {
+            return Cache::store('redis')->remember($key, $ttlSeconds, $callback);
+        } catch (\Throwable $e) {
+            return Cache::remember($key, $ttlSeconds, $callback);
+        }
+    }
+
+    /**
      * 1. Government Subsidy & Controlled Chemical Ledger Report
      * RBSC Permission Scope: reports.regulatory
      */
     public function regulatory(Request $request)
     {
-        $report = Cache::remember('report_regulatory_subsidy', 300, function () {
-            // Aggregate subsidized vs non-subsidized orders
+        $cacheKey = $this->buildCacheKey('regulatory', $request);
+
+        $report = $this->rememberInRedis($cacheKey, 300, function () use ($request) {
+            $page = max(1, (int) $request->get('page', 1));
+            $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+            $search = strtolower(trim($request->get('search', '')));
+            $statusFilter = $request->get('status', '');
+            $dateFrom = $request->get('date_from', '');
+            $dateTo = $request->get('date_to', '');
+
+            // Aggregate summary metrics
             $totalOrders = Order::where('status', '!=', 'CANCELLED')->count();
             
-            // Subsidized fertilizer breakdown by category
             $subsidizedCategories = DB::table('order_items')
                 ->join('products', 'order_items.product_id', '=', 'products.id')
                 ->join('categories', 'products.category_id', '=', 'categories.id')
@@ -41,31 +78,62 @@ class ReportController extends Controller
                 ->groupBy('categories.name')
                 ->get();
 
-            // Recent chemical buyer audit log
-            $buyerLogs = Order::with(['user', 'items.product'])
-                ->where('status', '!=', 'CANCELLED')
-                ->orderBy('created_at', 'desc')
-                ->limit(15)
-                ->get()
-                ->map(function ($order) {
-                    $hasControlledChemicals = $order->items->contains(function ($item) {
-                        return str_contains(strtolower($item->product->name ?? ''), 'urea') 
-                            || str_contains(strtolower($item->product->name ?? ''), 'dap')
-                            || str_contains(strtolower($item->product->name ?? ''), 'pesticide');
-                    });
+            // Filtered Query for Audit Ledger
+            $query = Order::with(['user', 'items.product'])
+                ->where('status', '!=', 'CANCELLED');
 
-                    return [
-                        'order_id' => $order->id,
-                        'farmer_name' => $order->user ? $order->user->name : 'Walk-in Farmer',
-                        'farmer_email' => $order->user ? $order->user->email : 'N/A',
-                        'farmer_phone' => $order->user ? $order->user->phone : 'N/A',
-                        'kisan_card_status' => $order->user && $order->user->is_verified ? 'VERIFIED_AADHAAR' : 'PENDING_DOCUMENTATION',
-                        'chemical_classification' => $hasControlledChemicals ? 'SCHEDULE_H_RESTRICTED' : 'GENERAL_AGRI_INPUT',
-                        'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
-                        'transaction_date' => $order->created_at->format('Y-m-d H:i:s'),
-                        'total_amount' => (float) $order->total,
-                    ];
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('id', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%")
+                             ->orWhere('phone', 'like', "%{$search}%")
+                             ->orWhere('email', 'like', "%{$search}%");
+                      });
                 });
+            }
+
+            if ($dateFrom) {
+                $query->whereDate('created_at', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $query->whereDate('created_at', '<=', $dateTo);
+            }
+
+            $totalItems = $query->count();
+            $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+            $orders = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            $ledgerItems = $orders->map(function ($order) {
+                $hasControlledChemicals = $order->items->contains(function ($item) {
+                    return str_contains(strtolower($item->product->name ?? ''), 'urea') 
+                        || str_contains(strtolower($item->product->name ?? ''), 'dap')
+                        || str_contains(strtolower($item->product->name ?? ''), 'pesticide');
+                });
+
+                return [
+                    'order_id' => $order->id,
+                    'farmer_name' => $order->user ? $order->user->name : 'Walk-in Farmer',
+                    'farmer_email' => $order->user ? $order->user->email : 'N/A',
+                    'farmer_phone' => $order->user ? $order->user->phone : 'N/A',
+                    'kisan_card_status' => ($order->user && $order->user->is_verified) ? 'VERIFIED_AADHAAR' : 'PENDING_DOCUMENTATION',
+                    'chemical_classification' => $hasControlledChemicals ? 'SCHEDULE_H_RESTRICTED' : 'GENERAL_AGRI_INPUT',
+                    'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                    'transaction_date' => $order->created_at->format('Y-m-d H:i:s'),
+                    'total_amount' => (float) $order->total,
+                ];
+            });
+
+            if (!empty($statusFilter)) {
+                $ledgerItems = $ledgerItems->filter(function ($item) use ($statusFilter) {
+                    return strtolower($item['chemical_classification']) === strtolower($statusFilter)
+                        || strtolower($item['kisan_card_status']) === strtolower($statusFilter);
+                })->values();
+            }
 
             return [
                 'summary' => [
@@ -75,7 +143,13 @@ class ReportController extends Controller
                     'active_kisan_card_farmers' => User::where('is_verified', true)->count(),
                 ],
                 'breakdown' => $subsidizedCategories,
-                'audit_ledger' => $buyerLogs,
+                'data' => $ledgerItems,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $totalItems,
+                ],
             ];
         });
 
@@ -88,23 +162,31 @@ class ReportController extends Controller
      */
     public function fefoInventory(Request $request)
     {
-        $report = Cache::remember('report_fefo_inventory', 300, function () {
-            $dbBatches = \App\Models\ProductBatch::with('product')->get();
+        $cacheKey = $this->buildCacheKey('fefo', $request);
+
+        $report = $this->rememberInRedis($cacheKey, 300, function () use ($request) {
+            $page = max(1, (int) $request->get('page', 1));
+            $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+            $search = strtolower(trim($request->get('search', '')));
+            $statusFilter = $request->get('status', '');
+
+            $dbBatches = ProductBatch::with(['product', 'warehouseZone'])->get();
 
             if ($dbBatches->count() > 0) {
                 $batchAnalysis = $dbBatches->map(function ($b) {
                     $daysToExpiry = Carbon::now()->diffInDays(Carbon::parse($b->expiry_date), false);
+                    $zoneCode = typeof_is_object($b->warehouse_zone) ? ($b.warehouse_zone->code ?? 'ZONE-A') : ($b->warehouse_zone ?? 'ZONE-A');
                     return [
+                        'id' => $b->id,
                         'product_id' => $b->product_id,
                         'product_name' => $b->product ? $b->product->name : 'Chemical Input',
-                        'category_id' => $b->product ? $b->product->category_id : 1,
-                        'stock_qty' => $b->stock_qty,
                         'batch_code' => $b->batch_code,
+                        'warehouse_zone' => $zoneCode,
+                        'stock_qty' => $b->stock_qty,
                         'days_remaining' => (int) $daysToExpiry,
                         'expiry_date' => Carbon::parse($b->expiry_date)->format('Y-m-d'),
                         'moisture_status' => "MOISTURE ({$b->moisture_pct}%)",
                         'status' => $b->status,
-                        'clearance_discount_suggested' => $daysToExpiry < 30 ? '25% Clearance Markdown' : 'None',
                     ];
                 })->sortBy('days_remaining')->values();
             } else {
@@ -113,7 +195,6 @@ class ReportController extends Controller
                     $hash = crc32($product->name);
                     $daysToExpiry = ($hash % 120) + 15;
                     $batchCode = 'BATCH-2026-' . strtoupper(substr(md5($product->id), 0, 6));
-                    $moistureRisk = ($hash % 2 == 0) ? 'NORMAL (2.1%)' : 'ELEVATED (4.8% Moisture)';
 
                     $expiryStatus = 'SAFE';
                     if ($daysToExpiry < 30) {
@@ -123,33 +204,56 @@ class ReportController extends Controller
                     }
 
                     return [
+                        'id' => $product->id,
                         'product_id' => $product->id,
                         'product_name' => $product->name,
-                        'category_id' => $product->category_id,
-                        'stock_qty' => $product->stock_qty,
                         'batch_code' => $batchCode,
+                        'warehouse_zone' => 'ZONE-A1',
+                        'stock_qty' => $product->stock_qty,
                         'days_remaining' => $daysToExpiry,
                         'expiry_date' => Carbon::now()->addDays($daysToExpiry)->format('Y-m-d'),
-                        'moisture_status' => $moistureRisk,
+                        'moisture_status' => 'NORMAL (2.1%)',
                         'status' => $expiryStatus,
-                        'clearance_discount_suggested' => $daysToExpiry < 30 ? '25% Clearance Markdown' : 'None',
                     ];
                 })->sortBy('days_remaining')->values();
             }
 
-            $criticalCount = $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->count();
-            $fefoPriorityCount = $batchAnalysis->where('status', 'FEFO_DISPATCH_PRIORITY')->count();
+            // Apply Filters
+            if ($search) {
+                $batchAnalysis = $batchAnalysis->filter(function ($item) use ($search) {
+                    return str_contains(strtolower($item['batch_code']), $search)
+                        || str_contains(strtolower($item['product_name']), $search)
+                        || str_contains(strtolower($item['warehouse_zone']), $search);
+                })->values();
+            }
+
+            if ($statusFilter) {
+                $batchAnalysis = $batchAnalysis->filter(function ($item) use ($statusFilter) {
+                    return strtolower($item['status']) === strtolower($statusFilter);
+                })->values();
+            }
+
+            $totalItems = $batchAnalysis->count();
+            $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+            $paginatedBatches = $batchAnalysis->slice(($page - 1) * $perPage, $perPage)->values();
 
             return [
                 'summary' => [
-                    'total_batches_tracked' => $batchAnalysis->count(),
-                    'critical_expiry_batches' => $criticalCount,
-                    'fefo_dispatch_queue' => $fefoPriorityCount,
+                    'total_batches_tracked' => $totalItems,
+                    'critical_expiry_batches' => $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->count(),
+                    'fefo_dispatch_queue' => $batchAnalysis->where('status', 'FEFO_DISPATCH_PRIORITY')->count(),
                     'est_spoilage_risk_value' => $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->sum(function($p) {
                         return $p['stock_qty'] * 150;
                     }),
                 ],
-                'batches' => $batchAnalysis,
+                'data' => $paginatedBatches,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $totalItems,
+                ],
             ];
         });
 
@@ -162,8 +266,14 @@ class ReportController extends Controller
      */
     public function diseaseOutbreak(Request $request)
     {
-        $report = Cache::remember('report_disease_outbreak_telemetry', 300, function () {
-            // Aggregate diagnosis table
+        $cacheKey = $this->buildCacheKey('outbreak', $request);
+
+        $report = $this->rememberInRedis($cacheKey, 300, function () use ($request) {
+            $page = max(1, (int) $request->get('page', 1));
+            $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+            $search = strtolower(trim($request->get('search', '')));
+            $statusFilter = $request->get('status', '');
+
             $totalDiagnoses = CropDiagnosis::count();
 
             $diseaseClusters = CropDiagnosis::select(
@@ -176,10 +286,24 @@ class ReportController extends Controller
                 ->orderByDesc('occurrences')
                 ->get();
 
-            // Recent telemetry scans
-            $recentScans = CropDiagnosis::with('user')
-                ->orderBy('created_at', 'desc')
-                ->limit(15)
+            $query = CropDiagnosis::with('user');
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('disease_name', 'like', "%{$search}%")
+                      ->orWhere('crop_type', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            $totalItems = $query->count();
+            $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+            $scans = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
                 ->get()
                 ->map(function ($diag) {
                     return [
@@ -202,7 +326,13 @@ class ReportController extends Controller
                     'remedy_inventory_readiness' => '94.5% Stocked',
                 ],
                 'pathology_clusters' => $diseaseClusters,
-                'scans' => $recentScans,
+                'data' => $scans,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $totalItems,
+                ],
             ];
         });
 
@@ -215,14 +345,41 @@ class ReportController extends Controller
      */
     public function securityAudit(Request $request)
     {
-        $report = Cache::remember('report_security_audit_log', 120, function () {
+        $cacheKey = $this->buildCacheKey('security', $request);
+
+        $report = $this->rememberInRedis($cacheKey, 120, function () use ($request) {
+            $page = max(1, (int) $request->get('page', 1));
+            $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+            $search = strtolower(trim($request->get('search', '')));
+            $statusFilter = $request->get('status', '');
+
             $staffUsers = User::whereHas('roles', function ($q) {
                 $q->whereIn('name', ['Super Admin', 'Admin', 'Store Manager', 'Warehouse Manager', 'Field Officer', 'Customer Support', 'Staff']);
             })->with('roles')->get();
 
-            $dbAuditLogs = \App\Models\AuditLog::with('user')
-                ->orderBy('created_at', 'desc')
-                ->limit(25)
+            $query = AuditLog::with('user');
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('action', 'like', "%{$search}%")
+                      ->orWhere('target', 'like', "%{$search}%")
+                      ->orWhere('ip_address', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            if ($statusFilter) {
+                $query->where('risk_level', $statusFilter);
+            }
+
+            $totalItems = $query->count();
+            $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+            $logs = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
                 ->get()
                 ->map(function ($log) {
                     return [
@@ -237,30 +394,7 @@ class ReportController extends Controller
                     ];
                 });
 
-            $auditTrail = $dbAuditLogs->count() > 0 ? $dbAuditLogs->toArray() : [
-                [
-                  'id' => 101,
-                  'admin_name' => 'Super Admin (Executive)',
-                  'action' => 'ROLE_PERMISSION_UPDATED',
-                  'target' => 'Staff Member: Store Manager',
-                  'details' => 'Granted capability [analytics.export, reports.regulatory]',
-                  'ip_address' => '192.168.1.45',
-                  'timestamp' => Carbon::now()->subMinutes(12)->format('Y-m-d H:i:s'),
-                  'risk_level' => 'LOW',
-                ],
-                [
-                  'id' => 102,
-                  'admin_name' => 'Admin SarkarFertilizer',
-                  'action' => 'SENSITIVE_DATA_EXPORTED',
-                  'target' => 'Customer CRM Roster',
-                  'details' => 'Triggered CSV data export under [analytics.export]',
-                  'ip_address' => '10.0.0.12',
-                  'timestamp' => Carbon::now()->subHours(2)->format('Y-m-d H:i:s'),
-                  'risk_level' => 'MEDIUM',
-                ],
-            ];
-
-            $failedAttempts24h = \App\Models\AuditLog::where('created_at', '>=', Carbon::now()->subDay())
+            $failedAttempts24h = AuditLog::where('created_at', '>=', Carbon::now()->subDay())
                 ->where('action', 'UNAUTHORIZED_ACCESS_BLOCKED')
                 ->count();
 
@@ -280,7 +414,13 @@ class ReportController extends Controller
                         'is_verified' => (bool) $u->is_verified,
                     ];
                 }),
-                'logs' => $auditTrail,
+                'data' => $logs,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $totalItems,
+                ],
             ];
         });
 
@@ -293,17 +433,44 @@ class ReportController extends Controller
      */
     public function financialReconcile(Request $request)
     {
-        $report = Cache::remember('report_financial_reconcile', 300, function () {
+        $cacheKey = $this->buildCacheKey('financial', $request);
+
+        $report = $this->rememberInRedis($cacheKey, 300, function () use ($request) {
+            $page = max(1, (int) $request->get('page', 1));
+            $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+            $search = strtolower(trim($request->get('search', '')));
+            $statusFilter = $request->get('status', '');
+
             $totalRevenue = Order::where('status', '!=', 'CANCELLED')->sum('total');
             $codOrders = Order::where('status', '!=', 'CANCELLED')->where('payment_status', 'COD')->get();
             $onlineOrders = Order::where('status', '!=', 'CANCELLED')->where('payment_status', 'PAID')->get();
 
-            $dbSettlements = \App\Models\DriverSettlement::with(['order.user', 'driver'])->get();
+            $query = DriverSettlement::with(['order.user', 'driver']);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('order_id', 'like', "%{$search}%")
+                      ->orWhereHas('order.user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            if ($statusFilter) {
+                $query->where('status', $statusFilter);
+            }
+
+            $totalItems = $query->count();
+            $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+            $dbSettlements = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
 
             if ($dbSettlements->count() > 0) {
                 $reconciliationList = $dbSettlements->map(function ($s) {
                     $order = $s->order;
-                    $isCod = $s->status === 'DRIVER_COLLECTION_PENDING';
                     return [
                         'order_id' => $s->order_id,
                         'farmer_name' => ($order && $order->user) ? $order->user->name : 'Customer',
@@ -317,10 +484,21 @@ class ReportController extends Controller
                     ];
                 });
             } else {
-                $reconciliationList = Order::with('user')
-                    ->where('status', '!=', 'CANCELLED')
-                    ->orderBy('created_at', 'desc')
-                    ->limit(15)
+                $orderQuery = Order::with('user')->where('status', '!=', 'CANCELLED');
+                if ($search) {
+                    $orderQuery->where(function ($q) use ($search) {
+                        $q->where('id', 'like', "%{$search}%")
+                          ->orWhereHas('user', function ($uq) use ($search) {
+                              $uq->where('name', 'like', "%{$search}%");
+                          });
+                    });
+                }
+                $totalItems = $orderQuery->count();
+                $lastPage = max(1, (int) ceil($totalItems / $perPage));
+
+                $reconciliationList = $orderQuery->orderBy('created_at', 'desc')
+                    ->skip(($page - 1) * $perPage)
+                    ->take($perPage)
                     ->get()
                     ->map(function ($order) {
                         $isCod = $order->payment_status === 'COD';
@@ -346,10 +524,20 @@ class ReportController extends Controller
                     'net_bank_settlement_est' => round($totalRevenue * 0.985, 2),
                     'razorpay_circuit_breaker' => 'CLOSED (OPERATIONAL)',
                 ],
-                'reconciled_orders' => $reconciliationList,
+                'data' => $reconciliationList,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $totalItems,
+                ],
             ];
         });
 
         return response()->json($report);
     }
+}
+
+function typeof_is_object($val) {
+    return is_object($val) || is_array($val);
 }

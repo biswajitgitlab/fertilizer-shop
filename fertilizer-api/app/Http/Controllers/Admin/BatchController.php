@@ -15,11 +15,61 @@ class BatchController extends Controller
 {
     public function index(Request $request)
     {
-        $batches = ProductBatch::with(['product', 'warehouseZone'])
-            ->orderBy('expiry_date', 'asc')
-            ->get();
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
+        $status = $request->get('status', '');
 
-        return response()->json($batches);
+        $cacheKey = "batches:p{$page}:pp{$perPage}:s{$search}:st{$status}";
+
+        try {
+            $cacheStore = \Illuminate\Support\Facades\Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = \Illuminate\Support\Facades\Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search, $status) {
+            $query = ProductBatch::with(['product', 'warehouseZone']);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('batch_code', 'like', "%{$search}%")
+                      ->orWhere('warehouse_zone', 'like', "%{$search}%")
+                      ->orWhereHas('product', function ($pq) use ($search) {
+                          $pq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('expiry_date', 'asc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
+        });
+
+        // If simple array requested without page param, return data for legacy callers
+        if (!$request->has('page') && !$request->has('search')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     public function store(Request $request)
@@ -91,6 +141,8 @@ class BatchController extends Controller
             'status' => 'sometimes|string|in:SAFE,FEFO_DISPATCH_PRIORITY,CRITICAL_EXPIRY_RISK,QUARANTINED,EXPIRED',
             'warehouse_zone' => 'sometimes|string|exists:warehouse_zones,code',
             'stock_qty' => 'sometimes|integer|min:0',
+            'expiry_date' => 'sometimes|date',
+            'moisture_pct' => 'sometimes|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($batch, $validated) {

@@ -58,6 +58,11 @@ class RoleSeeder extends Seeder
             'inventory.edit',
             'warehouse_zones.view',
             'warehouse_zones.edit',
+            // Batch Lot Management Module
+            'batches.view',
+            'batches.create',
+            'batches.edit',
+            'batches.delete',
             // Crop Plans & Triage Module
             'crop_plans.view',
             'crop_plans.manage',
@@ -77,24 +82,30 @@ class RoleSeeder extends Seeder
                 'customers.view', 'customers.edit', 'customers.delete',
                 'analytics.view', 'analytics.export',
                 'notifications.view', 'notifications.send',
-                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
+                'inventory.view', 'inventory.update', 'inventory.edit',
+                'warehouse_zones.view', 'warehouse_zones.edit',
+                'batches.view', 'batches.create', 'batches.edit', 'batches.delete',
                 'crop_plans.view', 'crop_plans.manage',
             ],
             'Store Manager' => [
                 'products.view', 'products.create', 'products.edit', 'products.delete',
                 'orders.view', 'orders.edit', 'orders.status', 'orders.delete',
-                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
+                'inventory.view', 'inventory.update', 'inventory.edit',
+                'warehouse_zones.view', 'warehouse_zones.edit',
+                'batches.view', 'batches.create', 'batches.edit',
                 'customers.view', 'analytics.view', 'notifications.view'
+            ],
+            'Warehouse Manager' => [
+                'inventory.view', 'inventory.update', 'inventory.edit',
+                'warehouse_zones.view', 'warehouse_zones.edit',
+                'batches.view', 'batches.create', 'batches.edit', 'batches.delete',
+                'products.view', 'orders.view', 'orders.status',
+                'notifications.view'
             ],
             'Customer Support' => [
                 'orders.view', 'orders.status',
                 'customers.view', 'customers.edit',
                 'notifications.view', 'products.view'
-            ],
-            'Warehouse Manager' => [
-                'inventory.view', 'inventory.update', 'inventory.edit', 'warehouse_zones.view', 'warehouse_zones.edit',
-                'products.view', 'orders.view', 'orders.status',
-                'notifications.view'
             ],
             'Field Officer' => [
                 'crop_plans.view', 'crop_plans.manage',
@@ -113,4 +124,3 @@ class RoleSeeder extends Seeder
         }
     }
 }
-
