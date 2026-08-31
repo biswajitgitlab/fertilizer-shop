@@ -10,6 +10,7 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { FloatingCartBanner } from './components/cart/FloatingCartBanner';
 import { ChatWidget } from './components/chat/ChatWidget';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { IdleTimer } from './components/common/IdleTimer';
 
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 
@@ -165,6 +166,7 @@ export function App() {
             },
           }}
         />
+        <IdleTimer />
         <LayoutWrapper>
           <Routes>
             {/* Customer Storefront Routes — Public */}

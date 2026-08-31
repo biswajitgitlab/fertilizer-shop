@@ -11,18 +11,37 @@ interface AuthState {
   updateUser: (user: Partial<User>) => void;
 }
 
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
 const savedToken = localStorage.getItem('token');
 const savedUserStr = localStorage.getItem('user');
-let initialUser: User | null = null;
+const savedLoginTime = localStorage.getItem('login_timestamp');
 
-if (savedUserStr) {
+let initialUser: User | null = null;
+let isExpired = false;
+
+if (savedLoginTime) {
+  const loginTime = parseInt(savedLoginTime, 10);
+  if (Date.now() - loginTime > TWENTY_FOUR_HOURS_MS) {
+    isExpired = true;
+  }
+}
+
+if (savedUserStr && !isExpired) {
   try {
     initialUser = JSON.parse(savedUserStr);
   } catch (e) {
     console.error("Failed to parse saved user:", e);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('login_timestamp');
   }
+} else if (isExpired) {
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+  localStorage.removeItem('login_timestamp');
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_user');
 }
 
 const isStaffRole = (user: any): boolean => {
@@ -32,8 +51,8 @@ const isStaffRole = (user: any): boolean => {
   return false;
 };
 
-// Only consider authenticated if we have both token AND user stored
-const isInitiallyAuthenticated = !!(savedToken && initialUser);
+// Only consider authenticated if we have token, user, and it's not expired
+const isInitiallyAuthenticated = !!(savedToken && initialUser && !isExpired);
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
@@ -44,6 +63,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (user, token) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('login_timestamp', Date.now().toString());
     set({
       user,
       token,
@@ -55,6 +75,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('login_timestamp');
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_user');
     try {
