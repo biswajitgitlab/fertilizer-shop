@@ -126,7 +126,7 @@ class InventoryController extends Controller
         }
 
         if ($product->stock_qty <= 10) {
-            \App\Services\NotificationService::notifyLowStock($product);
+            app(\App\Contracts\NotificationServiceInterface::class)->notifyLowStock($product);
         }
 
         return response()->json(['message' => 'Stock updated successfully', 'product' => $product]);

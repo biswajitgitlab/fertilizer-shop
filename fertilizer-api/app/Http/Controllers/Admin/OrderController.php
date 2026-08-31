@@ -26,7 +26,7 @@ class OrderController extends Controller
         }
 
         $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $status, $paymentStatus, $search) {
-            $query = Order::with(['user', 'items.product', 'payment']);
+            $query = Order::with(['user', 'packer', 'driver', 'items.product', 'payment']);
 
             if (!empty($status)) {
                 $query->where('status', strtoupper($status));
@@ -77,7 +77,7 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
-            return Order::with(['user', 'items.product', 'payment'])->findOrFail($id);
+            return Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])->findOrFail($id);
         });
         return response()->json($order);
     }
@@ -87,7 +87,9 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         
         $request->validate([
-            'status' => 'sometimes|in:PENDING,CONFIRMED,SHIPPED,DELIVERED,CANCELLED,REFUNDED',
+            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
+            'packer_id' => 'sometimes|nullable|exists:users,id',
+            'driver_id' => 'sometimes|nullable|exists:users,id',
             'tracking_number' => 'sometimes|nullable|string',
             'cancellation_reason' => 'sometimes|nullable|string',
         ]);
@@ -96,10 +98,10 @@ class OrderController extends Controller
 
         if ($newStatus === 'CANCELLED' && $order->status !== 'CANCELLED') {
             // Guard: Cannot cancel shipped/delivered orders
-            if (in_array($order->status, ['SHIPPED', 'DELIVERED'])) {
+            if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'])) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => "Order #{$order->order_number} has already been shipped or delivered and cannot be cancelled."
+                    'message' => "Order #{$order->order_number} has already been shipped/delivered and cannot be cancelled."
                 ], 422);
             }
 
@@ -168,7 +170,30 @@ class OrderController extends Controller
         } else {
             if ($request->has('status')) {
                 $order->status = $request->status;
+
+                if (in_array($request->status, ['PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
+                    $order->packed_at = now();
+                }
+                if (in_array($request->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
+                    $order->shipped_at = now();
+                }
+                if ($request->status === 'DELIVERED') {
+                    $order->delivered_at = now();
+                    $order->payment_status = 'PAID';
+                }
             }
+        }
+
+        if ($request->has('packer_id')) {
+            $order->packer_id = $request->packer_id;
+        }
+
+        if ($request->has('driver_id')) {
+            $order->driver_id = $request->driver_id;
+
+            \App\Models\DriverSettlement::where('order_id', $order->id)->update([
+                'driver_id' => $request->driver_id
+            ]);
         }
 
         if ($request->has('tracking_number')) {
@@ -181,13 +206,15 @@ class OrderController extends Controller
         Cache::forget('admin_dashboard_stats');
         Cache::forget('admin_analytics_metrics');
 
-        \App\Services\NotificationService::notifyOrderStatusUpdated($order);
+        app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);
 
         try {
-            $order->load('user');
+            $order->load(['user', 'packer', 'driver']);
             \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [
                 'order_id' => $order->id,
                 'status' => $order->status,
+                'packer_name' => $order->packer->name ?? null,
+                'driver_name' => $order->driver->name ?? null,
                 'tracking_number' => $order->tracking_number,
                 'user_phone' => $order->user->phone ?? 'Unknown',
             ]);
@@ -202,7 +229,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'order_ids' => 'required|array',
-            'status' => 'required|in:PENDING,CONFIRMED,SHIPPED,DELIVERED,CANCELLED,REFUNDED'
+            'status' => 'required|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED'
         ]);
 
         Order::whereIn('id', $request->order_ids)->update(['status' => $request->status]);

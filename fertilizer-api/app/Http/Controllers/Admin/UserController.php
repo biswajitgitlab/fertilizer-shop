@@ -188,7 +188,7 @@ class UserController extends Controller
 
             $this->clearCache();
 
-            \App\Services\NotificationService::notifyStaffCreated($admin);
+            app(\App\Contracts\NotificationServiceInterface::class)->notifyStaffCreated($admin);
 
             return response()->json([
                 'message' => "Staff member {$admin->name} created successfully with role {$roleName}.",

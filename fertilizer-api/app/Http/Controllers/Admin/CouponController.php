@@ -87,7 +87,7 @@ class CouponController extends Controller
 
         $coupon = Coupon::create($request->all());
         $this->clearCouponCache();
-        \App\Services\NotificationService::notifyCouponCreated($coupon);
+        app(\App\Contracts\NotificationServiceInterface::class)->notifyCouponCreated($coupon);
         return response()->json(['message' => 'Coupon created successfully', 'coupon' => $coupon], 201);
     }
 

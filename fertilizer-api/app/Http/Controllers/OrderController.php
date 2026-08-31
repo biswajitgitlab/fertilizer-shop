@@ -314,13 +314,13 @@ class OrderController extends Controller
                     ]);
                 }
 
-                \App\Services\NotificationService::notifyOrderCreated($order);
+                app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderCreated($order);
 
                 // Check low stock for ordered items
                 foreach ($order->items as $item) {
                     $prod = $item->product;
                     if ($prod && $prod->stock_qty <= 10) {
-                        \App\Services\NotificationService::notifyLowStock($prod);
+                        app(\App\Contracts\NotificationServiceInterface::class)->notifyLowStock($prod);
                     }
                 }
             }
@@ -394,7 +394,7 @@ class OrderController extends Controller
 
         $reason = $request->input('reason') ?? $request->input('cancellation_reason') ?? 'Customer requested cancellation';
         $previousStatus = $order->status;
-        $cancelledBy = auth()->user() && auth()->user()->hasRole && auth()->user()->hasRole('Admin') ? 'ADMIN' : 'CUSTOMER';
+        $cancelledBy = (auth()->user() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('Admin')) ? 'ADMIN' : 'CUSTOMER';
 
         try {
             DB::transaction(function () use ($order, $reason, $cancelledBy) {
@@ -467,7 +467,7 @@ class OrderController extends Controller
             Cache::forget('admin_dashboard_stats');
             Cache::forget('admin_analytics_metrics');
 
-            \App\Services\NotificationService::notifyOrderStatusUpdated($order, $previousStatus);
+            app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order, $previousStatus);
 
             return response()->json([
                 'status' => 'success',
@@ -542,7 +542,7 @@ class OrderController extends Controller
     public function verifyPayment(Request $request, $id)
     {
         $order = Order::where('user_id', auth()->id())->orWhere(function($query) {
-            if (auth()->user() && auth()->user()->hasRole && auth()->user()->hasRole('Admin')) {
+            if (auth()->user() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole('Admin')) {
                 // Admin can verify any order
             }
         })->findOrFail($id);

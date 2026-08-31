@@ -86,7 +86,14 @@ export interface Order {
   total: number;
   paymentMethod: 'Cash on Delivery' | 'Online Payment';
   paymentStatus: 'Pending' | 'Paid' | 'Failed';
-  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled' | 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled' | 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'READY_FOR_PICKUP' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+  packerId?: string | number;
+  packerName?: string;
+  driverId?: string | number;
+  driverName?: string;
+  packedAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
   trackingNumber?: string;
   createdAt: string;
   adminNotes?: string;

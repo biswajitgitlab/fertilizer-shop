@@ -17,10 +17,14 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({ status }) => {
   const statusIndexMap: Record<string, number> = {
     'pending': 0,
     'confirmed': 1,
+    'processing': 2,
     'packed': 2,
+    'ready_for_pickup': 2,
     'shipped': 3,
+    'out_for_delivery': 3,
     'delivered': 4,
-    'cancelled': -1
+    'cancelled': -1,
+    'refunded': -1
   };
 
   const currentIndex = statusIndexMap[status.toLowerCase()] ?? 1;
