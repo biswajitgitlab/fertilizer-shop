@@ -115,7 +115,6 @@ class RoleSeeder extends Seeder
                 'products.view', 'orders.view', 'customers.view',
                 'inventory.view', 'notifications.view'
             ],
-            'Customer' => [],
         ];
 
         foreach ($rolePermissions as $roleName => $perms) {

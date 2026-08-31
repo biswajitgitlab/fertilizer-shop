@@ -67,7 +67,7 @@ class RoleController extends Controller
                     'name' => $role->name,
                     'user_count' => $userCount,
                     'permissions' => $role->permissions->pluck('name'),
-                    'is_system' => in_array($role->name, ['Super Admin', 'Admin', 'Customer']),
+                    'is_system' => in_array($role->name, ['Super Admin', 'Admin']),
                 ];
             });
         });
@@ -174,7 +174,7 @@ class RoleController extends Controller
 
         $role = Role::findOrFail($id);
 
-        if (in_array($role->name, ['Super Admin', 'Admin', 'Customer'])) {
+        if (in_array($role->name, ['Super Admin', 'Admin'])) {
             return response()->json(['message' => 'Cannot delete system core roles.'], 422);
         }
 

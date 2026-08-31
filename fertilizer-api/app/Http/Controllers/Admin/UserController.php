@@ -36,23 +36,28 @@ class UserController extends Controller
         }
 
         $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search, $role, $status) {
-            $query = Admin::query();
+            $query = Admin::query()->whereNotIn('role', ['Customer', 'Farmer']);
 
-            // Search by name, email, or phone
+            // Search by name, email, phone, or role
             if (!empty($search)) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%")
-                      ->orWhere('phone', 'like', "%{$search}%");
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(phone) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(role) LIKE ?', ["%{$search}%"])
+                      ->orWhereHas('roles', function ($rq) use ($search) {
+                          $rq->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                      });
                 });
             }
 
             // Filter by role
             if (!empty($role) && $role !== 'ALL') {
-                $query->where(function ($q) use ($role) {
-                    $q->where('role', $role)
-                      ->orWhereHas('roles', function ($rq) use ($role) {
-                          $rq->where('name', $role);
+                $roleLower = strtolower($role);
+                $query->where(function ($q) use ($role, $roleLower) {
+                    $q->whereRaw('LOWER(role) = ?', [$roleLower])
+                      ->orWhereHas('roles', function ($rq) use ($roleLower) {
+                          $rq->whereRaw('LOWER(name) = ?', [$roleLower]);
                       });
                 });
             }
@@ -74,6 +79,7 @@ class UserController extends Controller
 
             $formattedAdmins = $admins->map(function ($admin) {
                 $roles = $admin->getRoleNames()->toArray();
+                $createdAt = $admin->created_at ? (is_string($admin->created_at) ? $admin->created_at : $admin->created_at->toISOString()) : now()->toISOString();
                 return [
                     'id' => $admin->id,
                     'name' => $admin->name,
@@ -83,7 +89,7 @@ class UserController extends Controller
                     'roles' => empty($roles) ? [$admin->role ?: 'Admin'] : $roles,
                     'is_verified' => (bool)$admin->is_verified,
                     'effective_permissions_count' => count($admin->getEffectivePermissions()),
-                    'created_at' => $admin->created_at,
+                    'created_at' => $createdAt,
                 ];
             })->values()->toArray();
 
@@ -217,7 +223,7 @@ class UserController extends Controller
                 'roles' => empty($roles) ? [$admin->role ?: 'Admin'] : $roles,
                 'is_verified' => (bool)$admin->is_verified,
                 'effective_permissions' => $admin->getEffectivePermissions(),
-                'created_at' => $admin->created_at,
+                'created_at' => $admin->created_at ? (is_string($admin->created_at) ? $admin->created_at : $admin->created_at->toISOString()) : now()->toISOString(),
             ],
             'stats' => [
                 'orders_count' => 0,

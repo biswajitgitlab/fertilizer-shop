@@ -98,13 +98,12 @@ export const UsersPage: React.FC = () => {
       });
 
       let items: any[] = [];
-      if (res?.users?.data) {
+      if (Array.isArray(res?.users)) {
+        items = res.users;
+      } else if (Array.isArray(res?.users?.data)) {
         items = res.users.data;
-        if (res.meta) setMeta(res.meta);
-        else if (res.users.meta) setMeta(res.users.meta);
-      } else if (res?.data) {
+      } else if (Array.isArray(res?.data)) {
         items = res.data;
-        if (res.meta) setMeta(res.meta);
       } else if (Array.isArray(res)) {
         items = res;
       } else {
@@ -112,6 +111,12 @@ export const UsersPage: React.FC = () => {
       }
 
       setUsers(items);
+
+      if (res?.meta) {
+        setMeta(res.meta);
+      } else if (res?.users?.meta) {
+        setMeta(res.users.meta);
+      }
 
       if (res?.stats) {
         setStats(res.stats);
@@ -265,7 +270,6 @@ export const UsersPage: React.FC = () => {
     { name: 'Rajesh Kumar', role: 'Warehouse Manager', email: 'warehouse@fertilizershop.com', pass: 'staff123', perms: '6 Perms', badge: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300' },
     { name: 'Priya Verma', role: 'Field Officer', email: 'field.officer@fertilizershop.com', pass: 'staff123', perms: '5 Perms', badge: 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-300' },
     { name: 'Amit Das', role: 'Staff', email: 'staff@fertilizershop.com', pass: 'staff123', perms: '5 Perms', badge: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300' },
-    { name: 'Ramesh Patel', role: 'Customer', email: 'ramesh.patel@agri.com', pass: 'password123', perms: 'Storefront Portal', badge: 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300' },
   ];
 
   return (
@@ -326,7 +330,7 @@ export const UsersPage: React.FC = () => {
                 <h3 className="text-sm font-black tracking-wide text-white uppercase truncate">System Demo Users Roster &amp; RBAC Credentials</h3>
               </div>
               <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
-                8 Demo Accounts Ready
+                7 Demo Accounts Ready
               </span>
             </div>
 
@@ -460,7 +464,19 @@ export const UsersPage: React.FC = () => {
             {isLoading ? (
               <div className="py-8 text-center text-xs text-slate-400">Loading staff accounts...</div>
             ) : users.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">No staff accounts found matching query.</div>
+              <div className="py-12 text-center space-y-3 p-4">
+                <ShieldAlert className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No staff accounts found matching query.</p>
+                {(search || selectedRole !== 'ALL' || selectedStatus !== 'ALL') && (
+                  <button
+                    onClick={() => { setSearch(''); setSelectedRole('ALL'); setSelectedStatus('ALL'); setPage(1); }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Filters &amp; Search</span>
+                  </button>
+                )}
+              </div>
             ) : (
               users.map((user) => (
                 <div key={user.id} className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
@@ -563,7 +579,21 @@ export const UsersPage: React.FC = () => {
                   ))
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">No staff accounts found matching query.</td>
+                    <td colSpan={6} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <ShieldAlert className="w-8 h-8 text-slate-400" />
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No staff accounts found matching query.</p>
+                        {(search || selectedRole !== 'ALL' || selectedStatus !== 'ALL') && (
+                          <button
+                            onClick={() => { setSearch(''); setSelectedRole('ALL'); setSelectedStatus('ALL'); setPage(1); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Reset Filters &amp; Search</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ) : (
                   users.map((user) => (
