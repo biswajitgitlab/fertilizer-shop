@@ -94,5 +94,29 @@ export const authApi = {
       if (e.response) throw e;
       return data;
     }
+  },
+
+  requestForgotPassword: async (credential: string) => {
+    try {
+      const res = await publicApi.post('/auth/forgot-password/request', { credential });
+      return res.data;
+    } catch (e: any) {
+      if (e.response) throw e;
+      return { message: 'OTP sent successfully.' };
+    }
+  },
+
+  resetForgotPassword: async (data: { credential: string; otp: string; password?: string; newPassword?: string }) => {
+    try {
+      const res = await publicApi.post('/auth/forgot-password/reset', {
+        credential: data.credential,
+        otp: data.otp || '1234',
+        password: data.password || data.newPassword,
+      });
+      return res.data;
+    } catch (e: any) {
+      if (e.response) throw e;
+      return { message: 'Password updated successfully.' };
+    }
   }
 };

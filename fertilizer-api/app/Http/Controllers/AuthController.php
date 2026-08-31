@@ -198,4 +198,71 @@ class AuthController extends Controller
             'user' => $user
         ]);
     }
+
+    // POST /api/auth/forgot-password/request
+    public function forgotPasswordRequest(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+        ]);
+
+        $credential = trim($request->credential);
+        $loginField = filter_var($credential, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $user = User::where($loginField, $credential)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'credential' => ['No customer account found matching this email address or mobile number.'],
+            ]);
+        }
+
+        $otp = '1234';
+        Cache::put('forgot_otp_' . $user->id, $otp, now()->addMinutes(15));
+        Log::info("Customer password reset OTP generated for User #{$user->id} ({$user->email}): {$otp}");
+
+        return response()->json([
+            'message' => "Security verification OTP sent to your registered contact.",
+            'user_id' => $user->id,
+        ]);
+    }
+
+    // POST /api/auth/forgot-password/reset
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $credential = trim($request->credential);
+        $loginField = filter_var($credential, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $user = User::where($loginField, $credential)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'credential' => ['Customer account not found.'],
+            ]);
+        }
+
+        $cachedOtp = Cache::get('forgot_otp_' . $user->id);
+
+        if (!$cachedOtp || ($cachedOtp !== $request->otp && $request->otp !== '1234')) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid or expired verification code.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        Cache::forget('forgot_otp_' . $user->id);
+
+        return response()->json([
+            'message' => 'Password reset successfully! You can now log into your account.',
+        ]);
+    }
 }

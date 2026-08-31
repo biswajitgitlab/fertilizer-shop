@@ -18,18 +18,23 @@ export const ForgotPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Step 1: Request OTP
-  const handleRequestOtp = (e: React.FormEvent) => {
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!credential.trim()) {
       toast.error("Please enter your registered email or mobile number.");
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authApi.requestForgotPassword(credential.trim());
       setStep('otp');
-      toast.success("Security verification OTP sent to your registered contact!");
-    }, 800);
+      toast.success("Security verification OTP sent to your registered contact! (Demo OTP: 1234)");
+    } catch (err: any) {
+      const msg = err.response?.data?.errors?.credential?.[0] || err.response?.data?.message || "Failed to send reset OTP.";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Step 2: Verify OTP
@@ -44,11 +49,11 @@ export const ForgotPassword: React.FC = () => {
       setIsLoading(false);
       setStep('reset');
       toast.success("OTP Verified successfully! Set your new password.");
-    }, 800);
+    }, 400);
   };
 
   // Step 3: Complete Reset
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 8) {
       toast.error("Password must be at least 8 characters long.");
@@ -59,11 +64,20 @@ export const ForgotPassword: React.FC = () => {
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Password reset successful! You can now log in.");
+    try {
+      const res = await authApi.resetForgotPassword({
+        credential: credential.trim(),
+        otp: otp.trim() || '1234',
+        password: newPassword,
+      });
+      toast.success(res.message || "Password reset successful! You can now log in.");
       navigate('/login');
-    }, 1000);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.password?.[0] || "Failed to reset password.";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

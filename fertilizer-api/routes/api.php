@@ -12,6 +12,8 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/forgot-password/request', [AuthController::class, 'forgotPasswordRequest']);
+    Route::post('/auth/forgot-password/reset', [AuthController::class, 'resetPassword']);
     
     // Dedicated Admin Portal Authentication Routes
     Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
