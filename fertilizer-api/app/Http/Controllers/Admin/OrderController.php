@@ -181,7 +181,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         
         $request->validate([
-            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
+            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,PACKED,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
             'packer_id' => 'sometimes|nullable|exists:admins,id',
             'driver_id' => 'sometimes|nullable|exists:admins,id',
             'tracking_number' => 'sometimes|nullable|string',
@@ -265,7 +265,7 @@ class OrderController extends Controller
             if ($request->has('status')) {
                 $order->status = $request->status;
 
-                if (in_array($request->status, ['PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
+                if (in_array($request->status, ['PACKED', 'PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
                     $order->packed_at = now();
                 }
                 if (in_array($request->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
@@ -274,6 +274,25 @@ class OrderController extends Controller
                 if ($request->status === 'DELIVERED') {
                     $order->delivered_at = now();
                     $order->payment_status = 'PAID';
+
+                    // Update payment record for COD if applicable
+                    if ($order->payment_method === 'COD') {
+                        \App\Models\Payment::updateOrCreate(
+                            ['order_id' => $order->id],
+                            [
+                                'gateway' => 'CASH_ON_DELIVERY',
+                                'transaction_id' => 'COD-DELIVERED-' . \Illuminate\Support\Str::random(8),
+                                'amount' => $order->total,
+                                'status' => 'SUCCESS',
+                                'response_json' => ['collected_at' => now()->toIso8601String()]
+                            ]
+                        );
+
+                        \App\Models\DriverSettlement::where('order_id', $order->id)->update([
+                            'status' => 'SETTLED_TO_BANK',
+                            'cash_collected' => $order->total
+                        ]);
+                    }
                 }
             }
         }
@@ -322,7 +341,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'order_ids' => 'required|array',
-            'status' => 'required|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED'
+            'status' => 'required|in:PENDING,CONFIRMED,PROCESSING,PACKED,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED'
         ]);
 
         Order::whereIn('id', $request->order_ids)->update(['status' => $request->status]);
