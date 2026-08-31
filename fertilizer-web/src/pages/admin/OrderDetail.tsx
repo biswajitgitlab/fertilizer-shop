@@ -139,7 +139,9 @@ export const OrderDetail: React.FC = () => {
                   >
                     <option value="">Unassigned</option>
                     {staffList.map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.role || 'Staff'})</option>
+                      <option key={s.id} value={String(s.id)}>
+                        {s.name} ({s.role || 'Staff'})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -155,7 +157,9 @@ export const OrderDetail: React.FC = () => {
                   >
                     <option value="">Unassigned</option>
                     {staffList.map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.role || 'Driver'})</option>
+                      <option key={s.id} value={String(s.id)}>
+                        {s.name} ({s.role || 'Staff'})
+                      </option>
                     ))}
                   </select>
                 </div>

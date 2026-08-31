@@ -56,8 +56,55 @@ class OrderController extends Controller
                 ->take($perPage)
                 ->get();
 
+            $formattedItems = $items->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'user_id' => $order->user_id,
+                    'user' => $order->user ? [
+                        'id' => $order->user->id,
+                        'name' => $order->user->name,
+                        'phone' => $order->user->phone,
+                        'email' => $order->user->email,
+                    ] : null,
+                    'status' => $order->status,
+                    'payment_status' => $order->payment_status,
+                    'payment_method' => $order->payment_method,
+                    'subtotal' => (float)$order->subtotal,
+                    'shipping_cost' => (float)$order->shipping_cost,
+                    'tax' => (float)$order->tax,
+                    'discount' => (float)$order->discount,
+                    'total' => (float)$order->total,
+                    'shipping_address_json' => $order->shipping_address_json,
+                    'tracking_number' => $order->tracking_number,
+                    'packer_id' => $order->packer_id,
+                    'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
+                    'driver_id' => $order->driver_id,
+                    'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'qty' => $item->qty,
+                            'unit_price' => (float)$item->unit_price,
+                            'total_price' => (float)$item->total_price,
+                            'product' => $item->product ? [
+                                'id' => $item->product->id,
+                                'name' => $item->product->name,
+                                'slug' => $item->product->slug,
+                                'price' => (float)$item->product->price,
+                                'unit' => $item->product->unit,
+                                'images_json' => $item->product->images_json,
+                            ] : null,
+                        ];
+                    })->values()->toArray(),
+                    'created_at' => $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toISOString()) : null,
+                    'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
+                ];
+            })->values()->toArray();
+
             return [
-                'data' => $items,
+                'data' => $formattedItems,
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -76,10 +123,57 @@ class OrderController extends Controller
 
     public function show($id)
     {
-        $order = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
-            return Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])->findOrFail($id);
+        $orderData = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
+            $order = Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])
+                ->where('id', $id)
+                ->orWhere('order_number', $id)
+                ->firstOrFail();
+            return [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'user_id' => $order->user_id,
+                'user' => $order->user ? [
+                    'id' => $order->user->id,
+                    'name' => $order->user->name,
+                    'phone' => $order->user->phone,
+                    'email' => $order->user->email,
+                ] : null,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'payment_method' => $order->payment_method,
+                'subtotal' => (float)$order->subtotal,
+                'shipping_cost' => (float)$order->shipping_cost,
+                'tax' => (float)$order->tax,
+                'discount' => (float)$order->discount,
+                'total' => (float)$order->total,
+                'shipping_address_json' => $order->shipping_address_json,
+                'tracking_number' => $order->tracking_number,
+                'packer_id' => $order->packer_id,
+                'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
+                'driver_id' => $order->driver_id,
+                'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id,
+                        'qty' => $item->qty,
+                        'unit_price' => (float)$item->unit_price,
+                        'total_price' => (float)$item->total_price,
+                        'product' => $item->product ? [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            'slug' => $item->product->slug,
+                            'price' => (float)$item->product->price,
+                            'unit' => $item->product->unit,
+                            'images_json' => $item->product->images_json,
+                        ] : null,
+                    ];
+                })->values()->toArray(),
+                'created_at' => $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toISOString()) : null,
+                'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
+            ];
         });
-        return response()->json($order);
+        return response()->json($orderData);
     }
 
     public function update(Request $request, $id)
@@ -88,8 +182,8 @@ class OrderController extends Controller
         
         $request->validate([
             'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
-            'packer_id' => 'sometimes|nullable|exists:users,id',
-            'driver_id' => 'sometimes|nullable|exists:users,id',
+            'packer_id' => 'sometimes|nullable|exists:admins,id',
+            'driver_id' => 'sometimes|nullable|exists:admins,id',
             'tracking_number' => 'sometimes|nullable|string',
             'cancellation_reason' => 'sometimes|nullable|string',
         ]);
@@ -203,8 +297,7 @@ class OrderController extends Controller
         $order->save();
 
         Cache::forget("admin_order_{$id}");
-        Cache::forget('admin_dashboard_stats');
-        Cache::forget('admin_analytics_metrics');
+        $this->clearOrderCaches();
 
         app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);
 
@@ -234,13 +327,36 @@ class OrderController extends Controller
 
         Order::whereIn('id', $request->order_ids)->update(['status' => $request->status]);
 
-        Cache::forget('admin_dashboard_stats');
-        Cache::forget('admin_analytics_metrics');
+        $this->clearOrderCaches();
         foreach ($request->order_ids as $id) {
             Cache::forget("admin_order_{$id}");
         }
 
         return response()->json(['message' => 'Orders updated successfully']);
+    }
+
+    private function clearOrderCaches()
+    {
+        try {
+            Cache::forget('admin_dashboard_stats');
+            Cache::forget('admin_analytics_metrics');
+
+            try {
+                $redis = Cache::store('redis')->getRedis();
+                $keys = $redis->keys('*orders:*');
+                foreach ($keys as $key) {
+                    $redis->del($key);
+                }
+                $sKeys = $redis->keys('*settlements:*');
+                foreach ($sKeys as $key) {
+                    $redis->del($key);
+                }
+            } catch (\Throwable $e) {
+                Cache::flush();
+            }
+        } catch (\Throwable $e) {
+            Cache::flush();
+        }
     }
 }
 

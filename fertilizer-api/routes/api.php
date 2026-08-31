@@ -210,7 +210,7 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::put('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'update'])->middleware('rbsc:roles.edit');
     Route::delete('/roles/{id}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->middleware('rbsc:roles.delete');
     Route::get('/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'permissions'])->middleware('rbsc:roles.view');
-    Route::get('/team', [\App\Http\Controllers\Admin\RoleController::class, 'team'])->middleware('rbsc:roles.view,users.view');
+    Route::get('/team', [\App\Http\Controllers\Admin\RoleController::class, 'team'])->middleware('rbsc:orders.view');
     Route::post('/team/assign-role', [\App\Http\Controllers\Admin\RoleController::class, 'assignRole'])->middleware('rbsc:roles.edit,users.edit');
     Route::put('/team/{id}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updateUserPermissions'])->middleware('rbsc:roles.edit,users.edit');
 

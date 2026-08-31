@@ -126,7 +126,8 @@ export const normalizeAdminOrder = (o: any): Order => {
     else status = 'Pending';
 
     return {
-      id: String(o.order_number || o.id || 'N/A'),
+      id: String(o.id || o.order_number || 'N/A'),
+      orderNumber: String(o.order_number || o.id || 'N/A'),
       numericId: o.id,
       userId: String(o.user_id || o.userId || ''),
       customerName: name,
@@ -527,25 +528,21 @@ export const adminApi = {
       if (rawData.meta) {
         meta = rawData.meta;
       }
-      if (Array.isArray(rawOrders) && rawOrders.length > 0) {
+      if (Array.isArray(rawOrders)) {
         fetchedOrders = rawOrders.map(normalizeAdminOrder);
         if (!rawData.meta) {
           meta = { current_page: 1, last_page: 1, per_page: cleanParams.per_page || 10, total: rawOrders.length };
         }
       }
+      return { orders: fetchedOrders, meta };
     } catch (e) {
       console.warn("Failed to fetch admin orders from backend, using fallback dataset:", e);
+      let fallback = DEMO_FALLBACK_ORDERS;
+      if (cleanParams.status) {
+        fallback = fallback.filter(o => o.status.toUpperCase() === cleanParams.status);
+      }
+      return { orders: fallback, meta: { current_page: 1, last_page: 1, per_page: 10, total: fallback.length } };
     }
-
-    if (fetchedOrders.length === 0 && !cleanParams.status && !cleanParams.search) {
-      fetchedOrders = DEMO_FALLBACK_ORDERS;
-      meta = { current_page: 1, last_page: 1, per_page: 10, total: DEMO_FALLBACK_ORDERS.length };
-    } else if (fetchedOrders.length === 0 && cleanParams.status) {
-      fetchedOrders = DEMO_FALLBACK_ORDERS.filter(o => o.status.toUpperCase() === cleanParams.status);
-      meta = { current_page: 1, last_page: 1, per_page: 10, total: fetchedOrders.length };
-    }
-
-    return { orders: fetchedOrders, meta };
   },
 
   updateOrderStatus: async (id: string, status: string, trackingNumber?: string, packerId?: number | string, driverId?: number | string) => {
@@ -804,10 +801,28 @@ export const adminApi = {
         return list;
       }
     } catch (e) {
-      console.warn("Failed to fetch admin team, using fallback list:", e);
+      console.warn("Failed to fetch admin team, attempting users endpoint:", e);
     }
+
+    try {
+      const usersRes = await apiClient.get('/admin/users');
+      const rawUsers = usersRes.data;
+      const userList = Array.isArray(rawUsers) ? rawUsers : (rawUsers?.data || []);
+      if (Array.isArray(userList) && userList.length > 0) {
+        return userList;
+      }
+    } catch (e) {
+      console.warn("Failed to fetch users, using fallback staff roster:", e);
+    }
+
     return [
-      { id: 1, name: 'Admin User', email: 'admin@fertilizershop.com', role: 'Super Admin', permissions: ['*'] }
+      { id: 1, name: 'Super Admin (Executive)', email: 'superadmin@fertilizershop.com', role: 'Super Admin' },
+      { id: 6, name: 'Admin SarkarFertilizer', email: 'admin@fertilizershop.com', role: 'Admin' },
+      { id: 7, name: 'Vikram Singh (Store Manager)', email: 'store.manager@fertilizershop.com', role: 'Store Manager' },
+      { id: 8, name: 'Ananya Sharma (Customer Support)', email: 'support@fertilizershop.com', role: 'Customer Support' },
+      { id: 9, name: 'Rajesh Kumar (Warehouse Manager)', email: 'warehouse@fertilizershop.com', role: 'Warehouse Manager' },
+      { id: 10, name: 'Priya Verma (Field Officer)', email: 'field.officer@fertilizershop.com', role: 'Field Officer' },
+      { id: 11, name: 'Amit Das (General Staff)', email: 'staff@fertilizershop.com', role: 'Staff' }
     ];
   },
   assignUserRole: async (userId: number | string, role: string) => {

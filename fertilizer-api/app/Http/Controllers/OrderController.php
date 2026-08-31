@@ -185,7 +185,7 @@ class OrderController extends Controller
 
         $summary = $calculation['summary'];
         $orderNumber = 'ORD-' . strtoupper(Str::random(10));
-        $trackingNumber = 'TRK-' . strtoupper(Str::random(9));
+        $trackingNumber = null;
 
         // TWO-TIER HIGH-CONCURRENCY CONCURRENCY LAYER
         // Tier 1: Redis Distributed Locks (Cache::lock)
@@ -323,6 +323,7 @@ class OrderController extends Controller
                         app(\App\Contracts\NotificationServiceInterface::class)->notifyLowStock($prod);
                     }
                 }
+                $this->clearOrderCaches();
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -464,8 +465,7 @@ class OrderController extends Controller
 
             // Cache Invalidation & Telemetry
             Cache::forget("admin_order_{$order->id}");
-            Cache::forget('admin_dashboard_stats');
-            Cache::forget('admin_analytics_metrics');
+            $this->clearOrderCaches();
 
             app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order, $previousStatus);
 
@@ -536,6 +536,7 @@ class OrderController extends Controller
             ]
         );
 
+        $this->clearOrderCaches();
         return response()->json(['message' => 'Switched payment method to Cash on Delivery', 'order' => $order->load('payment')]);
     }
 
@@ -584,13 +585,39 @@ class OrderController extends Controller
         $order->update([
             'payment_status' => 'PAID',
             'status' => 'CONFIRMED',
-            'tracking_number' => $order->tracking_number ?? ('TRK-' . strtoupper(Str::random(9)))
+            'tracking_number' => $order->tracking_number
         ]);
+
+        $this->clearOrderCaches();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Payment verified successfully',
             'order' => $order->load(['items.product', 'payment']),
         ]);
+    }
+
+    private function clearOrderCaches()
+    {
+        try {
+            Cache::forget('admin_dashboard_stats');
+            Cache::forget('admin_analytics_metrics');
+
+            try {
+                $redis = Cache::store('redis')->getRedis();
+                $keys = $redis->keys('*orders:*');
+                foreach ($keys as $key) {
+                    $redis->del($key);
+                }
+                $sKeys = $redis->keys('*settlements:*');
+                foreach ($sKeys as $key) {
+                    $redis->del($key);
+                }
+            } catch (\Throwable $e) {
+                Cache::flush();
+            }
+        } catch (\Throwable $e) {
+            Cache::flush();
+        }
     }
 }

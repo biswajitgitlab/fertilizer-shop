@@ -156,7 +156,7 @@ export const Orders: React.FC = () => {
                 <div key={ord.id} className="p-4 space-y-3 hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">#{ord.id}</span>
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">#{ord.orderNumber || ord.id}</span>
                       <p className="font-bold text-sm text-slate-900 dark:text-white truncate">
                         {ord.shippingAddress?.name || ord.customerName || (ord as any).user?.name || 'Valued Customer'}
                       </p>
@@ -235,7 +235,7 @@ export const Orders: React.FC = () => {
                 ) : (
                   orders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{ord.id}</td>
+                      <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{ord.orderNumber || ord.id}</td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">
                         {ord.shippingAddress?.name || ord.customerName || (ord as any).user?.name || 'Valued Customer'}
                         {(ord.shippingAddress?.phone || ord.phone || (ord as any).user?.phone) ? ` (${ord.shippingAddress?.phone || ord.phone || (ord as any).user?.phone})` : ''}

@@ -74,6 +74,7 @@ export interface ShippingAddress {
 
 export interface Order {
   id: string;
+  orderNumber?: string;
   userId: string;
   customerName: string;
   phone: string;
