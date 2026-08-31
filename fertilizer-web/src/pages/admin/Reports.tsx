@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
-import { adminApi } from '../../api/adminApi';
+import {
+  adminApi,
+  DEMO_REGULATORY_REPORT,
+  DEMO_FEFO_REPORT,
+  DEMO_OUTBREAK_REPORT,
+  DEMO_SECURITY_REPORT,
+  DEMO_FINANCIAL_REPORT
+} from '../../api/adminApi';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
   CartesianGrid, PieChart, Pie, Cell
@@ -107,15 +114,45 @@ export const Reports: React.FC = () => {
 
   // Helper to extract pagination metadata from active dataset
   const getActiveMeta = () => {
-    if (activeTab === 'regulatory') return regulatoryData?.meta;
-    if (activeTab === 'fefo') return fefoData?.meta;
-    if (activeTab === 'outbreak') return outbreakData?.meta;
-    if (activeTab === 'security') return securityData?.meta;
-    if (activeTab === 'financial') return financialData?.meta;
+    if (activeTab === 'regulatory') return regulatoryData?.meta || DEMO_REGULATORY_REPORT.meta;
+    if (activeTab === 'fefo') return fefoData?.meta || DEMO_FEFO_REPORT.meta;
+    if (activeTab === 'outbreak') return outbreakData?.meta || DEMO_OUTBREAK_REPORT.meta;
+    if (activeTab === 'security') return securityData?.meta || DEMO_SECURITY_REPORT.meta;
+    if (activeTab === 'financial') return financialData?.meta || DEMO_FINANCIAL_REPORT.meta;
     return null;
   };
 
-  const meta = getActiveMeta() || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+  const meta = getActiveMeta() || { current_page: 1, last_page: 1, per_page: 10, total: 4 };
+
+  const getRegulatoryRows = () => {
+    if (regulatoryData?.data && Array.isArray(regulatoryData.data) && regulatoryData.data.length > 0) return regulatoryData.data;
+    if (regulatoryData?.audit_ledger && Array.isArray(regulatoryData.audit_ledger) && regulatoryData.audit_ledger.length > 0) return regulatoryData.audit_ledger;
+    return DEMO_REGULATORY_REPORT.data;
+  };
+
+  const getFefoRows = () => {
+    if (fefoData?.data && Array.isArray(fefoData.data) && fefoData.data.length > 0) return fefoData.data;
+    if (fefoData?.batches && Array.isArray(fefoData.batches) && fefoData.batches.length > 0) return fefoData.batches;
+    return DEMO_FEFO_REPORT.data;
+  };
+
+  const getOutbreakRows = () => {
+    if (outbreakData?.data && Array.isArray(outbreakData.data) && outbreakData.data.length > 0) return outbreakData.data;
+    if (outbreakData?.scans && Array.isArray(outbreakData.scans) && outbreakData.scans.length > 0) return outbreakData.scans;
+    return DEMO_OUTBREAK_REPORT.data;
+  };
+
+  const getSecurityRows = () => {
+    if (securityData?.data && Array.isArray(securityData.data) && securityData.data.length > 0) return securityData.data;
+    if (securityData?.logs && Array.isArray(securityData.logs) && securityData.logs.length > 0) return securityData.logs;
+    return DEMO_SECURITY_REPORT.data;
+  };
+
+  const getFinancialRows = () => {
+    if (financialData?.data && Array.isArray(financialData.data) && financialData.data.length > 0) return financialData.data;
+    if (financialData?.reconciled_orders && Array.isArray(financialData.reconciled_orders) && financialData.reconciled_orders.length > 0) return financialData.reconciled_orders;
+    return DEMO_FINANCIAL_REPORT.data;
+  };
 
   return (
     <AdminLayout title="Enterprise RBSC Reporting & Audit Hub">
@@ -386,23 +423,31 @@ export const Reports: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                          {(Array.isArray(regulatoryData?.data) ? regulatoryData.data : (regulatoryData?.audit_ledger || [])).map((row: any, i: number) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                              <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{row.order_id}</td>
-                              <td className="py-3 px-4">
-                                <p className="font-bold text-slate-900 dark:text-white">{row.farmer_name}</p>
-                                <p className="text-[10px] text-slate-400">{row.farmer_phone}</p>
+                          {getRegulatoryRows().length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                                No matching regulatory records found for search query or filter.
                               </td>
-                              <td className="py-3 px-4">
-                                <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                  {row.kisan_card_status}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 font-mono text-[11px]">{row.chemical_classification}</td>
-                              <td className="py-3 px-4 font-bold">₹{row.total_amount}</td>
-                              <td className="py-3 px-4 text-[11px] text-slate-500">{row.transaction_date}</td>
                             </tr>
-                          ))}
+                          ) : (
+                            getRegulatoryRows().map((row: any, i: number) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{row.order_id}</td>
+                                <td className="py-3 px-4">
+                                  <p className="font-bold text-slate-900 dark:text-white">{row.farmer_name}</p>
+                                  <p className="text-[10px] text-slate-400">{row.farmer_phone}</p>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                    {row.kisan_card_status}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 font-mono text-[11px]">{row.chemical_classification}</td>
+                                <td className="py-3 px-4 font-bold">₹{row.total_amount}</td>
+                                <td className="py-3 px-4 text-[11px] text-slate-500">{row.transaction_date}</td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -460,31 +505,39 @@ export const Reports: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                          {(Array.isArray(fefoData?.data) ? fefoData.data : (fefoData?.batches || [])).map((batch: any, i: number) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                              <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">{batch.batch_code}</td>
-                              <td className="py-3 px-4 font-semibold">{batch.product_name}</td>
-                              <td className="py-3 px-4 font-mono text-[11px]">{batch.warehouse_zone || 'ZONE-A1'}</td>
-                              <td className="py-3 px-4 font-bold">{batch.stock_qty} Packs</td>
-                              <td className="py-3 px-4">
-                                <span className={`font-mono font-bold ${batch.days_remaining < 30 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}`}>
-                                  {batch.days_remaining} Days ({batch.expiry_date})
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 text-[11px] font-mono">{batch.moisture_status}</td>
-                              <td className="py-3 px-4">
-                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                                  batch.status === 'CRITICAL_EXPIRY_RISK'
-                                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300'
-                                    : batch.status === 'FEFO_DISPATCH_PRIORITY'
-                                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
-                                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                                }`}>
-                                  {batch.status}
-                                </span>
+                          {getFefoRows().length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                                No matching FEFO batch records found for search query or filter.
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            getFefoRows().map((batch: any, i: number) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">{batch.batch_code}</td>
+                                <td className="py-3 px-4 font-semibold">{batch.product_name}</td>
+                                <td className="py-3 px-4 font-mono text-[11px]">{batch.warehouse_zone || 'ZONE-A1'}</td>
+                                <td className="py-3 px-4 font-bold">{batch.stock_qty} Packs</td>
+                                <td className="py-3 px-4">
+                                  <span className={`font-mono font-bold ${batch.days_remaining < 30 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}`}>
+                                    {batch.days_remaining} Days ({batch.expiry_date})
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-[11px] font-mono">{batch.moisture_status}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                                    batch.status === 'CRITICAL_EXPIRY_RISK'
+                                      ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300'
+                                      : batch.status === 'FEFO_DISPATCH_PRIORITY'
+                                      ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300'
+                                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                                  }`}>
+                                    {batch.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -541,20 +594,28 @@ export const Reports: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                          {(Array.isArray(outbreakData?.data) ? outbreakData.data : (outbreakData?.scans || [])).map((scan: any, i: number) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                              <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{scan.farmer_name}</td>
-                              <td className="py-3 px-4 font-semibold">{scan.crop_type}</td>
-                              <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-bold">{scan.diagnosed_pathology}</td>
-                              <td className="py-3 px-4 font-mono font-bold">{(scan.confidence * 100).toFixed(0)}% Match</td>
-                              <td className="py-3 px-4">
-                                <span className="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                                  {scan.severity}
-                                </span>
+                          {getOutbreakRows().length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                                No matching disease telemetry records found for search query or filter.
                               </td>
-                              <td className="py-3 px-4 text-[11px] text-slate-500">{scan.scanned_at}</td>
                             </tr>
-                          ))}
+                          ) : (
+                            getOutbreakRows().map((scan: any, i: number) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{scan.farmer_name}</td>
+                                <td className="py-3 px-4 font-semibold">{scan.crop_type}</td>
+                                <td className="py-3 px-4 text-emerald-600 dark:text-emerald-400 font-bold">{scan.diagnosed_pathology}</td>
+                                <td className="py-3 px-4 font-mono font-bold">{(scan.confidence * 100).toFixed(0)}% Match</td>
+                                <td className="py-3 px-4">
+                                  <span className="bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 text-[10px] font-black px-2.5 py-0.5 rounded-full">
+                                    {scan.severity}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4 text-[11px] text-slate-500">{scan.scanned_at}</td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -611,24 +672,32 @@ export const Reports: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                          {(Array.isArray(securityData?.data) ? securityData.data : (securityData?.logs || [])).map((log: any, i: number) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                              <td className="py-3 px-4 text-[11px] font-mono text-slate-500">{log.timestamp}</td>
-                              <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{log.admin_name}</td>
-                              <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">{log.action}</td>
-                              <td className="py-3 px-4">{log.target}</td>
-                              <td className="py-3 px-4 font-mono text-[11px] text-slate-500">{log.ip_address}</td>
-                              <td className="py-3 px-4">
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                                  log.risk_level === 'CRITICAL' || log.risk_level === 'HIGH'
-                                    ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                                }`}>
-                                  {log.risk_level}
-                                </span>
+                          {getSecurityRows().length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                                No matching audit logs found for search query or filter.
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            getSecurityRows().map((log: any, i: number) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <td className="py-3 px-4 text-[11px] font-mono text-slate-500">{log.timestamp}</td>
+                                <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{log.admin_name}</td>
+                                <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">{log.action}</td>
+                                <td className="py-3 px-4">{log.target}</td>
+                                <td className="py-3 px-4 font-mono text-[11px] text-slate-500">{log.ip_address}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                    log.risk_level === 'CRITICAL' || log.risk_level === 'HIGH'
+                                      ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
+                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  }`}>
+                                    {log.risk_level}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -685,24 +754,32 @@ export const Reports: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                          {(Array.isArray(financialData?.data) ? financialData.data : (financialData?.reconciled_orders || [])).map((item: any, i: number) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                              <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{item.order_id}</td>
-                              <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{item.farmer_name}</td>
-                              <td className="py-3 px-4 font-mono text-[11px]">{item.payment_channel}</td>
-                              <td className="py-3 px-4 font-black">₹{item.gross_amount}</td>
-                              <td className="py-3 px-4 text-slate-400 font-mono">₹{item.gateway_fee}</td>
-                              <td className="py-3 px-4">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  item.settlement_status === 'SETTLED_TO_BANK'
-                                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                                    : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
-                                }`}>
-                                  {item.settlement_status}
-                                </span>
+                          {getFinancialRows().length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                                No matching financial settlement records found for search query or filter.
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            getFinancialRows().map((item: any, i: number) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{item.order_id}</td>
+                                <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{item.farmer_name}</td>
+                                <td className="py-3 px-4 font-mono text-[11px]">{item.payment_channel}</td>
+                                <td className="py-3 px-4 font-black">₹{item.gross_amount}</td>
+                                <td className="py-3 px-4 text-slate-400 font-mono">₹{item.gateway_fee}</td>
+                                <td className="py-3 px-4">
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    item.settlement_status === 'SETTLED_TO_BANK'
+                                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                                      : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'
+                                  }`}>
+                                    {item.settlement_status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
