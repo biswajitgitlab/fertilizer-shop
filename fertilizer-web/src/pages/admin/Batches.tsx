@@ -83,6 +83,12 @@ export const Batches: React.FC = () => {
     }));
   };
 
+  const productOptions = products.map((p) => ({
+    value: p.id,
+    label: p.name,
+    sublabel: `Category: ${p.category || 'Fertilizer'} | Current Stock: ${p.stock_qty || p.stock || 0}`
+  }));
+
   return (
     <AdminLayout title="FEFO Product Batch Manager">
       <div className="space-y-6">
