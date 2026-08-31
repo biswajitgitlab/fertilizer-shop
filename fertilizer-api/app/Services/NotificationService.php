@@ -11,8 +11,9 @@ use App\Models\Coupon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use App\Contracts\NotificationServiceInterface;
 
-class NotificationService
+class NotificationService implements NotificationServiceInterface
 {
     /**
      * Core method to store a persistent notification and trigger Redis caching/events.

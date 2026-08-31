@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Contracts\NotificationServiceInterface;
 use App\Models\CropDiagnosis;
 use Illuminate\Support\Facades\Http;
 
 class DiagnosisController extends Controller
 {
+    public function __construct(
+        protected NotificationServiceInterface $notificationService
+    ) {}
+
     public function index(Request $request)
     {
         $diagnoses = $request->user()->cropDiagnoses()->orderBy('created_at', 'desc')->get();
@@ -46,7 +51,7 @@ class DiagnosisController extends Controller
             'status' => 'PENDING'
         ]);
 
-        \App\Services\NotificationService::notifyDiagnosisSubmitted($diagnosis);
+        $this->notificationService->notifyDiagnosisSubmitted($diagnosis);
 
         // Trigger n8n webhook for AI analysis
         try {
