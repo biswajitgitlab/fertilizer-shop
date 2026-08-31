@@ -48,6 +48,9 @@ import { Coupons as AdminCoupons } from './pages/admin/Coupons';
 import { Roles as AdminRoles } from './pages/admin/Roles';
 import { UsersPage as AdminUsers } from './pages/admin/Users';
 
+// Error Status Pages
+import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -210,8 +213,14 @@ export function App() {
             <Route path="/admin/roles" element={<ProtectedRoute adminOnly requiredPermission="roles.view"><AdminRoles /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminUsers /></ProtectedRoute>} />
 
-            {/* Catch all redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* HTTP Error Status Routes */}
+            <Route path="/401" element={<Unauthorized />} />
+            <Route path="/403" element={<Forbidden />} />
+            <Route path="/422" element={<Unprocessable />} />
+            <Route path="/404" element={<NotFound />} />
+
+            {/* Catch all 404 Route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </LayoutWrapper>
       </BrowserRouter>

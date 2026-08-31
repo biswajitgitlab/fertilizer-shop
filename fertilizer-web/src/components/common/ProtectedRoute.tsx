@@ -62,7 +62,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const hasPerm = isSuperAdmin || userPermissions.includes(requiredPermission);
 
     if (!hasPerm) {
-      return <Navigate to="/admin/dashboard" replace />;
+      return <Navigate to={`/403?perm=${encodeURIComponent(requiredPermission)}&path=${encodeURIComponent(location.pathname)}`} replace />;
     }
   }
 
