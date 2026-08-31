@@ -86,11 +86,17 @@ export interface Order {
   total: number;
   paymentMethod: 'Cash on Delivery' | 'Online Payment';
   paymentStatus: 'Pending' | 'Paid' | 'Failed';
-  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled';
+  status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled' | 'PENDING' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
   trackingNumber?: string;
   createdAt: string;
   adminNotes?: string;
   numericId?: string | number;
+  cancelledAt?: string;
+  cancelledBy?: 'CUSTOMER' | 'ADMIN' | 'SYSTEM';
+  cancellationReason?: string;
+  refundStatus?: 'NOT_APPLICABLE' | 'PENDING' | 'PROCESSING' | 'REFUNDED' | 'FAILED';
+  refundAmount?: number;
+  refundReferenceId?: string;
   paymentDetails?: {
     gateway: string;
     transactionId: string;

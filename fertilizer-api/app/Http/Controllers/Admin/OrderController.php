@@ -88,11 +88,87 @@ class OrderController extends Controller
         
         $request->validate([
             'status' => 'sometimes|in:PENDING,CONFIRMED,SHIPPED,DELIVERED,CANCELLED,REFUNDED',
-            'tracking_number' => 'sometimes|nullable|string'
+            'tracking_number' => 'sometimes|nullable|string',
+            'cancellation_reason' => 'sometimes|nullable|string',
         ]);
 
-        if ($request->has('status')) {
-            $order->status = $request->status;
+        $newStatus = $request->input('status');
+
+        if ($newStatus === 'CANCELLED' && $order->status !== 'CANCELLED') {
+            // Guard: Cannot cancel shipped/delivered orders
+            if (in_array($order->status, ['SHIPPED', 'DELIVERED'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Order #{$order->order_number} has already been shipped or delivered and cannot be cancelled."
+                ], 422);
+            }
+
+            $reason = $request->input('cancellation_reason') ?? 'Admin initiated cancellation';
+            
+            \Illuminate\Support\Facades\DB::transaction(function() use ($order, $reason) {
+                $refundReferenceId = null;
+                $refundStatus = 'NOT_APPLICABLE';
+                $paymentStatus = $order->payment_status;
+                $refundAmount = 0.00;
+
+                if ($order->payment_status === 'PAID' || in_array(strtoupper($order->payment_method), ['ONLINE', 'RAZORPAY', 'UPI'])) {
+                    $paymentService = app(\App\Contracts\PaymentServiceInterface::class);
+                    $refundResult = $paymentService->processRefund($order, (float) $order->total, $reason);
+
+                    $refundReferenceId = $refundResult['refund_id'] ?? ('rfnd_' . \Illuminate\Support\Str::random(12));
+                    $refundStatus = 'REFUNDED';
+                    $paymentStatus = 'REFUNDED';
+                    $refundAmount = (float) $order->total;
+                } else if ($order->payment_method === 'COD') {
+                    $paymentStatus = 'CANCELLED';
+                    $refundStatus = 'NOT_APPLICABLE';
+
+                    \App\Models\DriverSettlement::where('order_id', $order->id)->update([
+                        'status' => 'CANCELLED',
+                        'notes' => "Cancelled by ADMIN: {$reason}"
+                    ]);
+                }
+
+                $order->update([
+                    'status' => 'CANCELLED',
+                    'cancelled_at' => now(),
+                    'cancelled_by' => 'ADMIN',
+                    'cancellation_reason' => $reason,
+                    'payment_status' => $paymentStatus,
+                    'refund_status' => $refundStatus,
+                    'refund_amount' => $refundAmount,
+                    'refund_reference_id' => $refundReferenceId
+                ]);
+
+                // Restock products & batches
+                foreach ($order->items as $item) {
+                    $product = \App\Models\Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('stock_qty', $item->qty);
+
+                        $batch = \App\Models\ProductBatch::where('product_id', $product->id)
+                            ->where('expiry_date', '>', now())
+                            ->orderBy('expiry_date', 'desc')
+                            ->first();
+
+                        if ($batch) {
+                            $batch->increment('stock_qty', $item->qty);
+                        }
+
+                        \App\Models\InventoryLog::create([
+                            'product_id' => $product->id,
+                            'type' => 'CANCEL_RESTOCK',
+                            'qty' => $item->qty,
+                            'reason' => "Order #{$order->order_number} admin cancellation restock: {$reason}",
+                            'admin_id' => auth()->id()
+                        ]);
+                    }
+                }
+            });
+        } else {
+            if ($request->has('status')) {
+                $order->status = $request->status;
+            }
         }
 
         if ($request->has('tracking_number')) {

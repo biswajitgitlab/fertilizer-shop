@@ -64,12 +64,13 @@ export const orderApi = {
     }
   },
 
-  cancelOrder: async (id: string) => {
+  cancelOrder: async (id: string | number, reason?: string) => {
     try {
-      const res = await apiClient.post(`/orders/${id}/cancel`);
+      const res = await apiClient.post(`/orders/${id}/cancel`, { reason });
       return res.data;
-    } catch (e) {
-      return { id, status: 'Cancelled' };
+    } catch (e: any) {
+      const msg = e.response?.data?.message || 'Failed to cancel order';
+      throw new Error(msg);
     }
   },
 

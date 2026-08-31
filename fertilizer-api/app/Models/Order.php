@@ -12,12 +12,16 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'order_number', 'status', 'subtotal', 'discount', 'tax', 
         'shipping_cost', 'total', 'payment_method', 'payment_status', 
-        'shipping_address_json', 'billing_address_json', 'tracking_number', 'notes'
+        'shipping_address_json', 'billing_address_json', 'tracking_number', 'notes',
+        'cancelled_at', 'cancelled_by', 'cancellation_reason', 
+        'refund_status', 'refund_amount', 'refund_reference_id'
     ];
 
     protected $casts = [
         'shipping_address_json' => 'array',
         'billing_address_json' => 'array',
+        'cancelled_at' => 'datetime',
+        'refund_amount' => 'decimal:2',
     ];
 
     /**

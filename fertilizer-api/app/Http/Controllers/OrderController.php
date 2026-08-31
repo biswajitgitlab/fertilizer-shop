@@ -362,15 +362,69 @@ class OrderController extends Controller
         ], 201);
     }
 
-    public function cancel($id)
+    public function cancel(Request $request, $id)
     {
         $order = Order::where('user_id', auth()->id())->findOrFail($id);
-        
-        if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
-            DB::transaction(function() use ($order) {
-                $order->update(['status' => 'CANCELLED']);
-                
-                // Restock inventory items and batch stock
+
+        // Senior E-Commerce Guard: Block cancellation after SHIPPED or DELIVERED
+        if (in_array($order->status, ['SHIPPED', 'DELIVERED'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Order #{$order->order_number} has already been shipped or delivered and cannot be cancelled."
+            ], 422);
+        }
+
+        if (in_array($order->status, ['CANCELLED', 'REFUNDED'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order is already cancelled.'
+            ], 400);
+        }
+
+        $reason = $request->input('reason') ?? $request->input('cancellation_reason') ?? 'Customer requested cancellation';
+        $previousStatus = $order->status;
+        $cancelledBy = auth()->user() && auth()->user()->hasRole && auth()->user()->hasRole('Admin') ? 'ADMIN' : 'CUSTOMER';
+
+        try {
+            DB::transaction(function () use ($order, $reason, $cancelledBy) {
+                $refundReferenceId = null;
+                $refundStatus = 'NOT_APPLICABLE';
+                $paymentStatus = $order->payment_status;
+                $refundAmount = 0.00;
+
+                // Handle Online Payment (Razorpay) Refund
+                if ($order->payment_status === 'PAID' || in_array(strtoupper($order->payment_method), ['ONLINE', 'RAZORPAY', 'UPI'])) {
+                    $paymentService = app(\App\Contracts\PaymentServiceInterface::class);
+                    $refundResult = $paymentService->processRefund($order, (float) $order->total, $reason);
+
+                    $refundReferenceId = $refundResult['refund_id'] ?? ('rfnd_' . Str::random(12));
+                    $refundStatus = 'REFUNDED';
+                    $paymentStatus = 'REFUNDED';
+                    $refundAmount = (float) $order->total;
+                } else if ($order->payment_method === 'COD') {
+                    $paymentStatus = 'CANCELLED';
+                    $refundStatus = 'NOT_APPLICABLE';
+
+                    // Void Cash on Delivery collection entry for driver
+                    \App\Models\DriverSettlement::where('order_id', $order->id)->update([
+                        'status' => 'CANCELLED',
+                        'notes' => "Cancelled by {$cancelledBy} before delivery: {$reason}"
+                    ]);
+                }
+
+                // Update Order details
+                $order->update([
+                    'status' => 'CANCELLED',
+                    'cancelled_at' => now(),
+                    'cancelled_by' => $cancelledBy,
+                    'cancellation_reason' => $reason,
+                    'payment_status' => $paymentStatus,
+                    'refund_status' => $refundStatus,
+                    'refund_amount' => $refundAmount,
+                    'refund_reference_id' => $refundReferenceId
+                ]);
+
+                // Restock inventory items & batch stock (FEFO Reversal)
                 foreach ($order->items as $item) {
                     $product = Product::find($item->product_id);
                     if ($product) {
@@ -388,21 +442,38 @@ class OrderController extends Controller
 
                         InventoryLog::create([
                             'product_id' => $product->id,
-                            'type' => 'RESTOCK',
+                            'type' => 'CANCEL_RESTOCK',
                             'qty' => $item->qty,
-                            'reason' => "Order #{$order->order_number} cancellation restock",
+                            'reason' => "Order #{$order->order_number} cancellation restock: {$reason}",
                             'admin_id' => auth()->id()
                         ]);
                     }
                 }
             });
 
-            \App\Services\NotificationService::notifyOrderStatusUpdated($order, 'PENDING');
+            // Cache Invalidation & Telemetry
+            Cache::forget("admin_order_{$order->id}");
+            Cache::forget('admin_dashboard_stats');
+            Cache::forget('admin_analytics_metrics');
 
-            return response()->json(['message' => 'Order cancelled successfully and stock restored', 'order' => $order]);
+            \App\Services\NotificationService::notifyOrderStatusUpdated($order, $previousStatus);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Order cancelled successfully' . ($order->refund_reference_id ? " and refund of ₹" . number_format($order->refund_amount, 2) . " initiated." : "."),
+                'refund_details' => $order->refund_reference_id ? [
+                    'refund_id' => $order->refund_reference_id,
+                    'amount' => $order->refund_amount,
+                    'status' => $order->refund_status
+                ] : null,
+                'order' => $order->fresh(['items.product', 'payment'])
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to process order cancellation: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json(['message' => 'Order cannot be cancelled at this stage'], 400);
     }
 
     public function invoice($id)

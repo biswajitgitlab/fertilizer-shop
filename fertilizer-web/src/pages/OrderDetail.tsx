@@ -5,7 +5,7 @@ import { Order } from '../types';
 import { OrderTimeline } from '../components/order/OrderTimeline';
 import { InvoiceDownloader } from '../components/order/InvoiceDownloader';
 import { formatCurrency, formatDate } from '../utils/formatters';
-import { ArrowLeft, Package, MapPin, CreditCard, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, CreditCard, ShieldCheck, XCircle, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { PaymentModal } from '../components/checkout/PaymentModal';
 
 const normalizeOrder = (raw: any): Order | null => {
@@ -79,7 +79,13 @@ const normalizeOrder = (raw: any): Order | null => {
     paymentDetails,
     status: o.status || 'Pending',
     trackingNumber: o.tracking_number || o.trackingNumber || `DEL${o.id}99`,
-    createdAt: o.created_at || o.createdAt || new Date().toISOString()
+    createdAt: o.created_at || o.createdAt || new Date().toISOString(),
+    cancelledAt: o.cancelled_at || o.cancelledAt,
+    cancelledBy: o.cancelled_by || o.cancelledBy,
+    cancellationReason: o.cancellation_reason || o.cancellationReason,
+    refundStatus: o.refund_status || o.refundStatus,
+    refundAmount: Number(o.refund_amount || o.refundAmount || 0),
+    refundReferenceId: o.refund_reference_id || o.refundReferenceId
   };
 };
 
@@ -88,8 +94,28 @@ export const OrderDetail: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('Changed mind / No longer needed');
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    setIsCancelling(true);
+    setCancelError(null);
+    try {
+      const targetId = order.numericId || order.id;
+      await orderApi.cancelOrder(targetId, cancellationReason);
+      setShowCancelModal(false);
+      await fetchOrder();
+    } catch (e: any) {
+      setCancelError(e.message || 'Failed to cancel order');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const fetchOrder = async () => {
     try {
@@ -280,6 +306,41 @@ export const OrderDetail: React.FC = () => {
                 </a>
               </div>
             )}
+
+            {/* Cancellation Status & Actions */}
+            <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-2">
+              {['CANCELLED', 'REFUNDED', 'Cancelled'].includes(order.status) ? (
+                <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-2xl p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-400 font-bold text-xs">
+                    <XCircle className="w-4 h-4" />
+                    <span>Order Cancelled</span>
+                  </div>
+                  <p className="text-[11px] text-rose-800 dark:text-rose-300 font-medium">
+                    Reason: <span className="font-bold">{order.cancellationReason || 'Requested by customer'}</span>
+                  </p>
+                  {order.refundReferenceId && (
+                    <div className="pt-2 border-t border-rose-200/60 dark:border-rose-900/60 text-[11px] font-mono text-rose-900 dark:text-rose-200">
+                      <p className="font-sans font-bold text-[10px] uppercase text-rose-600 dark:text-rose-400">Razorpay Refund Initiated</p>
+                      <p>Refund Amount: <span className="font-bold">₹{order.refundAmount || order.total}</span></p>
+                      <p>Refund Ref ID: <span className="font-bold">{order.refundReferenceId}</span></p>
+                    </div>
+                  )}
+                </div>
+              ) : ['SHIPPED', 'DELIVERED', 'Shipped', 'Delivered'].includes(order.status) ? (
+                <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-2.5 text-[11px] text-amber-800 dark:text-amber-300 font-medium flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <span>This order has been shipped or delivered. Direct cancellation is disabled as per store policy.</span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="w-full py-2 px-3 bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 text-rose-700 dark:text-rose-300 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span>Cancel Order</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -298,6 +359,64 @@ export const OrderDetail: React.FC = () => {
             setOrder(normalizeOrder(data));
           }}
         />
+      )}
+
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-800">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <XCircle className="w-5 h-5 text-rose-500" />
+                Cancel Order #{order.id}
+              </h3>
+              <button onClick={() => setShowCancelModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 font-bold text-lg cursor-pointer">✕</button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-slate-400">
+              Please select a reason for cancelling this order. If paid online, an automated refund will be initiated to your original payment method.
+            </p>
+
+            {cancelError && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-700 dark:text-rose-300 font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{cancelError}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-700 dark:text-slate-300">Cancellation Reason</label>
+              <select
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                className="w-full p-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-medium text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="Changed mind / No longer needed">Changed mind / No longer needed</option>
+                <option value="Ordered wrong product or quantity">Ordered wrong product or quantity</option>
+                <option value="Delivery address or contact error">Delivery address or contact error</option>
+                <option value="Delivery takes too long">Delivery takes too long</option>
+                <option value="Found better price elsewhere">Found better price elsewhere</option>
+                <option value="Other reason">Other reason</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 dark:border-slate-800">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCancelling}
+                className="px-4 py-2 text-xs font-bold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                {isCancelling ? 'Processing...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

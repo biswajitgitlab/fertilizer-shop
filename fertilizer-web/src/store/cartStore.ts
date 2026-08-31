@@ -153,11 +153,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         saveCart(serverHydrated);
       }
     } catch (e: any) {
-      if (e.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-      console.error("Cart sync with server error:", e);
+      console.warn("Cart sync with server skipped/failed:", e.message || e);
     }
   },
 

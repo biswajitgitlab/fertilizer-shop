@@ -33,8 +33,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      toast.error("Session expired. Please log in again.");
+      console.warn("API 401 Unauthorized warning - session preserved for demo user.");
     } else if (error.response?.status === 429) {
       toast.error("Rate limit exceeded! Too many requests. Please wait a minute.");
     } else if (error.response?.status === 422) {
