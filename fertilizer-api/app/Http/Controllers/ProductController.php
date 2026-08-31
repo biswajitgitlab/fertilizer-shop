@@ -432,6 +432,22 @@ class ProductController extends Controller
         $validated['images_json'] = $imageUrls;
 
         $product = Product::create($validated);
+
+        if ($request->filled('batch_code') || $request->filled('expiry_date')) {
+            $batchCode = $request->input('batch_code') ?? ('LOT-' . strtoupper(Str::slug($product->name)) . '-' . date('Y'));
+            $expiryDate = $request->input('expiry_date') ?? date('Y-m-d', strtotime('+1 year'));
+            \App\Models\ProductBatch::create([
+                'product_id' => $product->id,
+                'batch_code' => $batchCode,
+                'manufactured_date' => date('Y-m-d'),
+                'expiry_date' => $expiryDate,
+                'moisture_pct' => $request->input('moisture_pct', 2.10),
+                'stock_qty' => $product->stock_qty,
+                'warehouse_zone' => $request->input('warehouse_zone', 'ZONE-A'),
+                'status' => 'SAFE',
+            ]);
+        }
+
         $this->clearProductCache();
         
         return response()->json($product, 201);

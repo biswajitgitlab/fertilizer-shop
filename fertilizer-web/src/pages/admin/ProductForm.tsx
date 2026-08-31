@@ -5,6 +5,7 @@ import { adminApi } from '../../api/adminApi';
 import { productApi } from '../../api/productApi';
 import { Category } from '../../types';
 import { Button } from '../../components/common/Button';
+import { SearchableSelect } from '../../components/common/SearchableSelect';
 import { ArrowLeft, Save, Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -171,17 +172,14 @@ export const ProductForm: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Category *</label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
-                required
-              >
-                {categories.map(c => <option key={c.id} value={c.name} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.name}</option>)}
-              </select>
-            </div>
+            <SearchableSelect
+              label="Category"
+              required
+              options={categories.map(c => ({ value: c.name, label: c.name }))}
+              value={formData.category}
+              onChange={(val) => setFormData({ ...formData, category: String(val) })}
+              placeholder="Search category..."
+            />
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pack Unit (e.g. 50 kg Bag, 1 L Bottle) *</label>

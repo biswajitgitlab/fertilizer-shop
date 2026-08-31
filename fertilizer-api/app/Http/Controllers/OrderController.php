@@ -275,6 +275,15 @@ class OrderController extends Controller
 
             // Trigger Notification Service (Redis + DB) for new order placement
             if ($order) {
+                if ($paymentMethod === 'COD') {
+                    \App\Models\DriverSettlement::create([
+                        'order_id' => $order->id,
+                        'driver_id' => 1,
+                        'cash_collected' => $order->total,
+                        'status' => 'DRIVER_COLLECTION_PENDING',
+                    ]);
+                }
+
                 \App\Services\NotificationService::notifyOrderCreated($order);
 
                 // Check low stock for ordered items

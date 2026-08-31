@@ -41,6 +41,13 @@ class InventoryController extends Controller
         $product->stock_qty = $request->stock;
         $product->save();
 
+        // Synchronize batch lot stock
+        $batch = \App\Models\ProductBatch::where('product_id', $product->id)->first();
+        if ($batch) {
+            $batch->stock_qty = $request->stock;
+            $batch->save();
+        }
+
         // Create log
         InventoryLog::create([
             'product_id' => $product->id,

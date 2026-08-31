@@ -28,4 +28,9 @@ class ProductBatch extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function warehouseZone(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseZone::class, 'warehouse_zone', 'code');
+    }
 }

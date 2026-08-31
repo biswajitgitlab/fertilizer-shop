@@ -49,6 +49,11 @@ import { Coupons as AdminCoupons } from './pages/admin/Coupons';
 import { Roles as AdminRoles } from './pages/admin/Roles';
 import { UsersPage as AdminUsers } from './pages/admin/Users';
 import { Reports as AdminReports } from './pages/admin/Reports';
+import AdminAuditLogs from './pages/admin/AuditLogs';
+import AdminBatches from './pages/admin/Batches';
+import AdminFarmers from './pages/admin/Farmers';
+import AdminSettlements from './pages/admin/Settlements';
+import AdminWarehouseZones from './pages/admin/WarehouseZones';
 
 // Error Status Pages
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
@@ -216,6 +221,11 @@ export function App() {
             <Route path="/admin/coupons" element={<ProtectedRoute adminOnly requiredPermission="products.view"><AdminCoupons /></ProtectedRoute>} />
             <Route path="/admin/roles" element={<ProtectedRoute adminOnly requiredPermission="roles.view"><AdminRoles /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/audit-logs" element={<ProtectedRoute adminOnly requiredPermission="security.audit"><AdminAuditLogs /></ProtectedRoute>} />
+            <Route path="/admin/batches" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminBatches /></ProtectedRoute>} />
+            <Route path="/admin/farmers" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminFarmers /></ProtectedRoute>} />
+            <Route path="/admin/settlements" element={<ProtectedRoute adminOnly requiredPermission="financial.reports"><AdminSettlements /></ProtectedRoute>} />
+            <Route path="/admin/warehouse-zones" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminWarehouseZones /></ProtectedRoute>} />
 
             {/* HTTP Error Status Routes */}
             <Route path="/401" element={<Unauthorized />} />

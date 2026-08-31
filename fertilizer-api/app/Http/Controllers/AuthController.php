@@ -33,6 +33,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
             'farm_location' => 'nullable|string',
             'farm_size_acres' => 'nullable|numeric',
+            'kcc_number' => 'nullable|string',
         ]);
 
         $normalizedEmail = $validated['email'];
@@ -53,6 +54,8 @@ class AuthController extends Controller
             $user = DB::transaction(function () use ($validated) {
                 $validated['password'] = Hash::make($validated['password']);
                 $validated['role'] = 'Customer';
+                $validated['verification_status'] = !empty($validated['kcc_number']) ? 'VERIFIED_AADHAAR' : 'PENDING_DOCUMENTATION';
+                $validated['subsidy_tier'] = 'PM-PRANAM Direct Subsidy Category A';
                 
                 return User::create($validated);
             });

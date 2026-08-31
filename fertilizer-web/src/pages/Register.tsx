@@ -13,6 +13,7 @@ export const Register: React.FC = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [kccNumber, setKccNumber] = useState('');
   const [state, setState] = useState('Haryana');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +26,7 @@ export const Register: React.FC = () => {
     }
     setIsLoading(true);
     try {
-      await authApi.register({ name, phone, email, state, password });
+      await authApi.register({ name, phone, email, state, password, kcc_number: kccNumber });
       toast.success("OTP sent to your mobile phone!");
       navigate(`/verify-otp?phone=${phone}`);
     } catch (e: any) {
@@ -169,6 +170,21 @@ export const Register: React.FC = () => {
                   placeholder="your@email.com (optional)"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Kisan Credit Card (KCC) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wider">Kisan Credit Card (KCC) Number</label>
+              <div className="relative">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  placeholder="e.g. KCC-2026-984210 (optional for subsidy)"
+                  value={kccNumber}
+                  onChange={(e) => setKccNumber(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 text-sm bg-slate-950/80 border border-emerald-500/30 rounded-xl text-white placeholder-emerald-700/60 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
                 />
               </div>

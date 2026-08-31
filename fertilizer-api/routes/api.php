@@ -157,6 +157,21 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::get('/reports/security-audit', [\App\Http\Controllers\Admin\ReportController::class, 'securityAudit'])->middleware('rbsc:security.audit');
     Route::get('/reports/financial-reconcile', [\App\Http\Controllers\Admin\ReportController::class, 'financialReconcile'])->middleware('rbsc:financial.reports');
 
+    // Dedicated Operational Management Endpoints
+    Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->middleware('rbsc:security.audit');
+    Route::get('/batches', [\App\Http\Controllers\Admin\BatchController::class, 'index'])->middleware('rbsc:inventory.view');
+    Route::post('/batches', [\App\Http\Controllers\Admin\BatchController::class, 'store'])->middleware('rbsc:inventory.edit');
+    Route::get('/farmers', [\App\Http\Controllers\Admin\FarmerVerificationController::class, 'index'])->middleware('rbsc:users.view');
+    Route::post('/farmers/{id}/verify', [\App\Http\Controllers\Admin\FarmerVerificationController::class, 'verify'])->middleware('rbsc:users.edit');
+    Route::get('/settlements', [\App\Http\Controllers\Admin\SettlementController::class, 'index'])->middleware('rbsc:financial.reports');
+    Route::post('/settlements/{id}/settle', [\App\Http\Controllers\Admin\SettlementController::class, 'settle'])->middleware('rbsc:financial.reports');
+
+    // Warehouse Zones CRUD
+    Route::get('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'index'])->middleware('rbsc:inventory.view');
+    Route::post('/warehouse-zones', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'store'])->middleware('rbsc:inventory.edit');
+    Route::put('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'update'])->middleware('rbsc:inventory.edit');
+    Route::delete('/warehouse-zones/{id}', [\App\Http\Controllers\Admin\WarehouseZoneController::class, 'destroy'])->middleware('rbsc:inventory.edit');
+
     // Inventory & Warehouse Management
     Route::get('/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->middleware('rbsc:inventory.view');
     Route::put('/inventory/{id}', [\App\Http\Controllers\Admin\InventoryController::class, 'update'])->middleware('rbsc:inventory.update');
