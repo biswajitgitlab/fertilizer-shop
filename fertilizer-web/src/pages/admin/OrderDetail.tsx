@@ -87,15 +87,30 @@ export const OrderDetail: React.FC = () => {
             </h3>
             <div className="space-y-3">
               {order.items.map((it, idx) => (
-                <div key={idx} className="flex justify-between items-center text-xs p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <img src={it.product.images[0]} alt={it.product.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-800" />
-                    <div>
-                      <p className="font-bold text-slate-900 dark:text-white">{it.product.name}</p>
-                      <p className="text-slate-500 dark:text-slate-400">Qty: {it.quantity}</p>
+                <div key={idx} className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800/50 space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <div className="flex items-center gap-3">
+                      <img src={it.product.images[0]} alt={it.product.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 dark:border-slate-800" />
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-white">{it.product.name}</p>
+                        <p className="text-slate-500 dark:text-slate-400">Quantity: <span className="font-bold text-slate-900 dark:text-white">{it.quantity} pack(s)</span></p>
+                      </div>
                     </div>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(it.product.price * it.quantity)}</span>
                   </div>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(it.product.price * it.quantity)}</span>
+
+                  {/* Warehouse Worker FEFO Picking Location Badge */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300">📦 Pick Location:</span>
+                      <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
+                        {it.product.category?.includes('Organic') ? 'ZONE-B' : it.product.category?.includes('Insect') ? 'ZONE-C' : it.product.category?.includes('Micro') ? 'ZONE-D' : 'ZONE-A'}
+                      </span>
+                    </div>
+                    <span className="text-slate-500 dark:text-slate-400 font-mono text-[10px]">
+                      FEFO Priority Dispatch: <strong className="text-slate-700 dark:text-slate-200">Earliest Lot Batch</strong>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

@@ -161,6 +161,7 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->middleware('rbsc:security.audit');
     Route::get('/batches', [\App\Http\Controllers\Admin\BatchController::class, 'index'])->middleware('rbsc:inventory.view');
     Route::post('/batches', [\App\Http\Controllers\Admin\BatchController::class, 'store'])->middleware('rbsc:inventory.edit');
+    Route::put('/batches/{id}', [\App\Http\Controllers\Admin\BatchController::class, 'update'])->middleware('rbsc:inventory.edit');
     Route::get('/farmers', [\App\Http\Controllers\Admin\FarmerVerificationController::class, 'index'])->middleware('rbsc:users.view');
     Route::post('/farmers/{id}/verify', [\App\Http\Controllers\Admin\FarmerVerificationController::class, 'verify'])->middleware('rbsc:users.edit');
     Route::get('/settlements', [\App\Http\Controllers\Admin\SettlementController::class, 'index'])->middleware('rbsc:financial.reports');

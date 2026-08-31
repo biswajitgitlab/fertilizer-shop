@@ -38,23 +38,55 @@ class InventoryController extends Controller
 
         $product = Product::findOrFail($id);
         $oldStock = $product->stock_qty;
-        $product->stock_qty = $request->stock;
-        $product->save();
+        $newStock = (int) $request->stock;
+        $delta = $newStock - $oldStock;
 
-        // Synchronize batch lot stock
-        $batch = \App\Models\ProductBatch::where('product_id', $product->id)->first();
-        if ($batch) {
-            $batch->stock_qty = $request->stock;
-            $batch->save();
+        if ($delta > 0) {
+            return response()->json([
+                'message' => 'Direct inventory restocking without batch metadata is disabled for agricultural compliance.',
+                'errors' => [
+                    'stock' => [
+                        "Inbound inventory restocks must be registered through the Batch Management module (/admin/batches) with mandatory Lot Number, Manufactured Date, Expiry Date, Moisture %, and Warehouse Zone."
+                    ]
+                ]
+            ], 422);
         }
 
-        // Create log
+        if ($delta < 0) {
+            // Stock reduction / audit write-off: Deduct from batches using FEFO order (earliest expiring batch first)
+            $remainingToDeduct = abs($delta);
+            $batches = \App\Models\ProductBatch::where('product_id', $product->id)
+                ->where('stock_qty', '>', 0)
+                ->orderBy('expiry_date', 'asc')
+                ->get();
+
+            foreach ($batches as $batch) {
+                if ($remainingToDeduct <= 0) break;
+
+                if ($batch->stock_qty >= $remainingToDeduct) {
+                    $batch->decrement('stock_qty', $remainingToDeduct);
+                    $remainingToDeduct = 0;
+                } else {
+                    $remainingToDeduct -= $batch->stock_qty;
+                    $batch->update(['stock_qty' => 0]);
+                }
+            }
+        }
+
+        // Set Product stock_qty equal to actual sum of active product batches (or newStock)
+        $product->stock_qty = \App\Models\ProductBatch::where('product_id', $product->id)->sum('stock_qty');
+        if ($product->stock_qty == 0 && $newStock > 0) {
+            $product->stock_qty = $newStock;
+        }
+        $product->save();
+
+        // Create Audit Log
         InventoryLog::create([
             'product_id' => $product->id,
-            'user_id' => auth()->id(),
-            'quantity_changed' => $request->stock - $oldStock,
-            'new_stock' => $request->stock,
-            'reason' => $request->reason ?? 'Manual adjustment'
+            'type' => $delta >= 0 ? 'RESTOCK' : 'ADJUSTMENT_OUT',
+            'qty' => $delta,
+            'reason' => $request->reason ?? 'Manual stock update via inventory control',
+            'admin_id' => auth()->id() ?? 1,
         ]);
 
         // Invalidate admin dashboard & inventory caches

@@ -255,12 +255,31 @@ class OrderController extends Controller
                     // Atomically decrement stock_qty
                     $product->decrement('stock_qty', $item['qty']);
 
+                    // FEFO (First-Expired, First-Out) Batch Stock Reduction
+                    $remainingToDeduct = $item['qty'];
+                    $batches = \App\Models\ProductBatch::where('product_id', $product->id)
+                        ->where('stock_qty', '>', 0)
+                        ->orderBy('expiry_date', 'asc')
+                        ->get();
+
+                    foreach ($batches as $batch) {
+                        if ($remainingToDeduct <= 0) break;
+
+                        if ($batch->stock_qty >= $remainingToDeduct) {
+                            $batch->decrement('stock_qty', $remainingToDeduct);
+                            $remainingToDeduct = 0;
+                        } else {
+                            $remainingToDeduct -= $batch->stock_qty;
+                            $batch->update(['stock_qty' => 0]);
+                        }
+                    }
+
                     // Create Inventory Audit Log
                     InventoryLog::create([
                         'product_id' => $product->id,
                         'type' => 'SALE',
                         'qty' => -$item['qty'],
-                        'reason' => "Order #{$createdOrder->order_number} placement",
+                        'reason' => "Order #{$createdOrder->order_number} placement (FEFO Batch Deducted)",
                         'admin_id' => $user->id
                     ]);
                 }
@@ -351,11 +370,22 @@ class OrderController extends Controller
             DB::transaction(function() use ($order) {
                 $order->update(['status' => 'CANCELLED']);
                 
-                // Restock inventory items
+                // Restock inventory items and batch stock
                 foreach ($order->items as $item) {
                     $product = Product::find($item->product_id);
                     if ($product) {
                         $product->increment('stock_qty', $item->qty);
+
+                        // Restore stock to latest active non-expired batch
+                        $batch = \App\Models\ProductBatch::where('product_id', $product->id)
+                            ->where('expiry_date', '>', now())
+                            ->orderBy('expiry_date', 'desc')
+                            ->first();
+
+                        if ($batch) {
+                            $batch->increment('stock_qty', $item->qty);
+                        }
+
                         InventoryLog::create([
                             'product_id' => $product->id,
                             'type' => 'RESTOCK',

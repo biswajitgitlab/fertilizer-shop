@@ -151,7 +151,11 @@ export const Batches: React.FC = () => {
                     <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">{b.batch_code}</td>
                       <td className="py-3.5 px-4 font-semibold">{b.product?.name || b.product_name || 'N/A'}</td>
-                      <td className="py-3.5 px-4 font-mono text-[11px]">{b.warehouse_zone}</td>
+                      <td className="py-3.5 px-4 font-mono text-[11px]">
+                        {typeof b.warehouse_zone === 'object' && b.warehouse_zone !== null 
+                          ? (b.warehouse_zone.code || b.warehouse_zone.name || 'N/A') 
+                          : (b.warehouse_zone || 'N/A')}
+                      </td>
                       <td className="py-3.5 px-4 font-bold">{b.stock_qty} Packs</td>
                       <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">{b.expiry_date}</td>
                       <td className="py-3.5 px-4 font-mono text-[11px]">{b.moisture_pct}%</td>

@@ -58,6 +58,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function batches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class);
+    }
+
     public function bundles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(ProductBundle::class, 'bundle_product')
