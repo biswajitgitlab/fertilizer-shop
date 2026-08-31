@@ -13,6 +13,7 @@ class DriverSettlement extends Model
         'cash_collected',
         'reconciled_by',
         'status',
+        'notes',
         'settled_at',
     ];
 

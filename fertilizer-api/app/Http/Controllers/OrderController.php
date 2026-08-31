@@ -377,11 +377,11 @@ class OrderController extends Controller
     {
         $order = Order::where('user_id', auth()->id())->findOrFail($id);
 
-        // Senior E-Commerce Guard: Block cancellation after SHIPPED or DELIVERED
-        if (in_array($order->status, ['SHIPPED', 'DELIVERED'])) {
+        // Senior E-Commerce Guard: Block cancellation after SHIPPED, OUT_FOR_DELIVERY, or DELIVERED
+        if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => "Order #{$order->order_number} has already been shipped or delivered and cannot be cancelled."
+                'message' => "Order #{$order->order_number} has already been shipped or out for delivery and cannot be cancelled."
             ], 422);
         }
 
