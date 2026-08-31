@@ -229,10 +229,14 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
         
+        if ($request->has('status') && is_string($request->status)) {
+            $request->merge(['status' => strtoupper($request->status)]);
+        }
+
         $request->validate([
-            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
-            'packer_id' => 'sometimes|nullable|exists:admins,id',
-            'driver_id' => 'sometimes|nullable|exists:admins,id',
+            'status' => 'sometimes|in:PENDING,CONFIRMED,PACKED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
+            'packer_id' => 'sometimes|nullable',
+            'driver_id' => 'sometimes|nullable',
             'tracking_number' => 'sometimes|nullable|string',
             'cancellation_reason' => 'sometimes|nullable|string',
         ]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import { Order } from '../../types';
@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 
 export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [trackingNo, setTrackingNo] = useState('');
   const [selectedPacker, setSelectedPacker] = useState<string>('');
@@ -43,9 +44,10 @@ export const OrderDetail: React.FC = () => {
     if (!order) return;
     try {
       await adminApi.updateOrderStatus(order.id, order.status, trackingNo, selectedPacker, selectedDriver);
-      toast.success("Order fulfillment and staff assignments saved!");
-      const updated = await adminApi.getOrderById(order.id);
-      setOrder(updated);
+      toast.success("Order fulfillment saved! Redirecting to orders list...");
+      setTimeout(() => {
+        navigate('/admin/orders');
+      }, 700);
     } catch (e) {
       toast.error("Failed to update order details.");
     }
@@ -57,9 +59,10 @@ export const OrderDetail: React.FC = () => {
     try {
       const targetStatus = (order.status === 'Pending' || order.status === 'Confirmed') ? 'Packed' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, packerId, selectedDriver);
-      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}.`);
-      const updated = await adminApi.getOrderById(order.id);
-      setOrder(updated);
+      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}. Redirecting...`);
+      setTimeout(() => {
+        navigate('/admin/orders');
+      }, 700);
     } catch (e) {
       toast.error("Failed to assign packer.");
     }
@@ -71,9 +74,10 @@ export const OrderDetail: React.FC = () => {
     try {
       const targetStatus = (['Pending', 'Confirmed', 'Packed', 'Processing'].includes(order.status)) ? 'Shipped' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, selectedPacker, driverId);
-      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}.`);
-      const updated = await adminApi.getOrderById(order.id);
-      setOrder(updated);
+      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}. Redirecting...`);
+      setTimeout(() => {
+        navigate('/admin/orders');
+      }, 700);
     } catch (e) {
       toast.error("Failed to assign driver.");
     }
@@ -83,9 +87,10 @@ export const OrderDetail: React.FC = () => {
     if (!order) return;
     try {
       await adminApi.updateOrderStatus(order.id, newStatus, trackingNo, selectedPacker, selectedDriver);
-      toast.success(`Order status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}!`);
-      const updated = await adminApi.getOrderById(order.id);
-      setOrder(updated);
+      toast.success(`Status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}! Redirecting...`);
+      setTimeout(() => {
+        navigate('/admin/orders');
+      }, 700);
     } catch (e) {
       toast.error("Failed to update order status.");
     }

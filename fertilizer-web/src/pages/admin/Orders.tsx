@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 export const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
+  const [assignedToMe, setAssignedToMe] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Pagination & Search State
@@ -27,7 +28,8 @@ export const Orders: React.FC = () => {
         page,
         per_page: perPage,
         status: statusFilter,
-        search
+        search,
+        assigned_to_me: assignedToMe ? 1 : undefined,
       });
       setOrders(res.orders || []);
       if (res.meta) {
@@ -43,7 +45,7 @@ export const Orders: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, perPage, statusFilter]);
+  }, [page, perPage, statusFilter, assignedToMe]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -126,20 +128,32 @@ export const Orders: React.FC = () => {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex border border-emerald-200/70 dark:border-emerald-500/20 gap-3 overflow-x-auto text-xs font-bold bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-sm dark:shadow-xl">
-          {['', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'].map(st => (
-            <button
-              key={st}
-              onClick={() => { setStatusFilter(st); setPage(1); }}
-              className={`pb-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer border ${
-                statusFilter === st
-                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-black shadow-xs'
-                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              {st === '' ? 'All Orders' : st}
-            </button>
-          ))}
+        <div className="flex items-center border border-emerald-200/70 dark:border-emerald-500/20 gap-3 overflow-x-auto text-xs font-bold bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-sm dark:shadow-xl justify-between">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {['', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'].map(st => (
+              <button
+                key={st}
+                onClick={() => { setStatusFilter(st); setPage(1); }}
+                className={`pb-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer border whitespace-nowrap ${
+                  statusFilter === st
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-black shadow-xs'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                {st === '' ? 'All Statuses' : st}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => { setAssignedToMe(!assignedToMe); setPage(1); }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              assignedToMe
+                ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-purple-500'
+            }`}
+          >
+            🎯 {assignedToMe ? 'Showing My Assigned Orders' : 'Filter: My Assigned Orders'}
+          </button>
         </div>
 
         {/* Orders Container: Mobile Cards (sm:hidden) & Desktop Table (hidden sm:block) */}
