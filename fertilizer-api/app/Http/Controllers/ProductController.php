@@ -158,7 +158,8 @@ class ProductController extends Controller
                 break;
         }
 
-        $products = $query->paginate(24);
+        $perPage = max(1, min(100, (int) $request->get('per_page', 24)));
+        $products = $query->paginate($perPage);
         return response()->json($products);
     }
 

@@ -51,7 +51,8 @@ class BatchController extends Controller
             $items = $query->orderBy('expiry_date', 'asc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
-                ->get();
+                ->get()
+                ->toArray();
 
             return [
                 'data' => $items,
@@ -127,10 +128,28 @@ class BatchController extends Controller
             return $createdBatch;
         });
 
+        $this->clearBatchCache();
+
         return response()->json([
             'message' => 'Product batch created and inventory synchronized successfully',
             'batch' => $batch->load(['product', 'warehouseZone']),
         ], 201);
+    }
+
+    private function clearBatchCache()
+    {
+        try {
+            if (\Illuminate\Support\Facades\Cache::config('cache.default') === 'redis') {
+                $redis = \Illuminate\Support\Facades\Cache::redis();
+                foreach ($redis->keys('*batches:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*fefo:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+        \Illuminate\Support\Facades\Cache::flush();
     }
 
     public function update(Request $request, $id)
@@ -167,6 +186,8 @@ class BatchController extends Controller
 
             $batch->update($validated);
         });
+
+        $this->clearBatchCache();
 
         return response()->json([
             'message' => 'Product batch updated successfully',

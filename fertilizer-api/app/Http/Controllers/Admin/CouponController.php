@@ -9,12 +9,68 @@ use Illuminate\Support\Facades\Cache;
 
 class CouponController extends Controller
 {
-    public function index()
+    private function clearCouponCache()
     {
-        $coupons = Cache::remember('admin_coupons_list', 600, function () {
-            return Coupon::orderBy('created_at', 'desc')->paginate(20);
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*coupons:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+        Cache::forget('admin_coupons_list');
+    }
+
+    public function index(Request $request)
+    {
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
+
+        $cacheKey = "coupons:p{$page}:pp{$perPage}:s{$search}";
+
+        try {
+            $cacheStore = Cache::store('redis');
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store();
+        }
+
+        $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search) {
+            $query = Coupon::query();
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('code', 'like', "%{$search}%")
+                      ->orWhere('type', 'like', "%{$search}%");
+                });
+            }
+
+            $total = $query->count();
+            $lastPage = max(1, (int) ceil($total / $perPage));
+
+            $items = $query->orderBy('created_at', 'desc')
+                ->skip(($page - 1) * $perPage)
+                ->take($perPage)
+                ->get()
+                ->toArray();
+
+            return [
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ],
+            ];
         });
-        return response()->json($coupons);
+
+        if (!$request->has('page') && !$request->has('search') && !$request->has('per_page')) {
+            return response()->json($result['data']);
+        }
+
+        return response()->json($result);
     }
 
     public function store(Request $request)
@@ -25,11 +81,12 @@ class CouponController extends Controller
             'value' => 'required|numeric|min:0',
             'min_order' => 'required|numeric|min:0',
             'expires_at' => 'nullable|date',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'is_new_customer_only' => 'boolean'
         ]);
 
         $coupon = Coupon::create($request->all());
-        Cache::forget('admin_coupons_list');
+        $this->clearCouponCache();
         \App\Services\NotificationService::notifyCouponCreated($coupon);
         return response()->json(['message' => 'Coupon created successfully', 'coupon' => $coupon], 201);
     }
@@ -52,11 +109,12 @@ class CouponController extends Controller
             'value' => 'required|numeric|min:0',
             'min_order' => 'required|numeric|min:0',
             'expires_at' => 'nullable|date',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'is_new_customer_only' => 'boolean'
         ]);
 
         $coupon->update($request->all());
-        Cache::forget('admin_coupons_list');
+        $this->clearCouponCache();
         Cache::forget("admin_coupon_{$id}");
 
         return response()->json(['message' => 'Coupon updated successfully', 'coupon' => $coupon]);
@@ -66,10 +124,9 @@ class CouponController extends Controller
     {
         $coupon = Coupon::findOrFail($id);
         $coupon->delete();
-        Cache::forget('admin_coupons_list');
+        $this->clearCouponCache();
         Cache::forget("admin_coupon_{$id}");
 
         return response()->json(['message' => 'Coupon deleted successfully']);
     }
 }
-

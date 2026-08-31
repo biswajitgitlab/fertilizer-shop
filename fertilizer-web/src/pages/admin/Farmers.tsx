@@ -221,7 +221,7 @@ export const Farmers: React.FC = () => {
                 ) : (
                   farmers.map((farmer: any, i: number) => (
                     <tr key={farmer.id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{farmer.name}</td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{farmer.name || farmer.farmer_name || farmer.email || 'Farmer Account'}</td>
                       <td className="py-3.5 px-4 text-slate-500 text-[11px]">{farmer.email || farmer.phone}</td>
                       <td className="py-3.5 px-4 font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300">{farmer.kcc_number || 'KCC-PENDING-REG'}</td>
                       <td className="py-3.5 px-4 text-[11px]">{farmer.subsidy_tier || 'PM-PRANAM Category A'}</td>

@@ -27,9 +27,10 @@ export const Inventory: React.FC = () => {
       const res = await api.get('/admin/inventory', {
         params: { page, per_page: perPage, search }
       });
-      const data = res.data;
-      if (data && Array.isArray(data.data)) {
-        const mappedProducts: Product[] = data.data.map((item: any) => ({
+      const raw = res.data;
+      const rawList = raw && Array.isArray(raw.data) ? raw.data : (Array.isArray(raw) ? raw : []);
+      if (rawList.length > 0) {
+        const mappedProducts: Product[] = rawList.map((item: any) => ({
           id: String(item.id),
           name: item.name,
           slug: item.slug || '',
@@ -48,11 +49,10 @@ export const Inventory: React.FC = () => {
           sku: item.sku || 'SKU'
         }));
         setProducts(mappedProducts);
-        setMeta(data.meta || { current_page: 1, last_page: 1, per_page: perPage, total: mappedProducts.length });
+        setMeta(raw.meta || { current_page: page, last_page: Math.max(1, Math.ceil(mappedProducts.length / perPage)), per_page: perPage, total: mappedProducts.length });
       } else {
-        const fallbackProds = await adminApi.getProducts();
-        setProducts(fallbackProds);
-        setMeta({ current_page: 1, last_page: 1, per_page: perPage, total: fallbackProds.length });
+        setProducts([]);
+        setMeta({ current_page: 1, last_page: 1, per_page: perPage, total: 0 });
       }
     } catch (e) {
       console.error("Inventory error:", e);

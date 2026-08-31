@@ -24,10 +24,12 @@ class FarmerVerificationController extends Controller
             return response()->json($cached);
         }
 
-        $query = User::whereDoesntHave('roles', function ($q) {
-            $q->whereIn('name', ['Super Admin', 'Admin', 'Store Manager']);
+        $query = User::where(function ($q) {
+            $q->where('role', 'Customer')
+              ->orWhere('role', 'Farmer')
+              ->orWhereNull('role');
         })
-        ->select('id', 'name', 'email', 'phone', 'is_verified', 'kcc_number', 'aadhaar_hash', 'subsidy_tier', 'verification_status', 'created_at');
+        ->select('id', 'name', 'email', 'phone', 'is_verified', 'kcc_number', 'aadhaar_hash', 'subsidy_tier', 'verification_status', 'farm_location', 'farm_size_acres', 'created_at');
 
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {

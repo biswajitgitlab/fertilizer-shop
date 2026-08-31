@@ -96,19 +96,109 @@ class DatabaseSeeder extends Seeder
             $admin->syncRoles([$roleObj]);
         }
 
-        // 2. Seed Demo Customer in 'users' table for Storefront Portal
-        User::firstOrCreate(
-            ['phone' => '9876543210'],
+        // 2. Seed Demo Farmers / Customers in 'users' table for Storefront & Admin KCC Verification
+        $farmers = [
             [
-                'email' => 'ramesh.patel@agri.com',
-                'name' => 'Ramesh Patel (Demo Customer)',
+                'phone' => '9876543210',
+                'email' => 'farmer@sarkarfertilizer.com',
+                'name' => 'Ramesh Kumar',
                 'password' => Hash::make('password123'),
                 'role' => 'Customer',
-                'farm_location' => 'Karnal, Haryana',
-                'farm_size_acres' => 12,
+                'kcc_number' => 'KCC-2026-88192',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                'verification_status' => 'VERIFIED_AADHAAR',
                 'is_verified' => true,
-            ]
-        );
+                'farm_location' => 'Karnal, Haryana',
+                'farm_size_acres' => 12.5,
+            ],
+            [
+                'phone' => '7863955493',
+                'email' => 'biswajit179789@gmail.com',
+                'name' => 'Biswajit Sarkar',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-99014',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                'verification_status' => 'VERIFIED_AADHAAR',
+                'is_verified' => true,
+                'farm_location' => 'Burdwan, West Bengal',
+                'farm_size_acres' => 18.0,
+            ],
+            [
+                'phone' => '9876543299',
+                'email' => 'ramesh.patel.farmer@example.com',
+                'name' => 'Ramesh Patel',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-44102',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category B',
+                'verification_status' => 'VERIFIED_AADHAAR',
+                'is_verified' => true,
+                'farm_location' => 'Anand, Gujarat',
+                'farm_size_acres' => 14.2,
+            ],
+            [
+                'phone' => '9876543288',
+                'email' => 'suresh.kumar.farmer@example.com',
+                'name' => 'Suresh Kumar',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-33291',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                'verification_status' => 'PENDING_DOCUMENTATION',
+                'is_verified' => false,
+                'farm_location' => 'Nashik, Maharashtra',
+                'farm_size_acres' => 25.0,
+            ],
+            [
+                'phone' => '9876543277',
+                'email' => 'harpreet.dhillon@agri.in',
+                'name' => 'Harpreet Singh Dhillon',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-77123',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                'verification_status' => 'VERIFIED_AADHAAR',
+                'is_verified' => true,
+                'farm_location' => 'Ludhiana, Punjab',
+                'farm_size_acres' => 32.0,
+            ],
+            [
+                'phone' => '9876543266',
+                'email' => 'anita.devi.krishi@example.com',
+                'name' => 'Anita Devi',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-55412',
+                'subsidy_tier' => 'PM-PRANAM Category B Micro-Nutrient',
+                'verification_status' => 'PENDING_DOCUMENTATION',
+                'is_verified' => false,
+                'farm_location' => 'Patna, Bihar',
+                'farm_size_acres' => 6.5,
+            ],
+            [
+                'phone' => '9876543255',
+                'email' => 'gurpreet.kaur@farm.org',
+                'name' => 'Gurpreet Kaur',
+                'password' => Hash::make('password123'),
+                'role' => 'Customer',
+                'kcc_number' => 'KCC-2026-11892',
+                'subsidy_tier' => 'PM-PRANAM Direct Subsidy Category A',
+                'verification_status' => 'VERIFIED_AADHAAR',
+                'is_verified' => true,
+                'farm_location' => 'Amritsar, Punjab',
+                'farm_size_acres' => 20.0,
+            ],
+        ];
+
+        foreach ($farmers as $f) {
+            $user = User::where('email', $f['email'])->orWhere('phone', $f['phone'])->first();
+            if ($user) {
+                $user->update($f);
+            } else {
+                User::create($f);
+            }
+        }
 
         $this->call([
             ConstantsSeeder::class,

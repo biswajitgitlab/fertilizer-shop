@@ -29,7 +29,11 @@ class CustomerController extends Controller
         }
 
         $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search) {
-            $query = User::query();
+            $query = User::where(function ($q) {
+                $q->where('role', 'Customer')
+                  ->orWhere('role', 'Farmer')
+                  ->orWhereNull('role');
+            });
 
             if (!empty($search)) {
                 $query->where(function($q) use ($search) {
@@ -46,7 +50,8 @@ class CustomerController extends Controller
             $items = $query->orderBy('created_at', 'desc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
-                ->get();
+                ->get()
+                ->toArray();
 
             return [
                 'data' => $items,

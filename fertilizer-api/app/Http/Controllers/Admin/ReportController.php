@@ -175,7 +175,7 @@ class ReportController extends Controller
             if ($dbBatches->count() > 0) {
                 $batchAnalysis = $dbBatches->map(function ($b) {
                     $daysToExpiry = Carbon::now()->diffInDays(Carbon::parse($b->expiry_date), false);
-                    $zoneCode = typeof_is_object($b->warehouse_zone) ? ($b.warehouse_zone->code ?? 'ZONE-A') : ($b->warehouse_zone ?? 'ZONE-A');
+                    $zoneCode = is_object($b->warehouseZone) ? ($b->warehouseZone->code ?? 'ZONE-A') : ($b->warehouse_zone ?? 'ZONE-A');
                     return [
                         'id' => $b->id,
                         'product_id' => $b->product_id,

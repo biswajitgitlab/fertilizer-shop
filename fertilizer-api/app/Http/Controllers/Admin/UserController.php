@@ -85,7 +85,7 @@ class UserController extends Controller
                     'effective_permissions_count' => count($admin->getEffectivePermissions()),
                     'created_at' => $admin->created_at,
                 ];
-            });
+            })->values()->toArray();
 
             // Summary stats
             $stats = [
@@ -180,7 +180,7 @@ class UserController extends Controller
                 return $createdAdmin;
             });
 
-            Cache::forget('admin_team_list');
+            $this->clearCache();
 
             \App\Services\NotificationService::notifyStaffCreated($admin);
 
@@ -277,7 +277,7 @@ class UserController extends Controller
         }
 
         $admin->update($data);
-        Cache::forget('admin_team_list');
+        $this->clearCache();
 
         return response()->json([
             'message' => "Staff member {$admin->name} updated successfully.",
@@ -304,10 +304,25 @@ class UserController extends Controller
 
         $adminName = $admin->name;
         $admin->delete();
-        Cache::forget('admin_team_list');
+        $this->clearCache();
 
         return response()->json([
             'message' => "Staff account {$adminName} deleted successfully."
         ]);
+    }
+
+    private function clearCache()
+    {
+        try {
+            Cache::forget('admin_team_list');
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*users:*') as $key) {
+                    $redis->del($key);
+                }
+            } else {
+                Cache::flush();
+            }
+        } catch (\Throwable $e) {}
     }
 }

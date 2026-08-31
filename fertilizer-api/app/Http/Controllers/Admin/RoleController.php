@@ -46,10 +46,18 @@ class RoleController extends Controller
     /**
      * List all roles with assigned permissions and user counts.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Cache::remember('admin_roles_list', 1800, function () {
-            return Role::with('permissions')->get()->map(function ($role) {
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
+        $search = strtolower(trim($request->get('search', '')));
+
+        $roles = Cache::remember("admin_roles_list_s{$search}", 1800, function () use ($search) {
+            $query = Role::with('permissions');
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            }
+            return $query->get()->map(function ($role) {
                 $userCount = Admin::whereHas('roles', function ($q) use ($role) {
                     $q->where('id', $role->id);
                 })->orWhere('role', $role->name)->count();
@@ -63,6 +71,21 @@ class RoleController extends Controller
                 ];
             });
         });
+
+        if ($request->has('page') || $request->has('search') || $request->has('per_page')) {
+            $total = count($roles);
+            $lastPage = max(1, (int) ceil($total / $perPage));
+            $items = array_slice($roles->toArray(), ($page - 1) * $perPage, $perPage);
+            return response()->json([
+                'data' => $items,
+                'meta' => [
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                ]
+            ]);
+        }
 
         return response()->json($roles);
     }

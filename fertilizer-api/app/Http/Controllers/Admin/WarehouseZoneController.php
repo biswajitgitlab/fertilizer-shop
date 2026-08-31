@@ -5,9 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\WarehouseZone;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class WarehouseZoneController extends Controller
 {
+    private function clearZoneCache()
+    {
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*zones:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+        Cache::flush();
+    }
+
     public function index(Request $request)
     {
         $page = max(1, (int) $request->get('page', 1));
@@ -17,9 +31,9 @@ class WarehouseZoneController extends Controller
         $cacheKey = "zones:p{$page}:pp{$perPage}:s{$search}";
 
         try {
-            $cacheStore = \Illuminate\Support\Facades\Cache::store('redis');
+            $cacheStore = Cache::store('redis');
         } catch (\Throwable $e) {
-            $cacheStore = \Illuminate\Support\Facades\Cache::store();
+            $cacheStore = Cache::store();
         }
 
         $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search) {
@@ -39,7 +53,8 @@ class WarehouseZoneController extends Controller
             $items = $query->orderBy('code', 'asc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
-                ->get();
+                ->get()
+                ->toArray();
 
             return [
                 'data' => $items,
@@ -70,6 +85,8 @@ class WarehouseZoneController extends Controller
         ]);
 
         $zone = WarehouseZone::create($validated);
+        $this->clearZoneCache();
+
         return response()->json($zone, 201);
     }
 
@@ -92,6 +109,8 @@ class WarehouseZoneController extends Controller
         ]);
 
         $zone->update($validated);
+        $this->clearZoneCache();
+
         return response()->json($zone);
     }
 
@@ -104,6 +123,8 @@ class WarehouseZoneController extends Controller
             ], 422);
         }
         $zone->delete();
+        $this->clearZoneCache();
+
         return response()->json(['message' => 'Warehouse zone deleted successfully']);
     }
 }
