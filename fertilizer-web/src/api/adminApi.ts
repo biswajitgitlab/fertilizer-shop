@@ -150,6 +150,13 @@ export const normalizeAdminOrder = (o: any): Order => {
       paymentStatus,
       paymentDetails,
       status,
+      packerId: o.packer_id || o.packerId || null,
+      packerName: o.packer?.name || o.packerName || null,
+      driverId: o.driver_id || o.driverId || null,
+      driverName: o.driver?.name || o.driverName || null,
+      packedAt: o.packed_at || o.packedAt || null,
+      shippedAt: o.shipped_at || o.shippedAt || null,
+      deliveredAt: o.delivered_at || o.deliveredAt || null,
       trackingNumber: o.tracking_number || o.trackingNumber || '',
       createdAt: o.created_at || o.createdAt || new Date().toISOString()
     };
@@ -541,15 +548,17 @@ export const adminApi = {
     return { orders: fetchedOrders, meta };
   },
 
-  updateOrderStatus: async (id: string, status: string, trackingNumber?: string) => {
+  updateOrderStatus: async (id: string, status: string, trackingNumber?: string, packerId?: number | string, driverId?: number | string) => {
     try {
       const payload: any = {};
       if (status) payload.status = status.toUpperCase();
       if (trackingNumber !== undefined) payload.tracking_number = trackingNumber;
+      if (packerId !== undefined) payload.packer_id = packerId;
+      if (driverId !== undefined) payload.driver_id = driverId;
       const res = await apiClient.put(`/admin/orders/${id}`, payload);
       return res.data;
     } catch (e) {
-      return { id, status, trackingNumber };
+      return { id, status, trackingNumber, packerId, driverId };
     }
   },
 

@@ -12,31 +12,42 @@ export const OrderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [trackingNo, setTrackingNo] = useState('');
+  const [selectedPacker, setSelectedPacker] = useState<string>('');
+  const [selectedDriver, setSelectedDriver] = useState<string>('');
+  const [staffList, setStaffList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrderAndStaff = async () => {
       try {
         if (!id) return;
-        const data = await adminApi.getOrderById(id);
+        const [data, team] = await Promise.all([
+          adminApi.getOrderById(id),
+          adminApi.getTeam().catch(() => [])
+        ]);
         setOrder(data);
         if (data.trackingNumber) setTrackingNo(data.trackingNumber);
+        if (data.packerId) setSelectedPacker(String(data.packerId));
+        if (data.driverId) setSelectedDriver(String(data.driverId));
+        setStaffList(Array.isArray(team) ? team : []);
       } catch (e) {
         console.error("Admin order detail error:", e);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchOrder();
+    fetchOrderAndStaff();
   }, [id]);
 
   const handleSaveTracking = async () => {
     if (!order) return;
     try {
-      await adminApi.updateOrderStatus(order.id, order.status, trackingNo);
-      toast.success("Courier tracking number updated!");
+      await adminApi.updateOrderStatus(order.id, order.status, trackingNo, selectedPacker, selectedDriver);
+      toast.success("Order fulfillment and staff assignments saved!");
+      const updated = await adminApi.getOrderById(order.id);
+      setOrder(updated);
     } catch (e) {
-      toast.error("Failed to update tracking.");
+      toast.error("Failed to update order details.");
     }
   };
 
@@ -115,24 +126,60 @@ export const OrderDetail: React.FC = () => {
               ))}
             </div>
 
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Assign Courier Tracking Number</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="e.g. DELHIVERY-890214"
-                  value={trackingNo}
-                  onChange={(e) => setTrackingNo(e.target.value)}
-                  className="flex-1 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
-                />
-                <button onClick={handleSaveTracking} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer">
-                  Save
-                </button>
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <span>📦 Warehouse Packer</span>
+                  </label>
+                  <select
+                    value={selectedPacker}
+                    onChange={(e) => setSelectedPacker(e.target.value)}
+                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
+                  >
+                    <option value="">Unassigned</option>
+                    {staffList.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.role || 'Staff'})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <span>🚚 Logistics Driver</span>
+                  </label>
+                  <select
+                    value={selectedDriver}
+                    onChange={(e) => setSelectedDriver(e.target.value)}
+                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
+                  >
+                    <option value="">Unassigned</option>
+                    {staffList.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.role || 'Driver'})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Assign Courier Tracking Number</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. DELHIVERY-890214"
+                    value={trackingNo}
+                    onChange={(e) => setTrackingNo(e.target.value)}
+                    className="flex-1 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
+                  />
+                  <button onClick={handleSaveTracking} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer">
+                    Save Order Fulfillment
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl space-y-3 h-fit text-xs text-slate-700 dark:text-slate-300">
+          <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl space-y-4 h-fit text-xs text-slate-700 dark:text-slate-300">
             <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Shipping Info
             </h3>
@@ -140,6 +187,21 @@ export const OrderDetail: React.FC = () => {
             <p className="text-slate-500 dark:text-slate-400">{order.shippingAddress?.line1 || 'N/A'}</p>
             <p className="text-slate-500 dark:text-slate-400">{[order.shippingAddress?.city, order.shippingAddress?.state].filter(Boolean).join(', ')}{order.shippingAddress?.pincode ? ` - ${order.shippingAddress.pincode}` : ''}</p>
             <p className="font-bold text-emerald-600 dark:text-emerald-400 pt-1">Ph: {order.shippingAddress?.phone || order.phone || 'N/A'}</p>
+
+            {/* Assigned Staff Summary Box */}
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+              <h4 className="font-bold text-slate-900 dark:text-white text-[11px] uppercase tracking-wider">Assigned Operations Staff</h4>
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Packer:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.packerName || 'Not Assigned'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Driver:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.driverName || 'Not Assigned'}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
