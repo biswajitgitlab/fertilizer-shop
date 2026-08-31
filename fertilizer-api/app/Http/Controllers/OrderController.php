@@ -143,13 +143,21 @@ class OrderController extends Controller
 
         $billingAddress = $request->input('billing_address') ?? $request->input('billingAddress') ?? $shippingAddress;
         $user = auth()->user() ?? \App\Models\User::first();
+        if (!$user) {
+            $user = \App\Models\User::create([
+                'name' => $shippingAddress['name'] ?? 'Farmer Customer',
+                'email' => 'customer_' . time() . '@krishiconnect.com',
+                'phone' => $shippingAddress['phone'] ?? '9876543210',
+                'password' => bcrypt('Password@123'),
+                'role' => 'customer',
+                'is_verified' => true
+            ]);
+        }
 
         $cart = Cart::where('user_id', $user->id)->first();
         $itemsToProcess = [];
 
-        if ($cart && !empty($cart->items_json)) {
-            $itemsToProcess = $cart->items_json;
-        } else if ($request->has('items') && is_array($request->input('items'))) {
+        if ($request->has('items') && is_array($request->input('items')) && count($request->input('items')) > 0) {
             foreach ($request->input('items') as $rawItem) {
                 $pId = $rawItem['product_id'] ?? $rawItem['product']['id'] ?? $rawItem['productId'] ?? null;
                 $qty = $rawItem['qty'] ?? $rawItem['quantity'] ?? 1;
@@ -161,6 +169,8 @@ class OrderController extends Controller
                     ];
                 }
             }
+        } else if ($cart && !empty($cart->items_json)) {
+            $itemsToProcess = $cart->items_json;
         }
 
         if (empty($itemsToProcess)) {
@@ -295,9 +305,10 @@ class OrderController extends Controller
             // Trigger Notification Service (Redis + DB) for new order placement
             if ($order) {
                 if ($paymentMethod === 'COD') {
+                    $driverUser = \App\Models\User::where('role', 'driver')->first() ?? \App\Models\User::first();
                     \App\Models\DriverSettlement::create([
                         'order_id' => $order->id,
-                        'driver_id' => 1,
+                        'driver_id' => $driverUser ? $driverUser->id : null,
                         'cash_collected' => $order->total,
                         'status' => 'DRIVER_COLLECTION_PENDING',
                     ]);

@@ -18,11 +18,13 @@ class SettlementController extends Controller
             ->whereNotIn('id', DriverSettlement::pluck('order_id'))
             ->get();
 
+        $driverUser = \App\Models\User::where('role', 'driver')->first() ?? \App\Models\User::first();
+
         foreach ($unlinkedCodOrders as $order) {
             DriverSettlement::firstOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'driver_id' => 3,
+                    'driver_id' => $driverUser ? $driverUser->id : null,
                     'cash_collected' => $order->total,
                     'status' => $order->payment_status === 'PAID' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
                     'notes' => 'Auto-generated COD field collection ledger for Order #' . $order->id,

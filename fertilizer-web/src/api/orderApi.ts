@@ -37,11 +37,19 @@ export const orderApi = {
 
   createOrder: async (orderData: any) => {
     try {
+      const formattedItems = (orderData.items || []).map((item: any) => ({
+        product_id: item.product?.id || item.product_id || item.id,
+        qty: item.quantity || item.qty || 1,
+        bundle_id: item.bundle_id || null
+      }));
+
       const payload = {
         ...orderData,
+        items: formattedItems,
         shipping_address: orderData.shippingAddress || orderData.shipping_address,
         payment_method: orderData.paymentMethod === 'Cash on Delivery' ? 'COD' : (orderData.paymentMethod === 'Online Payment' ? 'ONLINE' : orderData.paymentMethod || 'COD')
       };
+
       const res = await apiClient.post('/orders', payload);
       const data = res.data;
       if (data && data.order) {
@@ -52,15 +60,10 @@ export const orderApi = {
         };
       }
       return data;
-    } catch (e) {
-      console.error("API createOrder failed, generating local confirmation:", e);
-      return {
-        id: `ORD-${Math.floor(10000 + Math.random() * 90000)}`,
-        status: 'Confirmed',
-        trackingNumber: `TRK-${Math.floor(1000000 + Math.random() * 9000000)}`,
-        createdAt: new Date().toISOString(),
-        ...orderData
-      };
+    } catch (e: any) {
+      console.error("API createOrder failed:", e);
+      const msg = e.response?.data?.message || e.message || "Failed to place order. Please try again.";
+      throw new Error(msg);
     }
   },
 

@@ -76,7 +76,7 @@ export const Checkout: React.FC = () => {
       }
     } catch (e: any) {
       console.error("Place order error:", e);
-      toast.error("Failed to place order. Try again.");
+      toast.error(e.message || "Failed to place order. Try again.");
     } finally {
       setIsPlacingOrder(false);
     }
