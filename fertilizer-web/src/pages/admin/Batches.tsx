@@ -64,8 +64,11 @@ export const Batches: React.FC = () => {
     const selectedProd = products.find(p => String(p.id) === String(prodId));
     let autoZone = 'ZONE-A';
     if (selectedProd) {
-      const cat = (selectedProd.category || '').toLowerCase();
-      const matchedZone = zones.find(z => z.category_type && z.category_type.toLowerCase() === cat);
+      const rawCat = typeof selectedProd.category === 'string'
+        ? selectedProd.category
+        : (selectedProd.category?.name || '');
+      const cat = rawCat.toLowerCase();
+      const matchedZone = zones.find(z => z.category_type && (z.category_type || '').toLowerCase() === cat);
       if (matchedZone) {
         autoZone = matchedZone.code;
       } else if (cat.includes('organic') || cat.includes('bio')) {
@@ -259,21 +262,19 @@ export const Batches: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Auto-Assigned Un-Editable Warehouse Zone Display */}
-                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                      <span>Auto-Assigned Warehouse Zone (Locked)</span>
-                    </label>
-                    <span className="text-[10px] font-black font-mono px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100">
-                      {formData.warehouse_zone}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-amber-700 dark:text-amber-400">
-                    Zone is automatically selected based on the product's chemical category for warehouse safety compliance and cannot be edited manually.
-                  </p>
-                </div>
+                {/* Auto-Assigned Un-Editable Warehouse Zone Dropdown */}
+                <SearchableSelect
+                  label="Warehouse Storage Zone (Auto-Assigned)"
+                  disabled
+                  options={zones.map(z => ({
+                    value: z.code,
+                    label: `${z.code} - ${z.name}`,
+                    sublabel: z.category_type ? `Category: ${z.category_type}` : undefined
+                  }))}
+                  value={formData.warehouse_zone}
+                  onChange={() => {}}
+                  placeholder="Select warehouse storage zone..."
+                />
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <button

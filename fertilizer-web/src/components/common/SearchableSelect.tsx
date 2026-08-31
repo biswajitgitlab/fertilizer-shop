@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, Check } from 'lucide-react';
+import { Search, ChevronDown, Check, Lock } from 'lucide-react';
 
 export interface SelectOption {
   value: string | number;
@@ -14,6 +14,7 @@ interface SearchableSelectProps {
   placeholder?: string;
   label?: string;
   required?: boolean;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   placeholder = 'Select an option...',
   label,
   required = false,
+  disabled = false,
   className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,13 +58,22 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 text-left transition-colors"
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between text-xs border rounded-xl px-3.5 py-2.5 text-left transition-colors ${
+          disabled
+            ? 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 opacity-80 cursor-not-allowed'
+            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500'
+        }`}
       >
         <span className={selectedOption ? 'font-semibold text-slate-900 dark:text-white' : 'text-slate-400'}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? selectedOption.label : (value ? String(value) : placeholder)}
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        {disabled ? (
+          <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        )}
       </button>
 
       {isOpen && (

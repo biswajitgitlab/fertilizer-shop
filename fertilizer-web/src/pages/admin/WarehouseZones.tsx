@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 export const WarehouseZones: React.FC = () => {
   const [zones, setZones] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -22,10 +23,14 @@ export const WarehouseZones: React.FC = () => {
   const fetchZones = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/admin/warehouse-zones');
-      setZones(res.data || []);
+      const [zoneRes, catRes] = await Promise.all([
+        api.get('/admin/warehouse-zones'),
+        api.get('/categories')
+      ]);
+      setZones(zoneRes.data || []);
+      setCategories(catRes.data.data || catRes.data || []);
     } catch (err) {
-      toast.error('Failed to fetch warehouse zones');
+      toast.error('Failed to fetch warehouse zones data');
     } finally {
       setLoading(false);
     }
@@ -256,13 +261,14 @@ export const WarehouseZones: React.FC = () => {
                   <select
                     value={formData.category_type}
                     onChange={(e) => setFormData({ ...formData, category_type: e.target.value })}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 font-semibold"
                   >
-                    <option value="Chemical Fertilizers">Chemical Fertilizers</option>
-                    <option value="Organic &amp; Bio-Fertilizers">Organic &amp; Bio-Fertilizers</option>
-                    <option value="Insecticides &amp; Pesticides">Insecticides &amp; Pesticides</option>
-                    <option value="Micronutrients &amp; Seeds">Micronutrients &amp; Seeds</option>
-                    <option value="General Storage">General Storage</option>
+                    <option value="">General Storage (All Categories)</option>
+                    {categories.map((c) => (
+                      <option key={c.id || c.name} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
