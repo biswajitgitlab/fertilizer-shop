@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 interface LogoProps {
   variant?: 'navbar' | 'sidebar' | 'hero' | 'icon' | 'footer';
@@ -17,6 +18,8 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
   showSubtitle = true,
 }) => {
+  const { appName, appTagline, logoUrl } = useSiteSettingsStore();
+
   // Size mapping for the logo mark container
   const getSizeClasses = () => {
     if (size) {
@@ -50,8 +53,8 @@ export const Logo: React.FC<LogoProps> = ({
   const logoMark = (
     <div className={`relative flex items-center justify-center shrink-0 bg-white/95 dark:bg-slate-900/95 border border-emerald-500/30 dark:border-emerald-500/40 shadow-md shadow-emerald-500/20 backdrop-blur-md transition-transform duration-300 group-hover:scale-105 ${containerClasses} ${className}`}>
       <img
-        src="/logo.png"
-        alt="SarkarFertilizer Logo"
+        src={logoUrl || '/logo.png'}
+        alt={`${appName} Logo`}
         className="w-full h-full object-contain filter drop-shadow transition-all duration-300 group-hover:brightness-110"
       />
     </div>
@@ -69,15 +72,15 @@ export const Logo: React.FC<LogoProps> = ({
         {/* Main Title Text */}
         {variant === 'sidebar' ? (
           <h2 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white truncate">
-            <span className="text-slate-900 dark:text-white">Sarkar</span><span className="text-emerald-500 dark:text-emerald-400">Admin</span>
+            <span className="text-slate-900 dark:text-white">{appName}</span>
           </h2>
         ) : variant === 'footer' || variant === 'hero' ? (
           <span className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-0.5 truncate">
-            <span className="text-white">Sarkar</span><span className="text-emerald-400">Fertilizer</span>
+            <span className="text-white">{appName}</span>
           </span>
         ) : (
           <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-0.5 truncate">
-            <span className="text-slate-900 dark:text-white">Sarkar</span><span className="text-emerald-600 dark:text-emerald-400">Fertilizer</span>
+            <span className="text-slate-900 dark:text-white">{appName}</span>
           </span>
         )}
 
@@ -94,11 +97,11 @@ export const Logo: React.FC<LogoProps> = ({
               </span>
             ) : variant === 'footer' ? (
               <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide block truncate mt-0.5">
-                Govt Certified Agri Store
+                {appTagline}
               </span>
             ) : (
               <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider hidden sm:block truncate mt-0.5">
-                Fertilizers &amp; Agri Store
+                {appTagline}
               </span>
             )}
           </>

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen, FileText
+  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen, FileText, Settings
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -26,6 +26,7 @@ export const Sidebar: React.FC<{
 
   const links = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Store Branding', path: '/admin/settings', icon: Settings },
     { name: 'Staff Management', path: '/admin/users', icon: UserCheck, perm: 'users.view' },
     { name: 'Customer CRM', path: '/admin/customers', icon: Users, perm: 'customers.view' },
     { name: 'Products', path: '/admin/products', icon: Package, perm: 'products.view' },

@@ -54,6 +54,7 @@ import { Batches as AdminBatches } from './pages/admin/Batches';
 import AdminFarmers from './pages/admin/Farmers';
 import AdminSettlements from './pages/admin/Settlements';
 import { WarehouseZones as AdminWarehouseZones } from './pages/admin/WarehouseZones';
+import { AdminSettings } from './pages/admin/AdminSettings';
 
 // Error Status Pages
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
@@ -226,6 +227,7 @@ export function App() {
             <Route path="/admin/farmers" element={<ProtectedRoute adminOnly requiredPermission="users.view"><AdminFarmers /></ProtectedRoute>} />
             <Route path="/admin/settlements" element={<ProtectedRoute adminOnly requiredPermission="financial.reports"><AdminSettlements /></ProtectedRoute>} />
             <Route path="/admin/warehouse-zones" element={<ProtectedRoute adminOnly requiredPermission="warehouse_zones.view"><AdminWarehouseZones /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AdminSettings /></ProtectedRoute>} />
 
             {/* HTTP Error Status Routes */}
             <Route path="/401" element={<Unauthorized />} />
