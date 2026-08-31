@@ -267,7 +267,7 @@ export const Reports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                      {(regulatoryData?.audit_ledger || []).map((row: any, i: number) => (
+                      {(Array.isArray(regulatoryData?.audit_ledger) ? regulatoryData.audit_ledger : []).map((row: any, i: number) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                           <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{row.order_id}</td>
                           <td className="py-3 px-4">
@@ -363,7 +363,7 @@ export const Reports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                      {(fefoData?.batches || []).map((batch: any, i: number) => (
+                      {(Array.isArray(fefoData?.batches) ? fefoData.batches : []).map((batch: any, i: number) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                           <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">{batch.batch_code}</td>
                           <td className="py-3 px-4 font-semibold">{batch.product_name}</td>
@@ -465,7 +465,7 @@ export const Reports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                      {(outbreakData?.scans || []).map((scan: any, i: number) => (
+                      {(Array.isArray(outbreakData?.scans) ? outbreakData.scans : []).map((scan: any, i: number) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                           <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{scan.farmer_name}</td>
                           <td className="py-3 px-4 font-semibold">{scan.crop_type}</td>
@@ -529,7 +529,7 @@ export const Reports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                      {(securityData?.logs || []).map((log: any, i: number) => (
+                      {(Array.isArray(securityData?.logs) ? securityData.logs : []).map((log: any, i: number) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                           <td className="py-3 px-4 text-[11px] font-mono text-slate-500">{log.timestamp}</td>
                           <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{log.admin_name}</td>
@@ -626,7 +626,7 @@ export const Reports: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-xs text-slate-800 dark:text-slate-200">
-                      {(financialData?.reconciled_orders || []).map((item: any, i: number) => (
+                      {(Array.isArray(financialData?.reconciled_orders) ? financialData.reconciled_orders : []).map((item: any, i: number) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                           <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">#{item.order_id}</td>
                           <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{item.farmer_name}</td>
