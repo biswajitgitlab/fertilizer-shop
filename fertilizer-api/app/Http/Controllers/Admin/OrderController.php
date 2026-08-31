@@ -16,8 +16,15 @@ class OrderController extends Controller
         $status = $request->input('status', '');
         $paymentStatus = $request->input('payment_status', '');
         $search = strtolower(trim($request->get('search', '')));
+        $packerId = $request->get('packer_id');
+        $driverId = $request->get('driver_id');
+        $assignedToMe = $request->boolean('assigned_to_me');
 
-        $cacheKey = "orders:p{$page}:pp{$perPage}:st{$status}:ps{$paymentStatus}:s{$search}";
+        $currentUser = auth('admin')->user() ?: auth()->user();
+        $currentUserId = $currentUser ? $currentUser->id : 0;
+        $currentRoles = $currentUser && method_exists($currentUser, 'getRoleNames') ? implode(',', $currentUser->getRoleNames()->toArray()) : 'all';
+
+        $cacheKey = "orders:u{$currentUserId}:r{$currentRoles}:p{$page}:pp{$perPage}:st{$status}:ps{$paymentStatus}:s{$search}:pk{$packerId}:dr{$driverId}:atm{$assignedToMe}";
 
         try {
             $cacheStore = Cache::store('redis');
@@ -25,8 +32,41 @@ class OrderController extends Controller
             $cacheStore = Cache::store();
         }
 
-        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $status, $paymentStatus, $search) {
+        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $status, $paymentStatus, $search, $packerId, $driverId, $assignedToMe, $currentUser) {
             $query = Order::with(['user', 'packer', 'driver', 'items.product', 'payment']);
+
+            // 1. Role-Based Scoping & Assigned-To Filtering
+            if ($currentUser && method_exists($currentUser, 'hasRole')) {
+                if ($currentUser->hasRole('Warehouse Packer')) {
+                    $query->where(function ($q) use ($currentUser) {
+                        $q->where('packer_id', $currentUser->id)->orWhereNull('packer_id');
+                    });
+                } else if ($currentUser->hasRole('Logistics Driver')) {
+                    $query->where(function ($q) use ($currentUser) {
+                        $q->where('driver_id', $currentUser->id);
+                    });
+                }
+            }
+
+            if ($assignedToMe && $currentUser) {
+                if ($currentUser->hasRole('Warehouse Packer')) {
+                    $query->where('packer_id', $currentUser->id);
+                } else if ($currentUser->hasRole('Logistics Driver')) {
+                    $query->where('driver_id', $currentUser->id);
+                } else {
+                    $query->where(function ($q) use ($currentUser) {
+                        $q->where('packer_id', $currentUser->id)->orWhere('driver_id', $currentUser->id);
+                    });
+                }
+            }
+
+            if (!empty($packerId)) {
+                $query->where('packer_id', $packerId);
+            }
+
+            if (!empty($driverId)) {
+                $query->where('driver_id', $driverId);
+            }
 
             if (!empty($status)) {
                 $query->where('status', strtoupper($status));
@@ -57,10 +97,12 @@ class OrderController extends Controller
                 ->get();
 
             $formattedItems = $items->map(function ($order) {
+                $customerName = $order->user ? $order->user->name : (is_array($order->shipping_address_json) ? ($order->shipping_address_json['name'] ?? 'Valued Customer') : 'Valued Customer');
                 return [
                     'id' => $order->id,
                     'order_number' => $order->order_number,
                     'user_id' => $order->user_id,
+                    'customer_name' => $customerName,
                     'user' => $order->user ? [
                         'id' => $order->user->id,
                         'name' => $order->user->name,
@@ -82,17 +124,18 @@ class OrderController extends Controller
                     'driver_id' => $order->driver_id,
                     'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
                     'items' => $order->items->map(function ($item) {
+                        $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
                         return [
                             'id' => $item->id,
                             'product_id' => $item->product_id,
                             'qty' => $item->qty,
-                            'unit_price' => (float)$item->unit_price,
-                            'total_price' => (float)$item->total_price,
+                            'unit_price' => $effectiveUnitPrice,
+                            'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
                             'product' => $item->product ? [
                                 'id' => $item->product->id,
                                 'name' => $item->product->name,
                                 'slug' => $item->product->slug,
-                                'price' => (float)$item->product->price,
+                                'price' => $effectiveUnitPrice,
                                 'unit' => $item->product->unit,
                                 'images_json' => $item->product->images_json,
                             ] : null,
@@ -128,10 +171,14 @@ class OrderController extends Controller
                 ->where('id', $id)
                 ->orWhere('order_number', $id)
                 ->firstOrFail();
+
+            $customerName = $order->user ? $order->user->name : (is_array($order->shipping_address_json) ? ($order->shipping_address_json['name'] ?? 'Valued Customer') : 'Valued Customer');
+
             return [
                 'id' => $order->id,
                 'order_number' => $order->order_number,
                 'user_id' => $order->user_id,
+                'customer_name' => $customerName,
                 'user' => $order->user ? [
                     'id' => $order->user->id,
                     'name' => $order->user->name,
@@ -153,17 +200,18 @@ class OrderController extends Controller
                 'driver_id' => $order->driver_id,
                 'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
                 'items' => $order->items->map(function ($item) {
+                    $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
                     return [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
                         'qty' => $item->qty,
-                        'unit_price' => (float)$item->unit_price,
-                        'total_price' => (float)$item->total_price,
+                        'unit_price' => $effectiveUnitPrice,
+                        'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
                         'product' => $item->product ? [
                             'id' => $item->product->id,
                             'name' => $item->product->name,
                             'slug' => $item->product->slug,
-                            'price' => (float)$item->product->price,
+                            'price' => $effectiveUnitPrice,
                             'unit' => $item->product->unit,
                             'images_json' => $item->product->images_json,
                         ] : null,
@@ -173,6 +221,7 @@ class OrderController extends Controller
                 'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
             ];
         });
+        return response()->json($orderData);
         return response()->json($orderData);
     }
 
@@ -263,31 +312,62 @@ class OrderController extends Controller
             });
         } else {
             if ($request->has('status')) {
-                $order->status = $request->status;
+                $order->status = strtoupper($request->status);
 
-                if (in_array($request->status, ['PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
+                if (in_array($order->status, ['PROCESSING', 'READY_FOR_PICKUP', 'PACKED']) && !$order->packed_at) {
                     $order->packed_at = now();
                 }
-                if (in_array($request->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
+                if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
                     $order->shipped_at = now();
                 }
-                if ($request->status === 'DELIVERED') {
+                if ($order->status === 'DELIVERED') {
                     $order->delivered_at = now();
                     $order->payment_status = 'PAID';
+
+                    \App\Models\DriverSettlement::updateOrCreate(
+                        ['order_id' => $order->id],
+                        [
+                            'driver_id' => $order->driver_id,
+                            'cash_collected' => (float)$order->total,
+                            'status' => 'SETTLED_TO_BANK',
+                            'settled_at' => now(),
+                            'notes' => 'Order marked DELIVERED - Payment collected & settled to bank.'
+                        ]
+                    );
                 }
             }
         }
 
-        if ($request->has('packer_id')) {
+        // 1. Warehouse Packer Assignment -> Automatic Status Transition to PROCESSING / PACKED
+        if ($request->has('packer_id') && $request->packer_id) {
             $order->packer_id = $request->packer_id;
+            if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
+                $order->status = 'PROCESSING';
+            }
+            if (!$order->packed_at) {
+                $order->packed_at = now();
+            }
         }
 
-        if ($request->has('driver_id')) {
+        // 2. Logistics Driver Assignment -> Automatic Status Transition to OUT_FOR_DELIVERY
+        if ($request->has('driver_id') && $request->driver_id) {
             $order->driver_id = $request->driver_id;
+            if (in_array($order->status, ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED'])) {
+                $order->status = 'OUT_FOR_DELIVERY';
+            }
+            if (!$order->shipped_at) {
+                $order->shipped_at = now();
+            }
 
-            \App\Models\DriverSettlement::where('order_id', $order->id)->update([
-                'driver_id' => $request->driver_id
-            ]);
+            \App\Models\DriverSettlement::updateOrCreate(
+                ['order_id' => $order->id],
+                [
+                    'driver_id' => $request->driver_id,
+                    'cash_collected' => (float)$order->total,
+                    'status' => $order->status === 'DELIVERED' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
+                    'notes' => "Assigned to driver #{$request->driver_id} for order delivery."
+                ]
+            );
         }
 
         if ($request->has('tracking_number')) {

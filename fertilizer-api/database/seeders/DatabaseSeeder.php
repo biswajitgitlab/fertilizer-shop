@@ -81,6 +81,22 @@ class DatabaseSeeder extends Seeder
                 'role' => 'Staff',
                 'is_verified' => true,
             ],
+            [
+                'email' => 'packer@fertilizershop.com',
+                'name' => 'Ramesh Packer',
+                'phone' => '9222222222',
+                'password' => Hash::make('staff123'),
+                'role' => 'Warehouse Packer',
+                'is_verified' => true,
+            ],
+            [
+                'email' => 'driver@fertilizershop.com',
+                'name' => 'Suresh Driver',
+                'phone' => '9111111111',
+                'password' => Hash::make('staff123'),
+                'role' => 'Logistics Driver',
+                'is_verified' => true,
+            ],
         ];
 
         foreach ($demoAdmins as $adminData) {

@@ -51,6 +51,46 @@ export const OrderDetail: React.FC = () => {
     }
   };
 
+  const handlePackerSelect = async (packerId: string) => {
+    setSelectedPacker(packerId);
+    if (!order) return;
+    try {
+      const targetStatus = (order.status === 'Pending' || order.status === 'Confirmed') ? 'Packed' : order.status;
+      await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, packerId, selectedDriver);
+      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}.`);
+      const updated = await adminApi.getOrderById(order.id);
+      setOrder(updated);
+    } catch (e) {
+      toast.error("Failed to assign packer.");
+    }
+  };
+
+  const handleDriverSelect = async (driverId: string) => {
+    setSelectedDriver(driverId);
+    if (!order) return;
+    try {
+      const targetStatus = (['Pending', 'Confirmed', 'Packed', 'Processing'].includes(order.status)) ? 'Shipped' : order.status;
+      await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, selectedPacker, driverId);
+      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}.`);
+      const updated = await adminApi.getOrderById(order.id);
+      setOrder(updated);
+    } catch (e) {
+      toast.error("Failed to assign driver.");
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!order) return;
+    try {
+      await adminApi.updateOrderStatus(order.id, newStatus, trackingNo, selectedPacker, selectedDriver);
+      toast.success(`Order status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}!`);
+      const updated = await adminApi.getOrderById(order.id);
+      setOrder(updated);
+    } catch (e) {
+      toast.error("Failed to update order status.");
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminLayout title="Order Details">
@@ -127,6 +167,56 @@ export const OrderDetail: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+              {/* Sequential Operational Workflow Progress Bar */}
+              <div className="p-4 rounded-2xl bg-slate-50/90 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">⚡ Fulfillment Workflow Actions</h4>
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Current: {order.status}</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    onClick={() => handleStatusChange('Packed')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      ['Packed', 'Processing'].includes(order.status)
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
+                    }`}
+                  >
+                    1. Warehouse Packed
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange('Shipped')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      order.status === 'Shipped'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
+                    }`}
+                  >
+                    2. Shipped / In Transit
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange('Out for Delivery')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      order.status === 'Out for Delivery'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
+                    }`}
+                  >
+                    3. Out for Delivery
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange('Delivered')}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                      order.status === 'Delivered'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-600 hover:text-white'
+                    }`}
+                  >
+                    4. Delivered & Paid
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
@@ -134,15 +224,24 @@ export const OrderDetail: React.FC = () => {
                   </label>
                   <select
                     value={selectedPacker}
-                    onChange={(e) => setSelectedPacker(e.target.value)}
+                    onChange={(e) => handlePackerSelect(e.target.value)}
                     className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
                   >
                     <option value="">Unassigned</option>
-                    {staffList.map(s => (
-                      <option key={s.id} value={String(s.id)}>
-                        {s.name} ({s.role || 'Staff'})
-                      </option>
-                    ))}
+                    <optgroup label="✓ Operational Warehouse Packers">
+                      {staffList.filter(s => (s.role || '').toLowerCase().includes('packer') || (s.role || '').toLowerCase().includes('warehouse')).map(s => (
+                        <option key={s.id} value={String(s.id)}>
+                          {s.name} — ({s.role})
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other Admin / Management Staff">
+                      {staffList.filter(s => !(s.role || '').toLowerCase().includes('packer') && !(s.role || '').toLowerCase().includes('warehouse')).map(s => (
+                        <option key={s.id} value={String(s.id)}>
+                          {s.name} ({s.role || 'Staff'})
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
 
@@ -152,15 +251,24 @@ export const OrderDetail: React.FC = () => {
                   </label>
                   <select
                     value={selectedDriver}
-                    onChange={(e) => setSelectedDriver(e.target.value)}
+                    onChange={(e) => handleDriverSelect(e.target.value)}
                     className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
                   >
                     <option value="">Unassigned</option>
-                    {staffList.map(s => (
-                      <option key={s.id} value={String(s.id)}>
-                        {s.name} ({s.role || 'Staff'})
-                      </option>
-                    ))}
+                    <optgroup label="✓ Operational Logistics Drivers">
+                      {staffList.filter(s => (s.role || '').toLowerCase().includes('driver') || (s.role || '').toLowerCase().includes('logistics') || (s.role || '').toLowerCase().includes('field')).map(s => (
+                        <option key={s.id} value={String(s.id)}>
+                          {s.name} — ({s.role})
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other Operations / Staff">
+                      {staffList.filter(s => !(s.role || '').toLowerCase().includes('driver') && !(s.role || '').toLowerCase().includes('logistics') && !(s.role || '').toLowerCase().includes('field')).map(s => (
+                        <option key={s.id} value={String(s.id)}>
+                          {s.name} ({s.role || 'Staff'})
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
               </div>
@@ -187,7 +295,7 @@ export const OrderDetail: React.FC = () => {
             <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Shipping Info
             </h3>
-            <p className="font-bold text-slate-900 dark:text-white text-sm">{order.shippingAddress?.name || order.customerName || 'Valued Customer'}</p>
+            <p className="font-bold text-slate-900 dark:text-white text-sm">{order.customerName || order.shippingAddress?.name || 'Valued Customer'}</p>
             <p className="text-slate-500 dark:text-slate-400">{order.shippingAddress?.line1 || 'N/A'}</p>
             <p className="text-slate-500 dark:text-slate-400">{[order.shippingAddress?.city, order.shippingAddress?.state].filter(Boolean).join(', ')}{order.shippingAddress?.pincode ? ` - ${order.shippingAddress.pincode}` : ''}</p>
             <p className="font-bold text-emerald-600 dark:text-emerald-400 pt-1">Ph: {order.shippingAddress?.phone || order.phone || 'N/A'}</p>

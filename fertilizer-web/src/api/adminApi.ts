@@ -67,7 +67,13 @@ export const normalizeAdminOrder = (o: any): Order => {
     }
   }
 
-  const name = addr?.name || o.customerName || o.user?.name || 'Valued Customer';
+  const realUserName = o.user?.name;
+  const shippingName = addr?.name;
+  const name = (realUserName && realUserName !== 'Valued Customer' && realUserName !== 'Farmer Customer')
+    ? realUserName
+    : (shippingName && shippingName !== 'Valued Customer' && shippingName !== 'Farmer Customer'
+      ? shippingName
+      : (o.customer_name || o.customerName || realUserName || shippingName || 'Valued Customer'));
   const phone = addr?.phone || o.phone || o.user?.phone || 'N/A';
   const line1 = addr?.line1 || addr?.address || 'N/A';
   const line2 = addr?.line2 || '';
@@ -79,6 +85,8 @@ export const normalizeAdminOrder = (o: any): Order => {
   const items = rawItems.map((item: any) => {
     const prod = item.product || {};
     const img = prod.images_json?.[0] || prod.images?.[0] || prod.image || item.image || '/placeholder.png';
+    const unitPrice = Number(item.unit_price ?? item.unitPrice ?? item.price ?? prod.price ?? 0);
+    const qty = Number(item.qty || item.quantity || 1);
     return {
       product: {
         id: String(prod.id || item.product_id || ''),
@@ -86,7 +94,7 @@ export const normalizeAdminOrder = (o: any): Order => {
         slug: prod.slug || item.slug || '',
         category: prod.category || 'Fertilizer',
         categorySlug: prod.category_slug || 'fertilizer',
-        price: Number(item.unit_price || item.price || prod.price || 0),
+        price: unitPrice,
         unit: prod.unit || item.unit || 'Pack',
         stock: prod.stock || 100,
         rating: prod.rating || 5,
@@ -98,7 +106,7 @@ export const normalizeAdminOrder = (o: any): Order => {
         usageInstructions: prod.usage_instructions || '',
         sku: prod.sku || 'SKU'
       },
-      quantity: Number(item.qty || item.quantity || 1)
+      quantity: qty
     };
   });
 
@@ -822,7 +830,9 @@ export const adminApi = {
       { id: 8, name: 'Ananya Sharma (Customer Support)', email: 'support@fertilizershop.com', role: 'Customer Support' },
       { id: 9, name: 'Rajesh Kumar (Warehouse Manager)', email: 'warehouse@fertilizershop.com', role: 'Warehouse Manager' },
       { id: 10, name: 'Priya Verma (Field Officer)', email: 'field.officer@fertilizershop.com', role: 'Field Officer' },
-      { id: 11, name: 'Amit Das (General Staff)', email: 'staff@fertilizershop.com', role: 'Staff' }
+      { id: 11, name: 'Amit Das (General Staff)', email: 'staff@fertilizershop.com', role: 'Staff' },
+      { id: 12, name: 'Ramesh Packer', email: 'packer@fertilizershop.com', role: 'Warehouse Packer' },
+      { id: 13, name: 'Suresh Driver', email: 'driver@fertilizershop.com', role: 'Logistics Driver' }
     ];
   },
   assignUserRole: async (userId: number | string, role: string) => {
@@ -855,6 +865,8 @@ export const adminApi = {
         { id: 9, name: 'Rajesh Kumar (Warehouse)', email: 'warehouse@fertilizershop.com', phone: '9555555555', role: 'Warehouse Manager', roles: ['Warehouse Manager'], is_verified: true, effective_permissions_count: 6, created_at: new Date().toISOString() },
         { id: 10, name: 'Priya Verma (Field Officer)', email: 'field.officer@fertilizershop.com', phone: '9444444444', role: 'Field Officer', roles: ['Field Officer'], is_verified: true, effective_permissions_count: 5, created_at: new Date().toISOString() },
         { id: 11, name: 'Amit Das (General Staff)', email: 'staff@fertilizershop.com', phone: '9333333333', role: 'Staff', roles: ['Staff'], is_verified: true, effective_permissions_count: 5, created_at: new Date().toISOString() },
+        { id: 12, name: 'Ramesh Packer', email: 'packer@fertilizershop.com', phone: '9222222222', role: 'Warehouse Packer', roles: ['Warehouse Packer'], is_verified: true, effective_permissions_count: 6, created_at: new Date().toISOString() },
+        { id: 13, name: 'Suresh Driver', email: 'driver@fertilizershop.com', phone: '9111111111', role: 'Logistics Driver', roles: ['Logistics Driver'], is_verified: true, effective_permissions_count: 4, created_at: new Date().toISOString() },
       ];
 
       if (params?.search) {
