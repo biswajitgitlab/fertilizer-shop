@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen
+  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen, FileText
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -32,6 +32,7 @@ export const Sidebar: React.FC<{
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag, perm: 'orders.view' },
     { name: 'Crop Diagnoses', path: '/admin/diagnoses', icon: Stethoscope, perm: 'crop_plans.view' },
     { name: 'Sales Analytics', path: '/admin/analytics', icon: BarChart2, perm: 'analytics.view' },
+    { name: 'Enterprise Reports (RBSC)', path: '/admin/reports', icon: FileText, perm: 'analytics.view' },
     { name: 'Inventory', path: '/admin/inventory', icon: Warehouse, perm: 'inventory.view' },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag, perm: 'products.view' },
     { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck, perm: 'roles.view' },

@@ -803,5 +803,52 @@ export const adminApi = {
     } catch (e) {
       return { success: true };
     }
+  },
+
+  // Enterprise RBSC Reports API Endpoints
+  getRegulatoryReport: async () => {
+    try {
+      const res = await apiClient.get('/admin/reports/regulatory');
+      return res.data;
+    } catch (e) {
+      console.warn("Regulatory report error, returning fallback:", e);
+      return null;
+    }
+  },
+  getFefoReport: async () => {
+    try {
+      const res = await apiClient.get('/admin/reports/fefo-inventory');
+      return res.data;
+    } catch (e) {
+      console.warn("FEFO report error, returning fallback:", e);
+      return null;
+    }
+  },
+  getDiseaseOutbreakReport: async () => {
+    try {
+      const res = await apiClient.get('/admin/reports/disease-outbreak');
+      return res.data;
+    } catch (e) {
+      console.warn("Outbreak report error, returning fallback:", e);
+      return null;
+    }
+  },
+  getSecurityAuditReport: async () => {
+    try {
+      const res = await apiClient.get('/admin/reports/security-audit');
+      return res.data;
+    } catch (e) {
+      console.warn("Security audit report error, returning fallback:", e);
+      return null;
+    }
+  },
+  getFinancialReconcileReport: async () => {
+    try {
+      const res = await apiClient.get('/admin/reports/financial-reconcile');
+      return res.data;
+    } catch (e) {
+      console.warn("Financial report error, returning fallback:", e);
+      return null;
+    }
   }
 };

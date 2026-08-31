@@ -940,6 +940,10 @@ export const UsersPage: React.FC = () => {
                           'Analytics & Reports': [
                             { name: 'analytics.view', label: 'View Sales Analytics' },
                             { name: 'analytics.export', label: 'Export Reports' },
+                            { name: 'reports.regulatory', label: 'Government Subsidy & Chemical Ledger' },
+                            { name: 'agronomy.reports', label: 'Regional Disease Outbreak Telemetry' },
+                            { name: 'security.audit', label: 'RBSC Security Audit & Privilege Trail' },
+                            { name: 'financial.reports', label: 'COD & Payment Circuit Settlement' },
                           ],
                           'Sentinel Alerts': [
                             { name: 'notifications.view', label: 'View Privileged Notices' },

@@ -16,9 +16,17 @@ use App\Contracts\NotificationServiceInterface;
 class NotificationService implements NotificationServiceInterface
 {
     /**
+     * Magic static call delegation for backward compatibility and static syntax support.
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        return (new static())->$method(...$parameters);
+    }
+
+    /**
      * Core method to store a persistent notification and trigger Redis caching/events.
      */
-    public static function createNotification(array $data): Notification
+    public function createNotification(array $data): Notification
     {
         $notification = Notification::create([
             'user_id' => $data['user_id'] ?? null,
@@ -35,9 +43,9 @@ class NotificationService implements NotificationServiceInterface
 
         // Redis Step 1: Invalidate Notification Caches
         if (!empty($data['user_id'])) {
-            self::clearUserNotificationCache($data['user_id']);
+            $this->clearUserNotificationCache($data['user_id']);
         } else {
-            self::clearAllAdminNotificationCaches();
+            $this->clearAllAdminNotificationCaches();
         }
 
         // Redis Step 2: Publish real-time notification event via Redis Pub/Sub / Stream
@@ -67,11 +75,11 @@ class NotificationService implements NotificationServiceInterface
      * CASE 1: Order Created Trigger
      * Notifies customer and staff with 'orders.view' permission.
      */
-    public static function notifyOrderCreated(Order $order): void
+    public function notifyOrderCreated(Order $order): void
     {
         // 1. Customer Notification
         if ($order->user_id) {
-            self::createNotification([
+            $this->createNotification([
                 'user_id' => $order->user_id,
                 'type' => 'order',
                 'title' => "Order #{$order->order_number} Confirmed",
@@ -82,7 +90,7 @@ class NotificationService implements NotificationServiceInterface
 
         // 2. Admin Staff Notification (orders.view)
         $customerName = $order->shipping_address_json['name'] ?? ($order->user->name ?? 'Customer');
-        self::createNotification([
+        $this->createNotification([
             'required_permission' => 'orders.view',
             'type' => 'order',
             'title' => "New Order #{$order->order_number} Received",
@@ -95,13 +103,13 @@ class NotificationService implements NotificationServiceInterface
     /**
      * CASE 2: Order Status Updated Trigger
      */
-    public static function notifyOrderStatusUpdated(Order $order, string $oldStatus = ''): void
+    public function notifyOrderStatusUpdated(Order $order, string $oldStatus = ''): void
     {
         $statusFormatted = ucfirst(strtolower($order->status));
 
         // 1. Customer Notification
         if ($order->user_id) {
-            self::createNotification([
+            $this->createNotification([
                 'user_id' => $order->user_id,
                 'type' => 'order',
                 'title' => "Order #{$order->order_number} Status: {$statusFormatted}",
@@ -111,7 +119,7 @@ class NotificationService implements NotificationServiceInterface
         }
 
         // 2. Admin Staff Notification
-        self::createNotification([
+        $this->createNotification([
             'required_permission' => 'orders.view',
             'type' => 'order',
             'title' => "Order #{$order->order_number} {$statusFormatted}",
@@ -121,118 +129,102 @@ class NotificationService implements NotificationServiceInterface
     }
 
     /**
-     * CASE 3: Low Inventory Warning Trigger with Redis Throttling
+     * CASE 3: Low Stock Warning Trigger
      */
-    public static function notifyLowStock(Product $product): void
+    public function notifyLowStock(Product $product): void
     {
-        $stock = $product->stock_qty ?? $product->stock ?? 0;
-        if ($stock > 10) return;
-
-        // Redis Lock / Throttle key to prevent duplicate notifications for 2 hours
-        $redisKey = "redis_low_stock_notif_{$product->id}";
-        if (Cache::has($redisKey)) {
-            return;
-        }
-
-        // Lock for 2 hours (7200s)
-        Cache::put($redisKey, true, 7200);
-
-        self::createNotification([
+        $this->createNotification([
             'required_permission' => 'inventory.view',
             'type' => 'warning',
-            'title' => "Low Inventory Warning: {$product->name}",
-            'body' => "'{$product->name}' stock level has dropped to {$stock} units in warehouse inventory.",
+            'title' => "Low Stock Warning: {$product->name}",
+            'body' => "Product '{$product->name}' is down to {$product->stock} units in inventory.",
             'link' => "/admin/inventory",
-            'data_json' => ['product_id' => $product->id, 'stock' => $stock]
+            'data_json' => ['product_id' => $product->id, 'stock' => $product->stock]
         ]);
     }
 
     /**
-     * CASE 4: Crop Diagnosis Submitted Trigger (Farmer -> Agronomist)
+     * CASE 4: Crop Diagnosis Submitted Trigger
      */
-    public static function notifyDiagnosisSubmitted(CropDiagnosis $diagnosis): void
+    public function notifyDiagnosisSubmitted(CropDiagnosis $diagnosis): void
     {
-        $cropName = $diagnosis->crop_name ?? $diagnosis->crop ?? 'Crop';
-
-        self::createNotification([
-            'required_permission' => 'diagnoses.view',
+        $this->createNotification([
+            'required_permission' => 'crop_plans.view',
             'type' => 'diagnosis',
-            'title' => "Crop Scan Review Required: {$cropName}",
-            'body' => "New crop diagnosis scan for {$cropName} submitted. Requires Agronomist verification.",
+            'title' => "New Crop Scan Submitted ({$diagnosis->crop})",
+            'body' => "A farmer submitted a new crop diagnosis scan for {$diagnosis->crop}. Requires agronomist review.",
             'link' => "/admin/diagnoses",
-            'data_json' => ['diagnosis_id' => $diagnosis->id, 'crop' => $cropName]
+            'data_json' => ['diagnosis_id' => $diagnosis->id]
         ]);
     }
 
     /**
-     * CASE 5: Crop Diagnosis Reviewed Trigger (Agronomist -> Farmer)
+     * CASE 5: Crop Diagnosis Reviewed Trigger
      */
-    public static function notifyDiagnosisReviewed(CropDiagnosis $diagnosis): void
+    public function notifyDiagnosisReviewed(CropDiagnosis $diagnosis): void
     {
-        $cropName = $diagnosis->crop_name ?? $diagnosis->crop ?? 'Crop';
-
         if ($diagnosis->user_id) {
-            self::createNotification([
+            $this->createNotification([
                 'user_id' => $diagnosis->user_id,
                 'type' => 'diagnosis',
-                'title' => "Crop Scan Analysis Ready: {$cropName}",
-                'body' => "Our Agronomist has reviewed your {$cropName} scan and provided treatment recommendations.",
-                'link' => "/diagnose",
-                'data_json' => ['diagnosis_id' => $diagnosis->id]
+                'title' => "Agronomist Prescription Ready for {$diagnosis->crop}",
+                'body' => "Our certified agronomists have reviewed your {$diagnosis->crop} scan and provided treatment recommendations.",
+                'link' => "/diagnose/{$diagnosis->id}",
             ]);
         }
     }
 
     /**
-     * CASE 6: Staff Member Created Trigger (Admin Portal -> Super Admins)
+     * CASE 6: Staff Account Created
      */
-    public static function notifyStaffCreated(Admin $admin): void
+    public function notifyStaffCreated(Admin $admin): void
     {
-        self::createNotification([
-            'required_permission' => 'roles.manage',
-            'type' => 'user',
-            'title' => "New Staff Account Registered: {$admin->name}",
-            'body' => "Internal staff user {$admin->name} ({$admin->email}) created with role: {$admin->role}.",
+        $this->createNotification([
+            'required_permission' => 'users.view',
+            'type' => 'system',
+            'title' => "New Staff Member Onboarded",
+            'body' => "Staff account for {$admin->name} ({$admin->email}) was created with role '{$admin->role}'.",
             'link' => "/admin/users",
-            'data_json' => ['admin_id' => $admin->id, 'email' => $admin->email]
         ]);
     }
 
     /**
-     * CASE 7: Coupon Created Trigger
+     * CASE 7: Coupon Created
      */
-    public static function notifyCouponCreated(Coupon $coupon): void
+    public function notifyCouponCreated(Coupon $coupon): void
     {
-        self::createNotification([
-            'required_permission' => 'coupons.manage',
-            'type' => 'info',
-            'title' => "New Promo Coupon Created: {$coupon->code}",
-            'body' => "Coupon code '{$coupon->code}' created with discount value {$coupon->value}.",
+        $this->createNotification([
+            'required_permission' => 'products.view',
+            'type' => 'system',
+            'title' => "New Promo Code Activated: {$coupon->code}",
+            'body' => "Coupon '{$coupon->code}' with {$coupon->discount_type} discount has been activated.",
             'link' => "/admin/coupons",
         ]);
     }
 
     /**
-     * Flush all Redis admin notification keys
+     * Redis Cache Invalidation Helper — All Admin Notifications
      */
-    public static function clearAllAdminNotificationCaches(): void
+    public function clearAllAdminNotificationCaches(): void
     {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Cache::forget("admin_notifications_{$admin->id}_v2");
-                Cache::forget("admin_notifications_{$admin->id}");
-            }
+            Cache::forget('admin_notifications_all');
+            Cache::forget('admin_unread_count_all');
         } catch (\Exception $e) {
             Log::warning("Failed to clear admin notification cache: " . $e->getMessage());
         }
     }
 
     /**
-     * Flush user notification key
+     * Redis Cache Invalidation Helper — Specific User
      */
-    public static function clearUserNotificationCache(int $userId): void
+    public function clearUserNotificationCache(int $userId): void
     {
-        Cache::forget("user_notifications_{$userId}");
+        try {
+            Cache::forget("user_notifications_{$userId}");
+            Cache::forget("user_unread_count_{$userId}");
+        } catch (\Exception $e) {
+            Log::warning("Failed to clear user notification cache: " . $e->getMessage());
+        }
     }
 }

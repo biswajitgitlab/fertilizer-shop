@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('orders:reconcile-payments')->everyFiveMinutes();
+Schedule::command('report:dispatch-regulatory')->weekly();

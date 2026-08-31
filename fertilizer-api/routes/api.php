@@ -149,8 +149,13 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::get('/customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->middleware('rbsc:customers.view');
     Route::get('/customers/{id}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->middleware('rbsc:customers.view');
 
-    // Analytics Reporting
+    // Analytics & Enterprise Reports
     Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->middleware('rbsc:analytics.view');
+    Route::get('/reports/regulatory', [\App\Http\Controllers\Admin\ReportController::class, 'regulatory'])->middleware('rbsc:reports.regulatory');
+    Route::get('/reports/fefo-inventory', [\App\Http\Controllers\Admin\ReportController::class, 'fefoInventory'])->middleware('rbsc:inventory.view');
+    Route::get('/reports/disease-outbreak', [\App\Http\Controllers\Admin\ReportController::class, 'diseaseOutbreak'])->middleware('rbsc:agronomy.reports');
+    Route::get('/reports/security-audit', [\App\Http\Controllers\Admin\ReportController::class, 'securityAudit'])->middleware('rbsc:security.audit');
+    Route::get('/reports/financial-reconcile', [\App\Http\Controllers\Admin\ReportController::class, 'financialReconcile'])->middleware('rbsc:financial.reports');
 
     // Inventory & Warehouse Management
     Route::get('/inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->middleware('rbsc:inventory.view');

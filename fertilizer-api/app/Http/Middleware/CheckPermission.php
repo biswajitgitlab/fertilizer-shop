@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\Admin;
+use App\Services\NotificationService;
+use Illuminate\Support\Facades\Log;
 
 class CheckPermission
 {
@@ -38,6 +40,29 @@ class CheckPermission
             if (method_exists($user, 'hasPermissionTo') && $user->hasPermissionTo($perm)) {
                 return $next($request);
             }
+        }
+
+        // Trigger Real-Time Security Sentinel Notification & Redis Pub/Sub Broadcast
+        try {
+            app(\App\Contracts\NotificationServiceInterface::class)->createNotification([
+                'required_permission' => 'security.audit',
+                'type' => 'warning',
+                'title' => 'RBSC Security Sentinel: 403 Unauthorized Access Blocked',
+                'body' => "Staff member {$user->name} ({$user->email}) attempted unauthorized access to {$request->path()} requiring [" . implode(', ', $permissions) . "].",
+                'link' => '/admin/reports?tab=security'
+            ]);
+
+            // Redis Step: Publish real-time breach event for security dashboard listeners
+            \Illuminate\Support\Facades\Redis::publish('security:alert', json_encode([
+                'event' => 'security.breach_blocked',
+                'user' => $user->email,
+                'path' => $request->path(),
+                'required_permissions' => $permissions,
+                'timestamp' => now()->toIso8601String(),
+            ]));
+            \Illuminate\Support\Facades\Redis::set('security:last_breach_timestamp', now()->toIso8601String());
+        } catch (\Throwable $e) {
+            Log::warning("Failed to dispatch RBSC Sentinel Notification or Redis Broadcast: " . $e->getMessage());
         }
 
         return response()->json([

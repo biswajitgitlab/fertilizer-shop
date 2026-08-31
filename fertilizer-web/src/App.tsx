@@ -48,6 +48,7 @@ import { Inventory as AdminInventory } from './pages/admin/Inventory';
 import { Coupons as AdminCoupons } from './pages/admin/Coupons';
 import { Roles as AdminRoles } from './pages/admin/Roles';
 import { UsersPage as AdminUsers } from './pages/admin/Users';
+import { Reports as AdminReports } from './pages/admin/Reports';
 
 // Error Status Pages
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
@@ -210,6 +211,7 @@ export function App() {
             <Route path="/admin/customers" element={<ProtectedRoute adminOnly requiredPermission="customers.view"><AdminCustomers /></ProtectedRoute>} />
             <Route path="/admin/diagnoses" element={<ProtectedRoute adminOnly requiredPermission="crop_plans.view"><AdminDiagnoses /></ProtectedRoute>} />
             <Route path="/admin/analytics" element={<ProtectedRoute adminOnly requiredPermission="analytics.view"><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute adminOnly requiredPermission="analytics.view"><AdminReports /></ProtectedRoute>} />
             <Route path="/admin/inventory" element={<ProtectedRoute adminOnly requiredPermission="inventory.view"><AdminInventory /></ProtectedRoute>} />
             <Route path="/admin/coupons" element={<ProtectedRoute adminOnly requiredPermission="products.view"><AdminCoupons /></ProtectedRoute>} />
             <Route path="/admin/roles" element={<ProtectedRoute adminOnly requiredPermission="roles.view"><AdminRoles /></ProtectedRoute>} />

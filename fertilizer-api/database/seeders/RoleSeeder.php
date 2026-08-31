@@ -42,9 +42,13 @@ class RoleSeeder extends Seeder
             'customers.view',
             'customers.edit',
             'customers.delete',
-            // Analytics Module
+            // Analytics & Enterprise Reports Module
             'analytics.view',
             'analytics.export',
+            'reports.regulatory',
+            'agronomy.reports',
+            'security.audit',
+            'financial.reports',
             // Notifications (Sentinel Alerts) Module
             'notifications.view',
             'notifications.send',
