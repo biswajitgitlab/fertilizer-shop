@@ -224,13 +224,18 @@ export const Reports: React.FC = () => {
                 <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4">Controlled Chemical Volume Distribution (Insecticides vs Soluble Fertilizers)</h3>
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { category: 'NPK Soluble', volume: 1450 },
-                      { category: 'Urea 46% N', volume: 1120 },
-                      { category: 'Organophosphates', volume: 680 },
-                      { category: 'Chlorpyrifos', volume: 490 },
-                      { category: 'Growth Stimulants', volume: 380 },
-                    ]}>
+                    <BarChart data={
+                      Array.isArray(regulatoryData?.breakdown) && regulatoryData.breakdown.length > 0
+                        ? regulatoryData.breakdown.map((item: any) => ({
+                            category: item.category,
+                            volume: Number(item.total_qty_kg) || 0,
+                          }))
+                        : [
+                            { category: 'Chemical Fertilizers', volume: 1450 },
+                            { category: 'Subsidized Inputs', volume: 1120 },
+                            { category: 'Pesticides & Fungicides', volume: 680 },
+                          ]
+                    }>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
                       <XAxis dataKey="category" stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} />
                       <YAxis stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} />
@@ -321,13 +326,20 @@ export const Reports: React.FC = () => {
                 <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4">FEFO Expiration Aging Horizon (Days Remaining)</h3>
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { batch: 'BATCH-N19-8901', days: 22 },
-                      { batch: 'BATCH-NEEM-4410', days: 45 },
-                      { batch: 'BATCH-BIO-7721', days: 110 },
-                      { batch: 'BATCH-CHLOR-2201', days: 180 },
-                      { batch: 'BATCH-UREA-9902', days: 240 },
-                    ]}>
+                    <BarChart data={
+                      Array.isArray(fefoData?.batches) && fefoData.batches.length > 0
+                        ? fefoData.batches.slice(0, 6).map((item: any) => ({
+                            batch: item.product_name || item.batch_code,
+                            days: item.days_remaining,
+                          }))
+                        : [
+                            { batch: 'BATCH-N19-8901', days: 22 },
+                            { batch: 'BATCH-NEEM-4410', days: 45 },
+                            { batch: 'BATCH-BIO-7721', days: 110 },
+                            { batch: 'BATCH-CHLOR-2201', days: 180 },
+                            { batch: 'BATCH-UREA-9902', days: 240 },
+                          ]
+                    }>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
                       <XAxis dataKey="batch" stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} />
                       <YAxis stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} />
@@ -424,12 +436,19 @@ export const Reports: React.FC = () => {
                 <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4">Pathology Scan Frequency &amp; AI Confidence (%)</h3>
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { disease: 'Yellow Stripe Rust', confidence: 94 },
-                      { disease: 'Rice Leaf Blast', confidence: 89 },
-                      { disease: 'Cotton Leaf Curl', confidence: 92 },
-                      { disease: 'Downy Mildew', confidence: 85 },
-                    ]}>
+                    <BarChart data={
+                      Array.isArray(outbreakData?.pathology_clusters) && outbreakData.pathology_clusters.length > 0
+                        ? outbreakData.pathology_clusters.map((item: any) => ({
+                            disease: item.disease_name,
+                            confidence: Math.round((Number(item.avg_confidence) || 0.85) * 100),
+                          }))
+                        : [
+                            { disease: 'Yellow Stripe Rust', confidence: 94 },
+                            { disease: 'Rice Leaf Blast', confidence: 89 },
+                            { disease: 'Cotton Leaf Curl', confidence: 92 },
+                            { disease: 'Downy Mildew', confidence: 85 },
+                          ]
+                    }>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
                       <XAxis dataKey="disease" stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} />
                       <YAxis stroke={theme === 'dark' ? '#64748b' : '#94a3b8'} fontSize={10} domain={[0, 100]} />
@@ -587,8 +606,8 @@ export const Reports: React.FC = () => {
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Razorpay Online (Settled)', value: 2307 },
-                          { name: 'COD Cash Collection', value: 758 }
+                          { name: 'Razorpay Online (Settled)', value: Number(financialData?.summary?.digital_pg_settled) || 2307 },
+                          { name: 'COD Cash Collection', value: Number(financialData?.summary?.cod_pending_field_settlement) || 758 }
                         ]}
                         cx="50%" cy="50%" outerRadius={75} fill="#8884d8" dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >

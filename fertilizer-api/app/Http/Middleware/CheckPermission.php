@@ -52,6 +52,16 @@ class CheckPermission
                 'link' => '/admin/reports?tab=security'
             ]);
 
+            // Database Persistence: Save threat event directly to audit_logs table
+            \App\Models\AuditLog::create([
+                'user_id' => $user->id,
+                'action' => 'UNAUTHORIZED_ACCESS_BLOCKED',
+                'target' => '/' . ltrim($request->path(), '/'),
+                'details' => "403 Forbidden: Staff member {$user->name} ({$user->email}) attempted unauthorized access to {$request->path()} requiring [" . implode(', ', $permissions) . "].",
+                'ip_address' => $request->ip() ?? '127.0.0.1',
+                'risk_level' => 'HIGH_SECURITY_ALERT',
+            ]);
+
             // Redis Step: Publish real-time breach event for security dashboard listeners
             \Illuminate\Support\Facades\Redis::publish('security:alert', json_encode([
                 'event' => 'security.breach_blocked',

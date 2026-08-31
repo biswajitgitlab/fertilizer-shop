@@ -89,42 +89,60 @@ class ReportController extends Controller
     public function fefoInventory(Request $request)
     {
         $report = Cache::remember('report_fefo_inventory', 300, function () {
-            $products = Product::where('is_active', true)->get();
+            $dbBatches = \App\Models\ProductBatch::with('product')->get();
 
-            $batchAnalysis = $products->map(function ($product) {
-                // Generate realistic FEFO batch metadata
-                $hash = crc32($product->name);
-                $daysToExpiry = ($hash % 120) + 15; // 15 to 135 days
-                $batchCode = 'BATCH-2026-' . strtoupper(substr(md5($product->id), 0, 6));
-                $moistureRisk = ($hash % 2 == 0) ? 'NORMAL (2.1%)' : 'ELEVATED (4.8% Moisture)';
+            if ($dbBatches->count() > 0) {
+                $batchAnalysis = $dbBatches->map(function ($b) {
+                    $daysToExpiry = Carbon::now()->diffInDays(Carbon::parse($b->expiry_date), false);
+                    return [
+                        'product_id' => $b->product_id,
+                        'product_name' => $b->product ? $b->product->name : 'Chemical Input',
+                        'category_id' => $b->product ? $b->product->category_id : 1,
+                        'stock_qty' => $b->stock_qty,
+                        'batch_code' => $b->batch_code,
+                        'days_remaining' => (int) $daysToExpiry,
+                        'expiry_date' => Carbon::parse($b->expiry_date)->format('Y-m-d'),
+                        'moisture_status' => "MOISTURE ({$b->moisture_pct}%)",
+                        'status' => $b->status,
+                        'clearance_discount_suggested' => $daysToExpiry < 30 ? '25% Clearance Markdown' : 'None',
+                    ];
+                })->sortBy('days_remaining')->values();
+            } else {
+                $products = Product::where('is_active', true)->get();
+                $batchAnalysis = $products->map(function ($product) {
+                    $hash = crc32($product->name);
+                    $daysToExpiry = ($hash % 120) + 15;
+                    $batchCode = 'BATCH-2026-' . strtoupper(substr(md5($product->id), 0, 6));
+                    $moistureRisk = ($hash % 2 == 0) ? 'NORMAL (2.1%)' : 'ELEVATED (4.8% Moisture)';
 
-                $expiryStatus = 'SAFE';
-                if ($daysToExpiry < 30) {
-                    $expiryStatus = 'CRITICAL_EXPIRY_RISK';
-                } elseif ($daysToExpiry < 60) {
-                    $expiryStatus = 'FEFO_DISPATCH_PRIORITY';
-                }
+                    $expiryStatus = 'SAFE';
+                    if ($daysToExpiry < 30) {
+                        $expiryStatus = 'CRITICAL_EXPIRY_RISK';
+                    } elseif ($daysToExpiry < 60) {
+                        $expiryStatus = 'FEFO_DISPATCH_PRIORITY';
+                    }
 
-                return [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'category_id' => $product->category_id,
-                    'stock_qty' => $product->stock_qty,
-                    'batch_code' => $batchCode,
-                    'days_remaining' => $daysToExpiry,
-                    'expiry_date' => Carbon::now()->addDays($daysToExpiry)->format('Y-m-d'),
-                    'moisture_status' => $moistureRisk,
-                    'status' => $expiryStatus,
-                    'clearance_discount_suggested' => $daysToExpiry < 30 ? '25% Clearance Markdown' : 'None',
-                ];
-            })->sortBy('days_remaining')->values();
+                    return [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'category_id' => $product->category_id,
+                        'stock_qty' => $product->stock_qty,
+                        'batch_code' => $batchCode,
+                        'days_remaining' => $daysToExpiry,
+                        'expiry_date' => Carbon::now()->addDays($daysToExpiry)->format('Y-m-d'),
+                        'moisture_status' => $moistureRisk,
+                        'status' => $expiryStatus,
+                        'clearance_discount_suggested' => $daysToExpiry < 30 ? '25% Clearance Markdown' : 'None',
+                    ];
+                })->sortBy('days_remaining')->values();
+            }
 
             $criticalCount = $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->count();
             $fefoPriorityCount = $batchAnalysis->where('status', 'FEFO_DISPATCH_PRIORITY')->count();
 
             return [
                 'summary' => [
-                    'total_batches_tracked' => $products->count(),
+                    'total_batches_tracked' => $batchAnalysis->count(),
                     'critical_expiry_batches' => $criticalCount,
                     'fefo_dispatch_queue' => $fefoPriorityCount,
                     'est_spoilage_risk_value' => $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->sum(function($p) {
@@ -202,12 +220,29 @@ class ReportController extends Controller
                 $q->whereIn('name', ['Super Admin', 'Admin', 'Store Manager', 'Warehouse Manager', 'Field Officer', 'Customer Support', 'Staff']);
             })->with('roles')->get();
 
-            $auditTrail = [
+            $dbAuditLogs = \App\Models\AuditLog::with('user')
+                ->orderBy('created_at', 'desc')
+                ->limit(25)
+                ->get()
+                ->map(function ($log) {
+                    return [
+                        'id' => $log->id,
+                        'admin_name' => $log->user ? $log->user->name : 'System RBSC Sentinel',
+                        'action' => $log->action,
+                        'target' => $log->target,
+                        'details' => $log->details,
+                        'ip_address' => $log->ip_address,
+                        'timestamp' => $log->created_at->format('Y-m-d H:i:s'),
+                        'risk_level' => $log->risk_level,
+                    ];
+                });
+
+            $auditTrail = $dbAuditLogs->count() > 0 ? $dbAuditLogs->toArray() : [
                 [
                   'id' => 101,
                   'admin_name' => 'Super Admin (Executive)',
                   'action' => 'ROLE_PERMISSION_UPDATED',
-                  'target' => 'Staff Member: Vikram Singh (Store Manager)',
+                  'target' => 'Staff Member: Store Manager',
                   'details' => 'Granted capability [analytics.export, reports.regulatory]',
                   'ip_address' => '192.168.1.45',
                   'timestamp' => Carbon::now()->subMinutes(12)->format('Y-m-d H:i:s'),
@@ -217,39 +252,23 @@ class ReportController extends Controller
                   'id' => 102,
                   'admin_name' => 'Admin SarkarFertilizer',
                   'action' => 'SENSITIVE_DATA_EXPORTED',
-                  'target' => 'Customer CRM Roster (5,400 Records)',
+                  'target' => 'Customer CRM Roster',
                   'details' => 'Triggered CSV data export under [analytics.export]',
                   'ip_address' => '10.0.0.12',
                   'timestamp' => Carbon::now()->subHours(2)->format('Y-m-d H:i:s'),
                   'risk_level' => 'MEDIUM',
                 ],
-                [
-                  'id' => 103,
-                  'admin_name' => 'Rajesh Kumar (Warehouse Manager)',
-                  'action' => 'UNAUTHORIZED_ACCESS_BLOCKED',
-                  'target' => '/api/admin/users (RBSC Users Management)',
-                  'details' => '403 Forbidden: Account lacks [users.view] capability',
-                  'ip_address' => '192.168.1.88',
-                  'timestamp' => Carbon::now()->subHours(5)->format('Y-m-d H:i:s'),
-                  'risk_level' => 'HIGH_SECURITY_ALERT',
-                ],
-                [
-                  'id' => 104,
-                  'admin_name' => 'Super Admin (Executive)',
-                  'action' => 'RAZORPAY_CIRCUIT_RESET',
-                  'target' => 'Razorpay Circuit Breaker State Machine',
-                  'details' => 'Reset payment circuit state from OPEN to CLOSED',
-                  'ip_address' => '192.168.1.45',
-                  'timestamp' => Carbon::now()->subDays(1)->format('Y-m-d H:i:s'),
-                  'risk_level' => 'CRITICAL_ACTION',
-                ],
             ];
+
+            $failedAttempts24h = \App\Models\AuditLog::where('created_at', '>=', Carbon::now()->subDay())
+                ->where('action', 'UNAUTHORIZED_ACCESS_BLOCKED')
+                ->count();
 
             return [
                 'summary' => [
                     'active_staff_accounts' => $staffUsers->count(),
                     'security_policy_mode' => 'STRICT_RBSC_SANCTUM_ENFORCED',
-                    'failed_authorization_attempts_24h' => 3,
+                    'failed_authorization_attempts_24h' => $failedAttempts24h,
                     'pii_exports_24h' => 1,
                 ],
                 'staff_privileges' => $staffUsers->map(function ($u) {
@@ -279,25 +298,45 @@ class ReportController extends Controller
             $codOrders = Order::where('status', '!=', 'CANCELLED')->where('payment_status', 'COD')->get();
             $onlineOrders = Order::where('status', '!=', 'CANCELLED')->where('payment_status', 'PAID')->get();
 
-            $reconciliationList = Order::with('user')
-                ->where('status', '!=', 'CANCELLED')
-                ->orderBy('created_at', 'desc')
-                ->limit(15)
-                ->get()
-                ->map(function ($order) {
-                    $isCod = $order->payment_status === 'COD';
+            $dbSettlements = \App\Models\DriverSettlement::with(['order.user', 'driver'])->get();
+
+            if ($dbSettlements->count() > 0) {
+                $reconciliationList = $dbSettlements->map(function ($s) {
+                    $order = $s->order;
+                    $isCod = $s->status === 'DRIVER_COLLECTION_PENDING';
                     return [
-                        'order_id' => $order->id,
-                        'farmer_name' => $order->user ? $order->user->name : 'Customer',
-                        'payment_channel' => $isCod ? 'CASH_ON_DELIVERY (COD)' : 'RAZORPAY_DIGITAL_PG',
-                        'gross_amount' => (float) $order->total,
-                        'gateway_fee' => $isCod ? 0.0 : round($order->total * 0.02, 2),
-                        'net_settlement' => $isCod ? (float) $order->total : round($order->total * 0.98, 2),
-                        'settlement_status' => $isCod ? 'DRIVER_COLLECTION_PENDING' : 'SETTLED_TO_BANK',
+                        'order_id' => $s->order_id,
+                        'farmer_name' => ($order && $order->user) ? $order->user->name : 'Customer',
+                        'payment_channel' => 'CASH_ON_DELIVERY (COD)',
+                        'gross_amount' => (float) $s->cash_collected,
+                        'gateway_fee' => 0.0,
+                        'net_settlement' => (float) $s->cash_collected,
+                        'settlement_status' => $s->status,
                         'circuit_breaker_status' => 'NORMAL_HEALTHY',
-                        'date' => $order->created_at->format('Y-m-d H:i:s'),
+                        'date' => $s->created_at->format('Y-m-d H:i:s'),
                     ];
                 });
+            } else {
+                $reconciliationList = Order::with('user')
+                    ->where('status', '!=', 'CANCELLED')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(15)
+                    ->get()
+                    ->map(function ($order) {
+                        $isCod = $order->payment_status === 'COD';
+                        return [
+                            'order_id' => $order->id,
+                            'farmer_name' => $order->user ? $order->user->name : 'Customer',
+                            'payment_channel' => $isCod ? 'CASH_ON_DELIVERY (COD)' : 'RAZORPAY_DIGITAL_PG',
+                            'gross_amount' => (float) $order->total,
+                            'gateway_fee' => $isCod ? 0.0 : round($order->total * 0.02, 2),
+                            'net_settlement' => $isCod ? (float) $order->total : round($order->total * 0.98, 2),
+                            'settlement_status' => $isCod ? 'DRIVER_COLLECTION_PENDING' : 'SETTLED_TO_BANK',
+                            'circuit_breaker_status' => 'NORMAL_HEALTHY',
+                            'date' => $order->created_at->format('Y-m-d H:i:s'),
+                        ];
+                    });
+            }
 
             return [
                 'summary' => [
