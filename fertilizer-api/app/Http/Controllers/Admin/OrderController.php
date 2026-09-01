@@ -292,11 +292,23 @@ class OrderController extends Controller
                     }
                 }
 
-                // 3. Driver Concurrency Lock Validation
+                // 3. Driver Concurrency & Role Lock Validation
                 $requestedDriverId = $request->input('driver_id');
                 $isShippingAction = in_array($newStatus, ['SHIPPED', 'OUT_FOR_DELIVERY']) || !is_null($requestedDriverId);
 
                 if ($isShippingAction) {
+                    $currentUserModel = auth()->user();
+                    $isDriverOrAdmin = $currentUserModel && method_exists($currentUserModel, 'hasRole')
+                        ? ($currentUserModel->hasRole('Logistics Driver') || $currentUserModel->hasRole('Super Admin') || $currentUserModel->hasRole('Admin'))
+                        : true;
+
+                    if (!$isDriverOrAdmin) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Forbidden: Shipping and dispatching parcels can only be performed by assigned Logistics Drivers.'
+                        ], 403);
+                    }
+
                     if ($order->driver_id !== null && $order->driver_id != $currentUserId && ($requestedDriverId !== null && $order->driver_id != $requestedDriverId)) {
                         $driverName = $order->driver ? $order->driver->name : "Driver #{$order->driver_id}";
                         return response()->json([

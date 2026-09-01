@@ -11,7 +11,9 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 export const OrderDetail: React.FC = () => {
   const user = useAuthStore(state => state.user);
-  const isDriver = (user?.role || '').toLowerCase().includes('driver');
+  const isDriver = (user?.role || '').toLowerCase().includes('driver') || (user?.roles || []).some((r: any) => (typeof r === 'string' ? r : r.name).toLowerCase().includes('driver'));
+  const isSuperAdminOrAdmin = ['super admin', 'admin', 'superadmin'].includes((user?.role || '').toLowerCase());
+  const canShip = isDriver || isSuperAdminOrAdmin;
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
@@ -213,9 +215,9 @@ export const OrderDetail: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { level: 1, label: '1. Warehouse Packed', action: 'Packed', disabled: isDriver || !['PENDING', 'CONFIRMED'].includes((order.status || '').toUpperCase()) },
-                    { level: 2, label: '2. Shipped / In Transit', action: 'Shipped', disabled: !['PACKED', 'PROCESSING'].includes((order.status || '').toUpperCase()) },
-                    { level: 3, label: '3. Out for Delivery', action: 'Out for Delivery', disabled: (order.status || '').toUpperCase() !== 'SHIPPED' },
-                    { level: 4, label: '4. Delivered & Paid', action: 'Delivered', disabled: !['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes((order.status || '').toUpperCase()) },
+                    { level: 2, label: '2. Shipped / In Transit', action: 'Shipped', disabled: !canShip || !['PACKED', 'PROCESSING'].includes((order.status || '').toUpperCase()) },
+                    { level: 3, label: '3. Out for Delivery', action: 'Out for Delivery', disabled: !canShip || (order.status || '').toUpperCase() !== 'SHIPPED' },
+                    { level: 4, label: '4. Delivered & Paid', action: 'Delivered', disabled: !canShip || !['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes((order.status || '').toUpperCase()) },
                   ].map((btn) => {
                     const s = (order.status || '').toUpperCase();
                     let currentLevel = 0;
