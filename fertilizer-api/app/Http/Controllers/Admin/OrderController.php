@@ -234,7 +234,7 @@ class OrderController extends Controller
         }
 
         $request->validate([
-            'status' => 'sometimes|in:PENDING,CONFIRMED,PACKED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
+            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
             'packer_id' => 'sometimes|nullable',
             'driver_id' => 'sometimes|nullable',
             'tracking_number' => 'sometimes|nullable|string',
@@ -318,7 +318,7 @@ class OrderController extends Controller
             if ($request->has('status')) {
                 $order->status = strtoupper($request->status);
 
-                if (in_array($order->status, ['PROCESSING', 'READY_FOR_PICKUP', 'PACKED']) && !$order->packed_at) {
+                if (in_array($order->status, ['PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
                     $order->packed_at = now();
                 }
                 if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
@@ -328,16 +328,6 @@ class OrderController extends Controller
                     $order->delivered_at = now();
                     $order->payment_status = 'PAID';
 
-                    \App\Models\DriverSettlement::updateOrCreate(
-                        ['order_id' => $order->id],
-                        [
-                            'driver_id' => $order->driver_id,
-                            'cash_collected' => (float)$order->total,
-                            'status' => 'SETTLED_TO_BANK',
-                            'settled_at' => now(),
-                            'notes' => 'Order marked DELIVERED - Payment collected & settled to bank.'
-                        ]
-                    );
                 }
             }
         }
