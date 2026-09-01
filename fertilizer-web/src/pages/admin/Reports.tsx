@@ -112,46 +112,45 @@ export const Reports: React.FC = () => {
     toast.success(`Exporting ${activeTab.toUpperCase()} report dataset to CSV...`);
   };
 
-  // Helper to extract pagination metadata from active dataset
   const getActiveMeta = () => {
-    if (activeTab === 'regulatory') return regulatoryData?.meta || DEMO_REGULATORY_REPORT.meta;
-    if (activeTab === 'fefo') return fefoData?.meta || DEMO_FEFO_REPORT.meta;
-    if (activeTab === 'outbreak') return outbreakData?.meta || DEMO_OUTBREAK_REPORT.meta;
-    if (activeTab === 'security') return securityData?.meta || DEMO_SECURITY_REPORT.meta;
-    if (activeTab === 'financial') return financialData?.meta || DEMO_FINANCIAL_REPORT.meta;
+    if (activeTab === 'regulatory') return regulatoryData?.meta || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+    if (activeTab === 'fefo') return fefoData?.meta || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+    if (activeTab === 'outbreak') return outbreakData?.meta || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+    if (activeTab === 'security') return securityData?.meta || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
+    if (activeTab === 'financial') return financialData?.meta || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
     return null;
   };
 
-  const meta = getActiveMeta() || { current_page: 1, last_page: 1, per_page: 10, total: 4 };
+  const meta = getActiveMeta() || { current_page: 1, last_page: 1, per_page: 10, total: 0 };
 
   const getRegulatoryRows = () => {
-    if (regulatoryData?.data && Array.isArray(regulatoryData.data) && regulatoryData.data.length > 0) return regulatoryData.data;
-    if (regulatoryData?.audit_ledger && Array.isArray(regulatoryData.audit_ledger) && regulatoryData.audit_ledger.length > 0) return regulatoryData.audit_ledger;
-    return DEMO_REGULATORY_REPORT.data;
+    if (regulatoryData?.data && Array.isArray(regulatoryData.data)) return regulatoryData.data;
+    if (regulatoryData?.audit_ledger && Array.isArray(regulatoryData.audit_ledger)) return regulatoryData.audit_ledger;
+    return [];
   };
 
   const getFefoRows = () => {
-    if (fefoData?.data && Array.isArray(fefoData.data) && fefoData.data.length > 0) return fefoData.data;
-    if (fefoData?.batches && Array.isArray(fefoData.batches) && fefoData.batches.length > 0) return fefoData.batches;
-    return DEMO_FEFO_REPORT.data;
+    if (fefoData?.data && Array.isArray(fefoData.data)) return fefoData.data;
+    if (fefoData?.batches && Array.isArray(fefoData.batches)) return fefoData.batches;
+    return [];
   };
 
   const getOutbreakRows = () => {
-    if (outbreakData?.data && Array.isArray(outbreakData.data) && outbreakData.data.length > 0) return outbreakData.data;
-    if (outbreakData?.scans && Array.isArray(outbreakData.scans) && outbreakData.scans.length > 0) return outbreakData.scans;
-    return DEMO_OUTBREAK_REPORT.data;
+    if (outbreakData?.data && Array.isArray(outbreakData.data)) return outbreakData.data;
+    if (outbreakData?.scans && Array.isArray(outbreakData.scans)) return outbreakData.scans;
+    return [];
   };
 
   const getSecurityRows = () => {
-    if (securityData?.data && Array.isArray(securityData.data) && securityData.data.length > 0) return securityData.data;
-    if (securityData?.logs && Array.isArray(securityData.logs) && securityData.logs.length > 0) return securityData.logs;
-    return DEMO_SECURITY_REPORT.data;
+    if (securityData?.data && Array.isArray(securityData.data)) return securityData.data;
+    if (securityData?.logs && Array.isArray(securityData.logs)) return securityData.logs;
+    return [];
   };
 
   const getFinancialRows = () => {
-    if (financialData?.data && Array.isArray(financialData.data) && financialData.data.length > 0) return financialData.data;
-    if (financialData?.reconciled_orders && Array.isArray(financialData.reconciled_orders) && financialData.reconciled_orders.length > 0) return financialData.reconciled_orders;
-    return DEMO_FINANCIAL_REPORT.data;
+    if (financialData?.data && Array.isArray(financialData.data)) return financialData.data;
+    if (financialData?.reconciled_orders && Array.isArray(financialData.reconciled_orders)) return financialData.reconciled_orders;
+    return [];
   };
 
   return (

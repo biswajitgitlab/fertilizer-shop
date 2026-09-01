@@ -480,6 +480,15 @@ export const adminApi = {
     }
   },
 
+  getAnalytics: async () => {
+    try {
+      const res = await apiClient.get('/admin/dashboard');
+      return res.data;
+    } catch (e) {
+      return null;
+    }
+  },
+
   getProducts: async () => {
     try {
       const res = await apiClient.get('/products');
@@ -980,76 +989,46 @@ export const adminApi = {
   getRegulatoryReport: async (params?: any) => {
     try {
       const res = await apiClient.get('/admin/reports/regulatory', { params });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return res.data;
-      }
-      if (res.data) {
-        return { ...res.data, data: DEMO_REGULATORY_REPORT.data, meta: res.data.meta || DEMO_REGULATORY_REPORT.meta };
-      }
-      return DEMO_REGULATORY_REPORT;
+      return res.data;
     } catch (e) {
-      console.warn("Regulatory report error, returning fallback:", e);
-      return DEMO_REGULATORY_REPORT;
+      console.warn("Regulatory report error, returning empty fallback:", e);
+      return { data: [], summary: {}, meta: { current_page: 1, last_page: 1, total: 0 } };
     }
   },
   getFefoReport: async (params?: any) => {
     try {
       const res = await apiClient.get('/admin/reports/fefo-inventory', { params });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return res.data;
-      }
-      if (res.data) {
-        return { ...res.data, data: DEMO_FEFO_REPORT.data, meta: res.data.meta || DEMO_FEFO_REPORT.meta };
-      }
-      return DEMO_FEFO_REPORT;
+      return res.data;
     } catch (e) {
-      console.warn("FEFO report error, returning fallback:", e);
-      return DEMO_FEFO_REPORT;
+      console.warn("FEFO report error, returning empty fallback:", e);
+      return { data: [], summary: {}, meta: { current_page: 1, last_page: 1, total: 0 } };
     }
   },
   getDiseaseOutbreakReport: async (params?: any) => {
     try {
       const res = await apiClient.get('/admin/reports/disease-outbreak', { params });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return res.data;
-      }
-      if (res.data) {
-        return { ...res.data, data: DEMO_OUTBREAK_REPORT.data, meta: res.data.meta || DEMO_OUTBREAK_REPORT.meta };
-      }
-      return DEMO_OUTBREAK_REPORT;
+      return res.data;
     } catch (e) {
-      console.warn("Outbreak report error, returning fallback:", e);
-      return DEMO_OUTBREAK_REPORT;
+      console.warn("Outbreak report error, returning empty fallback:", e);
+      return { data: [], summary: {}, meta: { current_page: 1, last_page: 1, total: 0 } };
     }
   },
   getSecurityAuditReport: async (params?: any) => {
     try {
       const res = await apiClient.get('/admin/reports/security-audit', { params });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return res.data;
-      }
-      if (res.data) {
-        return { ...res.data, data: DEMO_SECURITY_REPORT.data, meta: res.data.meta || DEMO_SECURITY_REPORT.meta };
-      }
-      return DEMO_SECURITY_REPORT;
+      return res.data;
     } catch (e) {
-      console.warn("Security audit report error, returning fallback:", e);
-      return DEMO_SECURITY_REPORT;
+      console.warn("Security audit report error, returning empty fallback:", e);
+      return { data: [], summary: {}, meta: { current_page: 1, last_page: 1, total: 0 } };
     }
   },
   getFinancialReconcileReport: async (params?: any) => {
     try {
       const res = await apiClient.get('/admin/reports/financial-reconcile', { params });
-      if (res.data && res.data.data && res.data.data.length > 0) {
-        return res.data;
-      }
-      if (res.data) {
-        return { ...res.data, data: DEMO_FINANCIAL_REPORT.data, meta: res.data.meta || DEMO_FINANCIAL_REPORT.meta };
-      }
-      return DEMO_FINANCIAL_REPORT;
+      return res.data;
     } catch (e) {
-      console.warn("Financial report error, returning fallback:", e);
-      return DEMO_FINANCIAL_REPORT;
+      console.warn("Financial report error, returning empty fallback:", e);
+      return { data: [], summary: {}, meta: { current_page: 1, last_page: 1, total: 0 } };
     }
   }
 };

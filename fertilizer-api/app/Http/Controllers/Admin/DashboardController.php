@@ -108,6 +108,23 @@ class DashboardController extends Controller
             // Active Products
             $activeProducts = Product::where('is_active', true)->count();
 
+            // Category Sales Breakdown for Analytics
+            $categorySalesDb = DB::table('order_items')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->join('categories', 'products.category_id', '=', 'categories.id')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.status', '!=', 'CANCELLED')
+                ->select('categories.name', DB::raw('SUM(order_items.qty) as value'))
+                ->groupBy('categories.name')
+                ->get();
+                
+            $categorySales = $categorySalesDb->map(function($item) {
+                return [
+                    'name' => $item->name,
+                    'value' => (int) $item->value
+                ];
+            });
+
             return [
                 'stats' => [
                     'sales_today' => $salesToday,
@@ -119,7 +136,8 @@ class DashboardController extends Controller
                 ],
                 'chart_data' => $chartData,
                 'recent_orders' => $recentOrders,
-                'top_products' => $topSelling
+                'top_products' => $topSelling,
+                'category_sales' => $categorySales
             ];
         });
 
