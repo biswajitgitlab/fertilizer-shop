@@ -57,8 +57,8 @@ export const UsersPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 10, total: 0 });
+  const [perPage, setPerPage] = useState(25);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 25, total: 0 });
 
   // Modals
   const [showFormModal, setShowFormModal] = useState(false);
@@ -120,9 +120,15 @@ export const UsersPage: React.FC = () => {
         setStats(res.stats);
       }
 
-      const rData = await adminApi.getRoles();
-      if (Array.isArray(rData) && rData.length > 0) {
-        setRolesList(rData.map((r: any) => r.name).filter((r: string) => r !== 'Customer'));
+      if (res?.active_roles) {
+        setRolesList(res.active_roles);
+      } else if (res?.users?.active_roles) {
+        setRolesList(res.users.active_roles);
+      } else {
+        const rData = await adminApi.getRoles();
+        if (Array.isArray(rData) && rData.length > 0) {
+          setRolesList(rData.map((r: any) => r.name).filter((r: string) => r !== 'Customer'));
+        }
       }
     } catch (e) {
       console.error("Failed to load staff directory:", e);

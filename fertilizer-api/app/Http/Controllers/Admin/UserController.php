@@ -101,9 +101,15 @@ class UserController extends Controller
                 'unverified_count' => User::where('is_verified', false)->count(),
             ];
 
+            $activeRoles = Admin::with('roles')->get()->flatMap(function($admin) {
+                $roles = $admin->getRoleNames()->toArray();
+                return empty($roles) ? [$admin->role ?: 'Admin'] : $roles;
+            })->unique()->filter(function($r) { return $r !== 'Customer' && $r !== 'Farmer'; })->values()->toArray();
+
             return [
                 'users' => $formattedAdmins,
                 'stats' => $stats,
+                'active_roles' => $activeRoles,
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -321,14 +327,23 @@ class UserController extends Controller
     {
         try {
             if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
-                foreach ($redis->keys('*users:*') as $key) {
-                    $redis->del($key);
+                $redis = \Illuminate\Support\Facades\Redis::connection('cache');
+                $prefix = config('database.redis.options.prefix') ?: config('cache.prefix') . ':';
+                
+                $keys = $redis->keys('*users:*');
+                foreach ($keys as $key) {
+                    $keyWithoutPrefix = preg_replace('/^' . preg_quote($prefix, '/') . '(_)?/', '', $key);
+                    $redis->del($keyWithoutPrefix);
                 }
-                foreach ($redis->keys('*report:*') as $key) {
-                    $redis->del($key);
+                
+                $reportKeys = $redis->keys('*report:*');
+                foreach ($reportKeys as $key) {
+                    $keyWithoutPrefix = preg_replace('/^' . preg_quote($prefix, '/') . '(_)?/', '', $key);
+                    $redis->del($keyWithoutPrefix);
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Cache clear error: ' . $e->getMessage());
+        }
     }
 }
