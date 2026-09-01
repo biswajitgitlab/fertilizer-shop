@@ -7,6 +7,7 @@ import { CartItem } from './CartItem';
 import { formatCurrency } from '../../utils/formatters';
 import { Button } from '../common/Button';
 import toast from 'react-hot-toast';
+import { apiClient } from '../../api/axiosInstances';
 import {
   AnimatedCart,
   AnimatedTruck,
@@ -37,6 +38,24 @@ export const CartDrawer: React.FC = () => {
   const navigate = useNavigate();
   const [couponInput, setCouponInput] = useState('');
   const [showAvailableTokens, setShowAvailableTokens] = useState(false);
+  const [availableTokens, setAvailableTokens] = useState<Array<{ code: string; text: string }>>([
+    { code: 'NEWFARMER', text: 'Flat ₹150 OFF (1st Order)' },
+    { code: 'WELCOME10', text: '10% OFF (≥ ₹299)' },
+    { code: 'KRISHISAVE', text: 'Flat ₹250 OFF (≥ ₹999)' }
+  ]);
+
+  useEffect(() => {
+    apiClient.get('/coupons/public').then((res) => {
+      const data = res.data;
+      const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+      if (list.length > 0) {
+        setAvailableTokens(list.map((c: any) => ({
+          code: c.code,
+          text: String(c.type).toUpperCase() === 'PERCENT' ? `${c.value}% OFF (≥ ₹${c.min_order})` : `Flat ₹${c.value} OFF (≥ ₹${c.min_order})`
+        })));
+      }
+    }).catch(() => {});
+  }, []);
 
   const amountForFreeDelivery = Math.max(0, freeShippingThreshold - subtotal);
   const freeDeliveryProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
@@ -78,12 +97,6 @@ export const CartDrawer: React.FC = () => {
     setDrawerOpen(false);
     navigate('/checkout');
   };
-
-  const availableTokens = [
-    { code: 'NEWFARMER', text: 'Flat ₹150 OFF (1st Order)' },
-    { code: 'WELCOME10', text: '10% OFF (≥ ₹299)' },
-    { code: 'KRISHISAVE', text: 'Flat ₹250 OFF (≥ ₹999)' }
-  ];
 
   return (
     <AnimatePresence>

@@ -12,6 +12,7 @@ import { PageTransition } from '../components/common/PageTransition';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import { HeroCarousel } from '../components/home/HeroCarousel';
+import { DynamicCouponOfferBanner } from '../components/common/DynamicCouponOfferBanner';
 import { CategoryCarousel } from '../components/home/CategoryCarousel';
 import { ServicesCarousel } from '../components/home/ServicesCarousel';
 import {
@@ -104,8 +105,9 @@ export const Home: React.FC = () => {
     <PageTransition className="space-y-0 pb-0 bg-emerald-50/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
       {/* ─── 1. LIQUID GLASS HERO SPOTLIGHT CAROUSEL ─── */}
-      <section className="pt-20 sm:pt-24 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="pt-20 sm:pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4">
         <HeroCarousel />
+        <DynamicCouponOfferBanner />
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}

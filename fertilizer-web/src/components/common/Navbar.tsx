@@ -18,6 +18,7 @@ import {
 } from './AnimatedIcons';
 import { productApi } from '../../api/productApi';
 import { Logo } from './Logo';
+import { TopCouponMarquee } from './TopCouponMarquee';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -57,7 +58,9 @@ export const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shadow-xs transition-colors duration-300">
+    <>
+      <TopCouponMarquee />
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shadow-xs transition-colors duration-300">
       {/* Top Banner */}
       <div className="bg-emerald-900 dark:bg-slate-950 text-emerald-100 text-xs py-1.5 px-3 sm:px-4 border-b border-emerald-800/40 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center gap-2">
@@ -409,6 +412,6 @@ export const Navbar: React.FC = () => {
         )}
       </div>
     </header>
+    </>
   );
-
 };
