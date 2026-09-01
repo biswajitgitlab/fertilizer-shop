@@ -40,14 +40,25 @@ export const OrderDetail: React.FC = () => {
     fetchOrderAndStaff();
   }, [id]);
 
+  const fetchOrder = async () => {
+    if (!id) return;
+    try {
+      const data = await adminApi.getOrderById(id);
+      setOrder(data);
+      if (data.trackingNumber) setTrackingNo(data.trackingNumber);
+      if (data.packerId) setSelectedPacker(String(data.packerId));
+      if (data.driverId) setSelectedDriver(String(data.driverId));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleSaveTracking = async () => {
     if (!order) return;
     try {
       await adminApi.updateOrderStatus(order.id, order.status, trackingNo, selectedPacker, selectedDriver);
-      toast.success("Order fulfillment saved! Redirecting to orders list...");
-      setTimeout(() => {
-        navigate('/admin/orders');
-      }, 700);
+      toast.success("Order fulfillment saved!");
+      await fetchOrder();
     } catch (e) {
       toast.error("Failed to update order details.");
     }
@@ -59,10 +70,8 @@ export const OrderDetail: React.FC = () => {
     try {
       const targetStatus = (order.status === 'Pending' || order.status === 'Confirmed') ? 'Packed' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, packerId, selectedDriver);
-      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}. Redirecting...`);
-      setTimeout(() => {
-        navigate('/admin/orders');
-      }, 700);
+      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}.`);
+      await fetchOrder();
     } catch (e) {
       toast.error("Failed to assign packer.");
     }
@@ -74,10 +83,8 @@ export const OrderDetail: React.FC = () => {
     try {
       const targetStatus = (['Pending', 'Confirmed', 'Packed', 'Processing'].includes(order.status)) ? 'Shipped' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, selectedPacker, driverId);
-      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}. Redirecting...`);
-      setTimeout(() => {
-        navigate('/admin/orders');
-      }, 700);
+      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}.`);
+      await fetchOrder();
     } catch (e) {
       toast.error("Failed to assign driver.");
     }
@@ -87,10 +94,8 @@ export const OrderDetail: React.FC = () => {
     if (!order) return;
     try {
       await adminApi.updateOrderStatus(order.id, newStatus, trackingNo, selectedPacker, selectedDriver);
-      toast.success(`Status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}! Redirecting...`);
-      setTimeout(() => {
-        navigate('/admin/orders');
-      }, 700);
+      toast.success(`Status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}!`);
+      await fetchOrder();
     } catch (e) {
       toast.error("Failed to update order status.");
     }
@@ -171,6 +176,8 @@ export const OrderDetail: React.FC = () => {
               ))}
             </div>
 
+
+
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
               {/* Sequential Operational Workflow Progress Bar */}
               <div className="p-4 rounded-2xl bg-slate-50/90 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3">
@@ -181,41 +188,45 @@ export const OrderDetail: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     onClick={() => handleStatusChange('Packed')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    disabled={!['Pending', 'Confirmed'].includes(order.status)}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                       ['Packed', 'Processing'].includes(order.status)
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                         : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${['Pending', 'Confirmed'].includes(order.status) ? 'cursor-pointer' : ''}`}
                   >
                     1. Warehouse Packed
                   </button>
                   <button
                     onClick={() => handleStatusChange('Shipped')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    disabled={!['Packed', 'Processing'].includes(order.status)}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                       order.status === 'Shipped'
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                         : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${['Packed', 'Processing'].includes(order.status) ? 'cursor-pointer' : ''}`}
                   >
                     2. Shipped / In Transit
                   </button>
                   <button
                     onClick={() => handleStatusChange('Out for Delivery')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    disabled={order.status !== 'Shipped'}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                       order.status === 'Out for Delivery'
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                         : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Shipped' ? 'cursor-pointer' : ''}`}
                   >
                     3. Out for Delivery
                   </button>
                   <button
                     onClick={() => handleStatusChange('Delivered')}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                    disabled={order.status !== 'Out for Delivery'}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                       order.status === 'Delivered'
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                         : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-600 hover:text-white'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Out for Delivery' ? 'cursor-pointer' : ''}`}
                   >
                     4. Delivered & Paid
                   </button>
@@ -230,7 +241,8 @@ export const OrderDetail: React.FC = () => {
                   <select
                     value={selectedPacker}
                     onChange={(e) => handlePackerSelect(e.target.value)}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
+                    disabled={true}
+                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Unassigned</option>
                     <optgroup label="✓ Operational Warehouse Packers">
@@ -257,7 +269,8 @@ export const OrderDetail: React.FC = () => {
                   <select
                     value={selectedDriver}
                     onChange={(e) => handleDriverSelect(e.target.value)}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold"
+                    disabled={true}
+                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Unassigned</option>
                     <optgroup label="✓ Operational Logistics Drivers">
@@ -286,9 +299,14 @@ export const OrderDetail: React.FC = () => {
                     placeholder="e.g. DELHIVERY-890214"
                     value={trackingNo}
                     onChange={(e) => setTrackingNo(e.target.value)}
-                    className="flex-1 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500"
+                    disabled={order.status !== 'Shipped'}
+                    className="flex-1 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
-                  <button onClick={handleSaveTracking} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md cursor-pointer">
+                  <button 
+                    onClick={handleSaveTracking} 
+                    disabled={order.status !== 'Shipped'}
+                    className={`bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Shipped' ? 'cursor-pointer' : ''}`}
+                  >
                     Save Order Fulfillment
                   </button>
                 </div>
@@ -300,7 +318,7 @@ export const OrderDetail: React.FC = () => {
             <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Shipping Info
             </h3>
-            <p className="font-bold text-slate-900 dark:text-white text-sm">{order.customerName || order.shippingAddress?.name || 'Valued Customer'}</p>
+            <p className="font-bold text-slate-900 dark:text-white text-sm">{order.shippingAddress?.name || order.customerName || 'Valued Customer'}</p>
             <p className="text-slate-500 dark:text-slate-400">{order.shippingAddress?.line1 || 'N/A'}</p>
             <p className="text-slate-500 dark:text-slate-400">{[order.shippingAddress?.city, order.shippingAddress?.state].filter(Boolean).join(', ')}{order.shippingAddress?.pincode ? ` - ${order.shippingAddress.pincode}` : ''}</p>
             <p className="font-bold text-emerald-600 dark:text-emerald-400 pt-1">Ph: {order.shippingAddress?.phone || order.phone || 'N/A'}</p>
@@ -316,6 +334,37 @@ export const OrderDetail: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-slate-500">Driver:</span>
                   <span className="font-bold text-slate-900 dark:text-slate-200">{order.driverName || 'Not Assigned'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Financial Summary */}
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 mt-4">
+              <h4 className="font-bold text-slate-900 dark:text-white text-[11px] uppercase tracking-wider">Payment Summary</h4>
+              <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.subtotal || 0)}</span>
+                </div>
+                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                  <span>Shipping & Handling</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.shippingCost || 0)}</span>
+                </div>
+                {order.tax > 0 && (
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                    <span>Tax</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.tax || 0)}</span>
+                  </div>
+                )}
+                {order.discount > 0 && (
+                  <div className="flex justify-between text-rose-500 dark:text-rose-400">
+                    <span>Discount</span>
+                    <span className="font-medium">-{formatCurrency(order.discount || 0)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-2 mt-2 border-t border-emerald-200/50 dark:border-emerald-800/50">
+                  <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">Grand Total</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">{formatCurrency(order.total || 0)}</span>
                 </div>
               </div>
             </div>

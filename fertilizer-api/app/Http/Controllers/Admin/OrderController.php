@@ -91,13 +91,14 @@ class OrderController extends Controller
             $total = $query->count();
             $lastPage = max(1, (int) ceil($total / $perPage));
 
-            $items = $query->orderBy('created_at', 'desc')
+            $items = $query->orderByRaw("CASE WHEN status = 'CONFIRMED' THEN 1 ELSE 2 END")
+                ->orderBy('created_at', 'desc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
                 ->get();
 
             $formattedItems = $items->map(function ($order) {
-                $customerName = $order->user ? $order->user->name : (is_array($order->shipping_address_json) ? ($order->shipping_address_json['name'] ?? 'Valued Customer') : 'Valued Customer');
+                $customerName = (is_array($order->shipping_address_json) && !empty($order->shipping_address_json['name'])) ? $order->shipping_address_json['name'] : ($order->user ? $order->user->name : 'Valued Customer');
                 return [
                     'id' => $order->id,
                     'order_number' => $order->order_number,
@@ -174,7 +175,7 @@ class OrderController extends Controller
                 ->orWhere('order_number', $id)
                 ->firstOrFail();
 
-            $customerName = $order->user ? $order->user->name : (is_array($order->shipping_address_json) ? ($order->shipping_address_json['name'] ?? 'Valued Customer') : 'Valued Customer');
+            $customerName = (is_array($order->shipping_address_json) && !empty($order->shipping_address_json['name'])) ? $order->shipping_address_json['name'] : ($order->user ? $order->user->name : 'Valued Customer');
 
             return [
                 'id' => $order->id,
@@ -234,11 +235,11 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         
         if ($request->has('status') && is_string($request->status)) {
-            $request->merge(['status' => strtoupper($request->status)]);
+            $request->merge(['status' => str_replace(' ', '_', strtoupper($request->status))]);
         }
 
         $request->validate([
-            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED',
+            'status' => 'sometimes|in:PENDING,CONFIRMED,PROCESSING,PACKED,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,OUT FOR DELIVERY,DELIVERED,CANCELLED,REFUNDED',
             'packer_id' => 'sometimes|nullable',
             'driver_id' => 'sometimes|nullable',
             'tracking_number' => 'sometimes|nullable|string',
@@ -322,17 +323,27 @@ class OrderController extends Controller
             if ($request->has('status')) {
                 $order->status = strtoupper($request->status);
 
-                if (in_array($order->status, ['PROCESSING', 'READY_FOR_PICKUP']) && !$order->packed_at) {
-                    $order->packed_at = now();
+                if (in_array($order->status, ['PROCESSING', 'PACKED', 'READY_FOR_PICKUP'])) {
+                    if (!$order->packed_at) {
+                        $order->packed_at = now();
+                    }
+                    if (!$order->packer_id && auth()->id()) {
+                        $order->packer_id = auth()->id();
+                    }
                 }
-                if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY']) && !$order->shipped_at) {
-                    $order->shipped_at = now();
+                
+                if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY'])) {
+                    if (!$order->shipped_at) {
+                        $order->shipped_at = now();
+                    }
+                    if (!$order->driver_id && auth()->id()) {
+                        $order->driver_id = auth()->id();
+                    }
                 }
+                
                 if ($order->status === 'DELIVERED') {
                     $order->delivered_at = now();
                     $order->payment_status = 'PAID';
-
-
                 }
             }
         }

@@ -69,10 +69,10 @@ export const normalizeAdminOrder = (o: any): Order => {
 
   const realUserName = o.user?.name;
   const shippingName = addr?.name;
-  const name = (realUserName && realUserName !== 'Valued Customer' && realUserName !== 'Farmer Customer')
-    ? realUserName
-    : (shippingName && shippingName !== 'Valued Customer' && shippingName !== 'Farmer Customer'
-      ? shippingName
+  const name = (shippingName && shippingName !== 'Valued Customer' && shippingName !== 'Farmer Customer')
+    ? shippingName
+    : (realUserName && realUserName !== 'Valued Customer' && realUserName !== 'Farmer Customer'
+      ? realUserName
       : (o.customer_name || o.customerName || realUserName || shippingName || 'Valued Customer'));
   const phone = addr?.phone || o.phone || o.user?.phone || 'N/A';
   const line1 = addr?.line1 || addr?.address || 'N/A';
@@ -142,7 +142,7 @@ export const normalizeAdminOrder = (o: any): Order => {
       customerName: name,
       phone: phone,
       shippingAddress: {
-        name,
+        name: shippingName || name,
         phone,
         line1,
         line2,

@@ -69,7 +69,7 @@ export const Orders: React.FC = () => {
       case 'PENDING':
         return { icon: Clock, classes: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' };
       case 'CONFIRMED':
-        return { icon: CheckCircle, classes: 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800' };
+        return { icon: CheckCircle, classes: 'animate-pulse bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 shadow-sm shadow-blue-500/50' };
       case 'PROCESSING':
       case 'PACKED':
       case 'READY_FOR_PICKUP':
@@ -189,7 +189,7 @@ export const Orders: React.FC = () => {
               <div className="py-8 text-center text-xs text-slate-400">No orders found matching filter.</div>
             ) : (
               orders.map((ord) => (
-                <div key={ord.id} className="p-4 space-y-3 hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors">
+                <div key={ord.id} className={`p-4 space-y-3 hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors ${ord.status === 'CONFIRMED' ? 'animate-pulse bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">#{ord.orderNumber || ord.id}</span>
@@ -259,7 +259,7 @@ export const Orders: React.FC = () => {
                   </tr>
                 ) : (
                   orders.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors">
+                    <tr key={ord.id} className={`hover:bg-emerald-50/40 dark:hover:bg-slate-800/40 transition-colors ${ord.status === 'CONFIRMED' ? 'animate-pulse bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
                       <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400">#{ord.orderNumber || ord.id}</td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-slate-100">
                         {ord.customerName || ord.shippingAddress?.name || (ord as any).user?.name || 'Valued Customer'}
