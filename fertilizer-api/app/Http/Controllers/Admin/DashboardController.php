@@ -14,8 +14,31 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $user = $request->user();
+        if ($user && method_exists($user, 'hasRole') && $user->hasRole('Logistics Driver')) {
+            $driverId = $user->id;
+            
+            $delivered = Order::where('driver_id', $driverId)->where('status', 'DELIVERED')->count();
+            $pending = Order::where('driver_id', $driverId)->whereIn('status', ['OUT_FOR_DELIVERY', 'SHIPPED', 'PACKED', 'READY_FOR_PICKUP'])->count();
+            $cashCollected = \App\Models\DriverSettlement::where('driver_id', $driverId)
+                ->where('status', 'DRIVER_COLLECTION_PENDING')
+                ->sum('cash_collected');
+
+            return response()->json([
+                'stats' => [
+                    'sales_today' => (float)$cashCollected, // Map to totalRevenue
+                    'total_orders' => $delivered,
+                    'active_products' => $pending, // Map to activeProducts for driver
+                    'low_stock' => 0
+                ],
+                'chart_data' => [],
+                'recent_orders' => [],
+                'top_products' => []
+            ]);
+        }
+
         $dashboardData = Cache::remember('admin_dashboard_stats', 300, function () {
             $today = Carbon::today();
             $thisMonth = Carbon::now()->startOfMonth();

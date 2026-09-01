@@ -9,7 +9,10 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 import { Link } from 'react-router-dom';
 import { useUIStore } from '../../store/uiStore';
 
+import { useAuthStore } from '../../store/authStore';
 export const Dashboard: React.FC = () => {
+  const { user } = useAuthStore();
+  const isDriver = (user?.role || '').toLowerCase().includes('driver') || user?.roles?.some((r: string) => r.toLowerCase().includes('driver'));
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,41 +65,71 @@ export const Dashboard: React.FC = () => {
     <AdminLayout title="Store Overview Dashboard">
       <div className="space-y-8">
         
-        {/* Top 4 Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <StatCard
-            title="Total Revenue"
-            value={formatCurrency(stats.totalRevenue)}
-            change="+18.4%"
-            isPositive={true}
-            icon={<DollarSign className="w-5 h-5" />}
-            subtitle="Gross fertilizer sales"
-          />
-          <StatCard
-            title="Total Orders"
-            value={stats.totalOrders}
-            change="+12.1%"
-            isPositive={true}
-            icon={<ShoppingBag className="w-5 h-5" />}
-            subtitle="Fulfilled & Pending"
-          />
-          <StatCard
-            title="Active SKUs"
-            value={stats.activeProducts}
-            icon={<Package className="w-5 h-5" />}
-            subtitle="Government lab certified"
-          />
-          <StatCard
-            title="Low Stock Warning"
-            value={stats.lowStockCount}
-            change="Action Needed"
-            isPositive={false}
-            icon={<AlertCircle className="w-5 h-5 text-rose-500" />}
-            subtitle="Products < 10 bags"
-          />
-        </div>
+        {/* Top Stat Cards */}
+        {isDriver ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <StatCard
+              title="Total Delivered"
+              value={stats.totalOrders}
+              change="Lifetime"
+              isPositive={true}
+              icon={<ShoppingBag className="w-5 h-5" />}
+              subtitle="Orders successfully delivered"
+            />
+            <StatCard
+              title="Pending Deliveries"
+              value={stats.activeProducts}
+              change="To Do"
+              isPositive={true}
+              icon={<Package className="w-5 h-5 text-amber-500" />}
+              subtitle="Assigned to you"
+            />
+            <StatCard
+              title="COD Cash to Remit"
+              value={formatCurrency(stats.totalRevenue)}
+              change="Pending"
+              isPositive={false}
+              icon={<DollarSign className="w-5 h-5" />}
+              subtitle="Cash collected & pending remittance"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <StatCard
+              title="Total Revenue"
+              value={formatCurrency(stats.totalRevenue)}
+              change="+18.4%"
+              isPositive={true}
+              icon={<DollarSign className="w-5 h-5" />}
+              subtitle="Gross fertilizer sales"
+            />
+            <StatCard
+              title="Total Orders"
+              value={stats.totalOrders}
+              change="+12.1%"
+              isPositive={true}
+              icon={<ShoppingBag className="w-5 h-5" />}
+              subtitle="Fulfilled & Pending"
+            />
+            <StatCard
+              title="Active SKUs"
+              value={stats.activeProducts}
+              icon={<Package className="w-5 h-5" />}
+              subtitle="Government lab certified"
+            />
+            <StatCard
+              title="Low Stock Warning"
+              value={stats.lowStockCount}
+              change="Action Needed"
+              isPositive={false}
+              icon={<AlertCircle className="w-5 h-5 text-rose-500" />}
+              subtitle="Products < 10 bags"
+            />
+          </div>
+        )}
 
         {/* Revenue Chart Section */}
+        {!isDriver && (
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-sm dark:shadow-xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -139,6 +172,7 @@ export const Dashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
+        )}
 
         {/* Recent Orders Table */}
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 p-6 shadow-sm dark:shadow-xl space-y-4">

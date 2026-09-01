@@ -342,6 +342,9 @@ class OrderController extends Controller
                     if (!$order->driver_id && auth()->id()) {
                         $order->driver_id = auth()->id();
                     }
+                    if (!$order->tracking_number && $order->status === 'SHIPPED') {
+                        $order->tracking_number = 'TRACK-' . strtoupper(\Illuminate\Support\Str::random(8));
+                    }
                 }
                 
                 if ($order->status === 'DELIVERED') {
@@ -371,14 +374,16 @@ class OrderController extends Controller
             if (!$order->shipped_at) {
                 $order->shipped_at = now();
             }
+        }
 
+        if ($order->isDirty('driver_id') && $order->driver_id) {
             \App\Models\DriverSettlement::updateOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'driver_id' => $request->driver_id,
+                    'driver_id' => $order->driver_id,
                     'cash_collected' => (float)$order->total,
                     'status' => $order->status === 'DELIVERED' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
-                    'notes' => "Assigned to driver #{$request->driver_id} for order delivery."
+                    'notes' => "Assigned to driver #{$order->driver_id} for order delivery."
                 ]
             );
         }

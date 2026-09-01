@@ -816,7 +816,7 @@ export const adminApi = {
     try {
       const usersRes = await apiClient.get('/admin/users');
       const rawUsers = usersRes.data;
-      const userList = Array.isArray(rawUsers) ? rawUsers : (rawUsers?.data || []);
+      const userList = Array.isArray(rawUsers) ? rawUsers : (rawUsers?.data || rawUsers?.users || []);
       if (Array.isArray(userList) && userList.length > 0) {
         return userList;
       }

@@ -42,7 +42,11 @@ export const Sidebar: React.FC<{
     { name: 'Inventory', path: '/admin/inventory', icon: Warehouse, perm: 'inventory.view' },
     { name: 'Coupons', path: '/admin/coupons', icon: Tag, perm: 'products.view' },
     { name: 'Role & Permissions', path: '/admin/roles', icon: ShieldCheck, perm: 'roles.view' },
-  ].filter(link => !link.perm || isSuperAdmin || userPermissions.includes(link.perm));
+  ].filter(link => {
+    const isDriver = (user?.role || '').toLowerCase().includes('driver') || user?.roles?.some((r: string) => r.toLowerCase().includes('driver'));
+    if (isDriver && (link.name === 'FEFO Lot Batches' || link.name === 'Inventory')) return false;
+    return !link.perm || isSuperAdmin || userPermissions.includes(link.perm);
+  });
 
   const handleLogout = async () => {
     try {
