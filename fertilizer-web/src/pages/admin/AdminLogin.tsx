@@ -189,8 +189,9 @@ export const AdminLogin: React.FC = () => {
                   { label: '🛡️ System Admin', login: 'admin@fertilizershop.com', pass: 'admin123' },
                   { label: '🏪 Store Manager', login: 'store.manager@fertilizershop.com', pass: 'staff123' },
                   { label: '🎧 Support Lead', login: 'support@fertilizershop.com', pass: 'staff123' },
-                  { label: '📦 Warehouse', login: 'warehouse@fertilizershop.com', pass: 'staff123' },
-                  { label: '🚚 Driver', login: 'driver@sarkarfertilizer.com', pass: 'password' },
+                  { label: '🏭 Warehouse', login: 'warehouse@fertilizershop.com', pass: 'staff123' },
+                  { label: '📦 Packer', login: 'packer@fertilizershop.com', pass: 'staff123' },
+                  { label: '🚚 Driver', login: 'driver@fertilizershop.com', pass: 'staff123' },
                   { label: '🌾 Field Officer', login: 'field.officer@fertilizershop.com', pass: 'staff123' },
                   { label: '👤 General Staff', login: 'staff@fertilizershop.com', pass: 'staff123' },
                 ].map((demo, idx) => (
