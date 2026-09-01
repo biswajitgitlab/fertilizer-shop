@@ -18,9 +18,9 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
-        $adminUser = User::whereHas('roles', function ($q) {
+        $adminUser = \App\Models\Admin::whereHas('roles', function ($q) {
             $q->whereIn('name', ['Super Admin', 'Admin', 'Store Manager']);
-        })->first() ?? User::first();
+        })->first() ?? \App\Models\Admin::first();
 
         $adminUserId = $adminUser ? $adminUser->id : $users[0];
 

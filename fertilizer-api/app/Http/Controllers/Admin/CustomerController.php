@@ -29,11 +29,7 @@ class CustomerController extends Controller
         }
 
         $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search) {
-            $query = User::where(function ($q) {
-                $q->where('role', 'Customer')
-                  ->orWhere('role', 'Farmer')
-                  ->orWhereNull('role');
-            });
+            $query = User::query();
 
             if (!empty($search)) {
                 $query->where(function($q) use ($search) {
