@@ -29,11 +29,11 @@ class DriverSettlement extends Model
 
     public function driver(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'driver_id');
+        return $this->belongsTo(Admin::class, 'driver_id');
     }
 
     public function reconciler(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reconciled_by');
+        return $this->belongsTo(Admin::class, 'reconciled_by');
     }
 }

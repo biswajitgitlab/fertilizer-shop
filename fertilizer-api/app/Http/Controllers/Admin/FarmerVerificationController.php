@@ -25,6 +25,10 @@ class FarmerVerificationController extends Controller
         }
 
         $query = User::query()
+            ->where(function ($q) {
+                $q->whereIn('role', ['Customer', 'Farmer', 'customer', 'farmer'])
+                  ->orWhereNull('role');
+            })
             ->select('id', 'name', 'email', 'phone', 'is_verified', 'kcc_number', 'aadhaar_hash', 'subsidy_tier', 'verification_status', 'farm_location', 'farm_size_acres', 'created_at');
 
         if (!empty($search)) {
@@ -48,7 +52,7 @@ class FarmerVerificationController extends Controller
                 'name' => $u->name ?: 'Customer Account',
                 'email' => $u->email,
                 'phone' => $u->phone ?: 'N/A',
-                'role' => 'Customer',
+                'role' => $u->role ?: 'Customer',
                 'is_verified' => (bool)$u->is_verified,
                 'kcc_number' => $u->kcc_number ?: ('KCC-2026-' . str_pad($u->id, 5, '0', STR_PAD_LEFT)),
                 'aadhaar_hash' => $u->aadhaar_hash,
@@ -100,14 +104,7 @@ class FarmerVerificationController extends Controller
 
         // Clear cache
         try {
-            if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
-                foreach ($redis->keys('*farmers:*') as $key) {
-                    $redis->del($key);
-                }
-            } else {
-                Cache::flush();
-            }
+            Cache::flush();
         } catch (\Throwable $e) {}
 
         return response()->json([

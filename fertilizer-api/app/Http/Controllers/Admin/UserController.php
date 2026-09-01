@@ -320,15 +320,7 @@ class UserController extends Controller
     private function clearCache()
     {
         try {
-            Cache::forget('admin_team_list');
-            if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
-                foreach ($redis->keys('*users:*') as $key) {
-                    $redis->del($key);
-                }
-            } else {
-                Cache::flush();
-            }
+            Cache::flush();
         } catch (\Throwable $e) {}
     }
 }

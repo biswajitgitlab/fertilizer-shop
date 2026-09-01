@@ -18,7 +18,7 @@ class SettlementController extends Controller
             ->whereNotIn('id', DriverSettlement::pluck('order_id'))
             ->get();
 
-        $driverUser = \App\Models\User::where('role', 'driver')->first() ?? \App\Models\User::first();
+        $driverUser = \App\Models\Admin::where('role', 'Logistics Driver')->first() ?? \App\Models\Admin::first();
 
         foreach ($unlinkedCodOrders as $order) {
             DriverSettlement::firstOrCreate(
@@ -124,15 +124,7 @@ class SettlementController extends Controller
     private function clearSettlementCaches()
     {
         try {
-            try {
-                $redis = Cache::store('redis')->getRedis();
-                $keys = $redis->keys('*settlements:*');
-                foreach ($keys as $key) {
-                    $redis->del($key);
-                }
-            } catch (\Throwable $e) {
-                Cache::flush();
-            }
+            Cache::flush();
         } catch (\Throwable $e) {
             // Silently fail if cache clearing encounters an unrecoverable error
         }
