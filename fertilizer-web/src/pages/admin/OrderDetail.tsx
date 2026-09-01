@@ -358,7 +358,7 @@ export const OrderDetail: React.FC = () => {
                 )}
                 {order.discount > 0 && (
                   <div className="flex justify-between text-rose-500 dark:text-rose-400">
-                    <span>Discount</span>
+                    <span>Discount {(order as any).coupon_code || (order as any).couponCode ? `(${(order as any).coupon_code || (order as any).couponCode})` : ''}</span>
                     <span className="font-medium">-{formatCurrency(order.discount || 0)}</span>
                   </div>
                 )}

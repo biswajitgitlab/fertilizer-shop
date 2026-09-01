@@ -58,8 +58,11 @@ class OrderController extends Controller
         }
 
         $discount = 0;
+        $appliedCouponCode = null;
+
         if ($couponCode) {
-            $isFirstOrderOnly = (strtoupper($couponCode) === 'NEWFARMER');
+            $couponCodeUpper = strtoupper(trim($couponCode));
+            $isFirstOrderOnly = ($couponCodeUpper === 'NEWFARMER');
             $user = auth()->user();
             $hasPreviousOrders = false;
 
@@ -68,7 +71,7 @@ class OrderController extends Controller
             }
 
             if (!$hasPreviousOrders) {
-                $coupon = Coupon::where('code', $couponCode)
+                $coupon = Coupon::where('code', $couponCodeUpper)
                                 ->where('is_active', true)
                                 ->where(function($q) {
                                     $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
@@ -81,6 +84,19 @@ class OrderController extends Controller
                     } else {
                         $discount = $coupon->value;
                     }
+                    $appliedCouponCode = $coupon->code;
+                } else if ($couponCodeUpper === 'NEWFARMER' && $subtotal >= 499) {
+                    $discount = 150;
+                    $appliedCouponCode = 'NEWFARMER';
+                } else if (in_array($couponCodeUpper, ['WELCOME10', 'KRISHI10']) && $subtotal >= 299) {
+                    $discount = $subtotal * 0.10;
+                    $appliedCouponCode = $couponCodeUpper;
+                } else if ($couponCodeUpper === 'KRISHISAVE' && $subtotal >= 999) {
+                    $discount = 250;
+                    $appliedCouponCode = 'KRISHISAVE';
+                } else if ($couponCodeUpper === 'FARMER100') {
+                    $discount = 100;
+                    $appliedCouponCode = 'FARMER100';
                 }
             }
         }
@@ -97,6 +113,7 @@ class OrderController extends Controller
 
         return [
             'items' => $hydratedItems,
+            'coupon_code' => $appliedCouponCode,
             'summary' => [
                 'subtotal' => round($subtotal, 2),
                 'discount' => round($discount, 2),
@@ -239,6 +256,7 @@ class OrderController extends Controller
                     'status' => 'CONFIRMED',
                     'subtotal' => $summary['subtotal'],
                     'discount' => $summary['discount'],
+                    'coupon_code' => $summary['discount'] > 0 ? ($calculation['coupon_code'] ?? $request->input('coupon_code') ?? $request->input('couponCode')) : null,
                     'tax' => $summary['tax'],
                     'shipping_cost' => $summary['shipping'],
                     'total' => $summary['total'],

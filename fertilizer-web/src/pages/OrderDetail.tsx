@@ -73,6 +73,7 @@ const normalizeOrder = (raw: any): Order | null => {
     shippingFee: Number(o.shipping_cost ?? o.shippingFee ?? 0),
     tax: Number(o.tax || 0),
     discount: Number(o.discount || 0),
+    couponCode: o.coupon_code || o.couponCode || undefined,
     total: Number(o.total || 0),
     paymentMethod,
     paymentStatus,
@@ -243,7 +244,7 @@ export const OrderDetail: React.FC = () => {
 
           <div className="border-t border-gray-100 dark:border-slate-800 pt-3 space-y-1.5 text-xs text-gray-600 dark:text-slate-400 font-medium">
             <div className="flex justify-between"><span>Subtotal</span><span className="text-gray-900 dark:text-white font-bold">{formatCurrency(order.subtotal)}</span></div>
-            {order.discount > 0 && <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-bold"><span>Discount</span><span>-{formatCurrency(order.discount)}</span></div>}
+            {order.discount > 0 && <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-bold"><span>Discount Savings {order.couponCode ? `(${order.couponCode})` : ''}</span><span>-{formatCurrency(order.discount)}</span></div>}
             <div className="flex justify-between"><span>Shipping Fee</span><span>₹{order.shippingFee}</span></div>
             <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>GST (18%)</span><span>₹{order.tax}</span></div>
             <div className="flex justify-between text-base font-black text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-slate-800"><span>Total</span><span className="text-emerald-800 dark:text-emerald-400">{formatCurrency(order.total)}</span></div>

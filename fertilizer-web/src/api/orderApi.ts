@@ -47,7 +47,8 @@ export const orderApi = {
         ...orderData,
         items: formattedItems,
         shipping_address: orderData.shippingAddress || orderData.shipping_address,
-        payment_method: orderData.paymentMethod === 'Cash on Delivery' ? 'COD' : (orderData.paymentMethod === 'Online Payment' ? 'ONLINE' : orderData.paymentMethod || 'COD')
+        payment_method: orderData.paymentMethod === 'Cash on Delivery' ? 'COD' : (orderData.paymentMethod === 'Online Payment' ? 'ONLINE' : orderData.paymentMethod || 'COD'),
+        coupon_code: orderData.couponCode || orderData.coupon_code
       };
 
       const res = await apiClient.post('/orders', payload);

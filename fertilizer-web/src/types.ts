@@ -84,6 +84,7 @@ export interface Order {
   shippingFee: number;
   tax: number;
   discount: number;
+  couponCode?: string;
   total: number;
   paymentMethod: 'Cash on Delivery' | 'Online Payment';
   paymentStatus: 'Pending' | 'Paid' | 'Failed';

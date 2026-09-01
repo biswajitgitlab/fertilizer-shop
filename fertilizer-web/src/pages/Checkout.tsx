@@ -15,7 +15,7 @@ import { PaymentModal } from '../components/checkout/PaymentModal';
 
 export const Checkout: React.FC = () => {
   const navigate = useNavigate();
-  const { items, subtotal, discount, shippingFee, tax, total, clearCart, hasOutOfStockItems } = useCart();
+  const { items, subtotal, discount, shippingFee, tax, total, couponCode, clearCart, hasOutOfStockItems } = useCart();
 
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState<ShippingAddress>({
@@ -55,6 +55,7 @@ export const Checkout: React.FC = () => {
         paymentMethod,
         subtotal,
         discount,
+        couponCode,
         shippingFee,
         tax,
         total
