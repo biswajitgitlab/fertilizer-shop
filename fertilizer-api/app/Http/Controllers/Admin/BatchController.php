@@ -139,7 +139,7 @@ class BatchController extends Controller
     private function clearBatchCache()
     {
         try {
-            if (\Illuminate\Support\Facades\Cache::config('cache.default') === 'redis') {
+            if (config('cache.default') === 'redis') {
                 $redis = \Illuminate\Support\Facades\Cache::redis();
                 foreach ($redis->keys('*batches:*') as $key) {
                     $redis->del($key);
@@ -147,9 +147,11 @@ class BatchController extends Controller
                 foreach ($redis->keys('*fefo:*') as $key) {
                     $redis->del($key);
                 }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
             }
         } catch (\Throwable $e) {}
-        \Illuminate\Support\Facades\Cache::flush();
     }
 
     public function update(Request $request, $id)

@@ -104,7 +104,15 @@ class FarmerVerificationController extends Controller
 
         // Clear cache
         try {
-            Cache::flush();
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*farmers:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
         } catch (\Throwable $e) {}
 
         return response()->json([

@@ -20,6 +20,17 @@ class ProductController extends Controller
         if ($slug) {
             Cache::forget("product_{$slug}");
         }
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*inventory:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
     }
 
     /**

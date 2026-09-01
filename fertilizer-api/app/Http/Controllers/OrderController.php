@@ -603,21 +603,18 @@ class OrderController extends Controller
             Cache::forget('admin_dashboard_stats');
             Cache::forget('admin_analytics_metrics');
 
-            try {
-                $redis = Cache::store('redis')->getRedis();
-                $keys = $redis->keys('*orders:*');
-                foreach ($keys as $key) {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*orders:*') as $key) {
                     $redis->del($key);
                 }
-                $sKeys = $redis->keys('*settlements:*');
-                foreach ($sKeys as $key) {
+                foreach ($redis->keys('*settlements:*') as $key) {
                     $redis->del($key);
                 }
-            } catch (\Throwable $e) {
-                Cache::flush();
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
             }
-        } catch (\Throwable $e) {
-            Cache::flush();
-        }
+        } catch (\Throwable $e) {}
     }
 }

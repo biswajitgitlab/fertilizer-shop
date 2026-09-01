@@ -320,7 +320,15 @@ class UserController extends Controller
     private function clearCache()
     {
         try {
-            Cache::flush();
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*users:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
         } catch (\Throwable $e) {}
     }
 }

@@ -121,6 +121,20 @@ class InventoryController extends Controller
         Cache::forget('admin_dashboard_stats');
         Cache::forget('products_featured');
         Cache::forget('products_trending');
+        Cache::forget("admin_inventory_logs_{$product->id}");
+        
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*inventory:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+
         if ($product->slug) {
             Cache::forget("product_{$product->slug}");
         }

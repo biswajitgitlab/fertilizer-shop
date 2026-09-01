@@ -33,6 +33,15 @@ class N8nWebhookController extends Controller
             'status' => $status
         ]);
 
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = \Illuminate\Support\Facades\Cache::redis();
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json(['message' => 'Diagnosis result updated successfully']);
     }
 

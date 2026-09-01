@@ -41,6 +41,7 @@ class BundleController extends Controller
         }
 
         Cache::forget('admin_bundles_list');
+        Cache::forget('krishi_bundles_active');
 
         return response()->json($bundle->load('products'), 201);
     }
@@ -85,6 +86,10 @@ class BundleController extends Controller
 
         Cache::forget('admin_bundles_list');
         Cache::forget("admin_bundle_{$id}");
+        Cache::forget('krishi_bundles_active');
+        if ($bundle->slug) {
+            Cache::forget("krishi_bundle_{$bundle->slug}");
+        }
 
         return response()->json($bundle->load('products'));
     }
@@ -92,10 +97,15 @@ class BundleController extends Controller
     public function destroy(string $id)
     {
         $bundle = ProductBundle::findOrFail($id);
+        $slug = $bundle->slug;
         $bundle->delete();
 
         Cache::forget('admin_bundles_list');
         Cache::forget("admin_bundle_{$id}");
+        Cache::forget('krishi_bundles_active');
+        if ($slug) {
+            Cache::forget("krishi_bundle_{$slug}");
+        }
 
         return response()->json(['message' => 'Bundle deleted']);
     }

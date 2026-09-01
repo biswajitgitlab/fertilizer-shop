@@ -67,6 +67,15 @@ class DiagnosisController extends Controller
             \Log::error('Failed to trigger n8n diagnosis webhook: ' . $e->getMessage());
         }
 
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = \Illuminate\Support\Facades\Cache::redis();
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'message' => 'Diagnosis submitted successfully',
             'diagnosis_id' => $diagnosis->id

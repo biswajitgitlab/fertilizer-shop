@@ -12,7 +12,15 @@ class WarehouseZoneController extends Controller
     private function clearZoneCache()
     {
         try {
-            Cache::flush();
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*zones:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
         } catch (\Throwable $e) {}
     }
 

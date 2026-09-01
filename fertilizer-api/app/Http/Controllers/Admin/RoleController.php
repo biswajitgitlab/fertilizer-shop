@@ -19,6 +19,17 @@ class RoleController extends Controller
         Cache::forget('admin_roles_list');
         Cache::forget('admin_permissions_list');
         Cache::forget('admin_team_list');
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*admin_roles_list*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
+        } catch (\Throwable $e) {}
     }
 
     /**

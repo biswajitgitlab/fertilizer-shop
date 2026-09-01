@@ -124,7 +124,15 @@ class SettlementController extends Controller
     private function clearSettlementCaches()
     {
         try {
-            Cache::flush();
+            if (config('cache.default') === 'redis') {
+                $redis = Cache::redis();
+                foreach ($redis->keys('*settlements:*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*report:*') as $key) {
+                    $redis->del($key);
+                }
+            }
         } catch (\Throwable $e) {
             // Silently fail if cache clearing encounters an unrecoverable error
         }
