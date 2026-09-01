@@ -80,13 +80,18 @@ export const Settlements: React.FC = () => {
     fetchSettlements();
   }, [page, perPage, debouncedSearch, statusFilter]);
 
+  const [settlingId, setSettlingId] = useState<number | null>(null);
+
   const handleSettle = async (id: number) => {
+    setSettlingId(id);
     try {
       await api.post(`/admin/settlements/${id}/settle`);
       toast.success('COD cash reconciled & settled to bank!');
       fetchSettlements();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Settlement execution failed');
+    } finally {
+      setSettlingId(null);
     }
   };
 
@@ -249,9 +254,12 @@ export const Settlements: React.FC = () => {
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         {s.status === 'SETTLED_TO_BANK' ? (
-                          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold inline-flex items-center gap-1">
+                          <button
+                            disabled
+                            className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xl text-[11px] font-bold inline-flex items-center gap-1.5 opacity-80 cursor-not-allowed shadow-xs"
+                          >
                             <CheckCircle className="w-3.5 h-3.5" /> Bank Settled
-                          </span>
+                          </button>
                         ) : isDriver ? (
                           <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold inline-flex items-center gap-1">
                             Pending Admin Verification
@@ -259,9 +267,14 @@ export const Settlements: React.FC = () => {
                         ) : (
                           <button
                             onClick={() => handleSettle(s.id)}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition shadow-xs cursor-pointer active:scale-95"
+                            disabled={settlingId === s.id}
+                            className={`px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition shadow-xs flex items-center justify-center gap-1.5 ml-auto ${settlingId === s.id ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer active:scale-95'}`}
                           >
-                            Reconcile to Bank
+                            {settlingId === s.id ? (
+                              <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Reconciling...</>
+                            ) : (
+                              'Reconcile to Bank'
+                            )}
                           </button>
                         )}
                       </td>
