@@ -164,7 +164,7 @@ export const OrderDetail: React.FC = () => {
                       </span>
                     </div>
                     <span className="text-slate-500 dark:text-slate-400 font-mono text-[10px]">
-                      FEFO Priority Dispatch: <strong className="text-slate-700 dark:text-slate-200">Earliest Lot Batch</strong>
+                      FEFO Priority Dispatch: <strong className="text-slate-700 dark:text-slate-200">{(it as any).assigned_batch || 'Earliest Lot Batch'}</strong>
                     </span>
                   </div>
                 </div>

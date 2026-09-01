@@ -236,7 +236,7 @@ class OrderController extends Controller
                 $createdOrder = Order::create([
                     'user_id' => $user->id,
                     'order_number' => $orderNumber,
-                    'status' => 'PENDING',
+                    'status' => 'CONFIRMED',
                     'subtotal' => $summary['subtotal'],
                     'discount' => $summary['discount'],
                     'tax' => $summary['tax'],

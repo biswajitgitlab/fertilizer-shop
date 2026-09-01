@@ -106,7 +106,8 @@ export const normalizeAdminOrder = (o: any): Order => {
         usageInstructions: prod.usage_instructions || '',
         sku: prod.sku || 'SKU'
       },
-      quantity: qty
+      quantity: qty,
+      assigned_batch: item.assigned_batch || 'AUTO-BATCH'
     };
   });
 

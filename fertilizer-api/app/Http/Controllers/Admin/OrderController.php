@@ -20,7 +20,7 @@ class OrderController extends Controller
         $driverId = $request->get('driver_id');
         $assignedToMe = $request->boolean('assigned_to_me');
 
-        $currentUser = auth('admin')->user() ?: auth()->user();
+        $currentUser = auth()->user();
         $currentUserId = $currentUser ? $currentUser->id : 0;
         $currentRoles = $currentUser && method_exists($currentUser, 'getRoleNames') ? implode(',', $currentUser->getRoleNames()->toArray()) : 'all';
 
@@ -125,12 +125,14 @@ class OrderController extends Controller
                     'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
                     'items' => $order->items->map(function ($item) {
                         $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
+                        $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->where('stock_qty', '>', 0)->orderBy('expiry_date', 'asc')->first();
                         return [
                             'id' => $item->id,
                             'product_id' => $item->product_id,
                             'qty' => $item->qty,
                             'unit_price' => $effectiveUnitPrice,
                             'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
+                            'assigned_batch' => $earliestBatch ? $earliestBatch->batch_code : 'AUTO-BATCH',
                             'product' => $item->product ? [
                                 'id' => $item->product->id,
                                 'name' => $item->product->name,
@@ -201,12 +203,14 @@ class OrderController extends Controller
                 'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
                 'items' => $order->items->map(function ($item) {
                     $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
+                    $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->where('stock_qty', '>', 0)->orderBy('expiry_date', 'asc')->first();
                     return [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
                         'qty' => $item->qty,
                         'unit_price' => $effectiveUnitPrice,
                         'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
+                        'assigned_batch' => $earliestBatch ? $earliestBatch->batch_code : 'AUTO-BATCH',
                         'product' => $item->product ? [
                             'id' => $item->product->id,
                             'name' => $item->product->name,

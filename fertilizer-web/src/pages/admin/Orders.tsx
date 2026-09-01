@@ -5,14 +5,14 @@ import { adminApi } from '../../api/adminApi';
 import { Order } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import {
-  Search, X, RefreshCw, ChevronLeft, ChevronRight, Cpu, ShoppingBag
+  Search, X, RefreshCw, ChevronLeft, ChevronRight, Cpu, ShoppingBag,
+  Clock, CheckCircle, Package, Truck, Check, XCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
-  const [assignedToMe, setAssignedToMe] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Pagination & Search State
@@ -29,7 +29,6 @@ export const Orders: React.FC = () => {
         per_page: perPage,
         status: statusFilter,
         search,
-        assigned_to_me: assignedToMe ? 1 : undefined,
       });
       setOrders(res.orders || []);
       if (res.meta) {
@@ -45,7 +44,7 @@ export const Orders: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [page, perPage, statusFilter, assignedToMe]);
+  }, [page, perPage, statusFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,6 +62,39 @@ export const Orders: React.FC = () => {
     } catch (e) {
       toast.error("Failed to update status.");
     }
+  };
+
+  const getStatusStyles = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return { icon: Clock, classes: 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' };
+      case 'CONFIRMED':
+        return { icon: CheckCircle, classes: 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800' };
+      case 'PROCESSING':
+      case 'PACKED':
+      case 'READY_FOR_PICKUP':
+        return { icon: Package, classes: 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800' };
+      case 'SHIPPED':
+      case 'OUT_FOR_DELIVERY':
+        return { icon: Truck, classes: 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' };
+      case 'DELIVERED':
+        return { icon: Check, classes: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' };
+      case 'CANCELLED':
+      case 'REFUNDED':
+        return { icon: XCircle, classes: 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' };
+      default:
+        return { icon: Clock, classes: 'bg-slate-100 dark:bg-slate-900/50 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800' };
+    }
+  };
+
+  const renderStatusBadge = (status: string, extraClasses: string) => {
+    const { icon: Icon, classes } = getStatusStyles(status);
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-bold border ${classes} ${extraClasses}`}>
+        <Icon className="w-3.5 h-3.5" />
+        {status}
+      </span>
+    );
   };
 
   return (
@@ -144,16 +176,6 @@ export const Orders: React.FC = () => {
               </button>
             ))}
           </div>
-          <button
-            onClick={() => { setAssignedToMe(!assignedToMe); setPage(1); }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-              assignedToMe
-                ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-purple-500'
-            }`}
-          >
-            🎯 {assignedToMe ? 'Showing My Assigned Orders' : 'Filter: My Assigned Orders'}
-          </button>
         </div>
 
         {/* Orders Container: Mobile Cards (sm:hidden) & Desktop Table (hidden sm:block) */}
@@ -189,18 +211,7 @@ export const Orders: React.FC = () => {
 
                     <div>
                       <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase block text-right">Status</span>
-                      <select
-                        value={ord.status}
-                        onChange={(e) => handleUpdateStatus(ord.id, e.target.value)}
-                        className="bg-white dark:bg-slate-900 border border-emerald-300/80 dark:border-emerald-700/80 rounded-xl px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
-                      >
-                        <option value="Pending" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Pending</option>
-                        <option value="Confirmed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Confirmed</option>
-                        <option value="Packed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Packed</option>
-                        <option value="Shipped" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Shipped</option>
-                        <option value="Delivered" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Delivered</option>
-                        <option value="Cancelled" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Cancelled</option>
-                      </select>
+                      {renderStatusBadge(ord.status, "px-2.5 py-1 rounded-xl text-[10px] sm:text-xs")}
                     </div>
                   </div>
 
@@ -226,7 +237,7 @@ export const Orders: React.FC = () => {
                   <th className="py-3.5 px-4">Customer Name</th>
                   <th className="py-3.5 px-4">Date</th>
                   <th className="py-3.5 px-4">Amount</th>
-                  <th className="py-3.5 px-4">Change Status</th>
+                  <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Details</th>
                 </tr>
               </thead>
@@ -257,18 +268,7 @@ export const Orders: React.FC = () => {
                       <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">{formatDate(ord.createdAt)}</td>
                       <td className="py-3.5 px-4 font-black text-slate-900 dark:text-white">{formatCurrency(ord.total)}</td>
                       <td className="py-3.5 px-4">
-                        <select
-                          value={ord.status}
-                          onChange={(e) => handleUpdateStatus(ord.id, e.target.value)}
-                          className="bg-white dark:bg-slate-900 border border-emerald-300/80 dark:border-emerald-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-xs"
-                        >
-                          <option value="Pending" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Pending</option>
-                          <option value="Confirmed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Confirmed</option>
-                          <option value="Packed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Packed</option>
-                          <option value="Shipped" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Shipped</option>
-                          <option value="Delivered" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Delivered</option>
-                          <option value="Cancelled" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Cancelled</option>
-                        </select>
+                        {renderStatusBadge(ord.status, "px-3 py-1.5 rounded-xl text-xs")}
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <Link to={`/admin/orders/${ord.id}`} className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold transition-colors">
