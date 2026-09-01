@@ -20,15 +20,15 @@ export const OrderSummary: React.FC = () => {
   const [inputCoupon, setInputCoupon] = useState('');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCoupon.trim()) return;
-    const success = applyCoupon(inputCoupon.trim().toUpperCase());
-    if (success) {
-      toast.success(`Coupon "${inputCoupon.toUpperCase()}" applied!`);
+    const res = await applyCoupon(inputCoupon.trim().toUpperCase());
+    if (res.success) {
+      toast.success(res.message);
       setInputCoupon('');
     } else {
-      toast.error('Invalid coupon code. Try KRISHI10');
+      toast.error(res.message || 'Invalid coupon code');
     }
   };
 

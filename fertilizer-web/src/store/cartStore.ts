@@ -15,7 +15,7 @@ interface CartState {
   clearCart: () => void;
   toggleDrawer: () => void;
   setDrawerOpen: (isOpen: boolean) => void;
-  applyCoupon: (code: string) => { success: boolean; message: string };
+  applyCoupon: (code: string) => Promise<{ success: boolean; message: string }> | { success: boolean; message: string };
   removeCoupon: () => void;
   syncWithServer: () => Promise<void>;
   hasOutOfStockItems: () => boolean;
@@ -168,10 +168,30 @@ export const useCartStore = create<CartState>((set, get) => ({
   toggleDrawer: () => set((state) => ({ isOpen: !state.isOpen })),
   setDrawerOpen: (isOpen) => set({ isOpen }),
 
-  applyCoupon: (code) => {
+  applyCoupon: async (code) => {
     const cleanCode = code.trim().toUpperCase();
     const subtotal = get().getSubtotal();
 
+    // 1. Try DB Coupon via API
+    try {
+      const apiRes = await cartApi.applyCoupon(cleanCode);
+      if (apiRes && apiRes.coupon) {
+        const coupon = apiRes.coupon;
+        if (subtotal < coupon.min_order) {
+          return { success: false, message: `Coupon ${cleanCode} requires minimum subtotal of ₹${coupon.min_order}` };
+        }
+        let calcAmount = 0;
+        if (coupon.type === 'PERCENT') {
+          calcAmount = (subtotal * Number(coupon.value)) / 100;
+        } else {
+          calcAmount = Number(coupon.value);
+        }
+        set({ couponCode: cleanCode, discountPercent: coupon.type === 'PERCENT' ? Number(coupon.value) : 0, discountAmount: coupon.type === 'FIXED' ? Number(coupon.value) : calcAmount, isFreeShippingCoupon: false });
+        return { success: true, message: `🎉 Coupon ${cleanCode} applied! ${coupon.type === 'PERCENT' ? `${coupon.value}% OFF` : `Flat ₹${coupon.value} OFF`}` };
+      }
+    } catch (e) {}
+
+    // 2. Client-side promo token fallbacks
     if (cleanCode === 'NEWFARMER') {
       const hasPlacedOrders = localStorage.getItem('krishi_has_placed_orders') === 'true';
       if (hasPlacedOrders) {

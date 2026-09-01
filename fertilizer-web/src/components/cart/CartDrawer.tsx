@@ -53,10 +53,10 @@ export const CartDrawer: React.FC = () => {
     };
   }, [isOpen]);
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
-    const res = applyCoupon(couponInput);
+    const res = await applyCoupon(couponInput);
     if (res.success) {
       toast.success(res.message);
       setCouponInput('');
@@ -65,8 +65,8 @@ export const CartDrawer: React.FC = () => {
     }
   };
 
-  const handleQuickApplyToken = (code: string) => {
-    const res = applyCoupon(code);
+  const handleQuickApplyToken = async (code: string) => {
+    const res = await applyCoupon(code);
     if (res.success) {
       toast.success(res.message);
     } else {

@@ -31,10 +31,10 @@ export const Cart: React.FC = () => {
   const amountForFreeDelivery = Math.max(0, freeShippingThreshold - subtotal);
   const freeDeliveryProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!couponInput.trim()) return;
-    const res = applyCoupon(couponInput);
+    const res = await applyCoupon(couponInput);
     if (res.success) {
       toast.success(res.message);
       setCouponInput('');
@@ -43,8 +43,8 @@ export const Cart: React.FC = () => {
     }
   };
 
-  const handleQuickApplyToken = (code: string) => {
-    const res = applyCoupon(code);
+  const handleQuickApplyToken = async (code: string) => {
+    const res = await applyCoupon(code);
     if (res.success) {
       toast.success(res.message);
     } else {
