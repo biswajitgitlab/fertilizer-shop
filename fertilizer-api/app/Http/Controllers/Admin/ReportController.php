@@ -147,8 +147,8 @@ class ReportController extends Controller
                     'govt_audit_compliance_score' => $totalOrders > 0 ? '100%' : '0%', 
                     'active_kisan_card_farmers' => User::where('is_verified', true)->count(),
                 ],
-                'breakdown' => $subsidizedCategories,
-                'data' => $ledgerItems,
+                'breakdown' => $subsidizedCategories->toArray(),
+                'data' => $ledgerItems->toArray(),
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -227,7 +227,7 @@ class ReportController extends Controller
                         return $p['stock_qty'] * 150;
                     }),
                 ],
-                'data' => $paginatedBatches,
+                'data' => $paginatedBatches->toArray(),
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -257,12 +257,12 @@ class ReportController extends Controller
             $totalDiagnoses = CropDiagnosis::count();
 
             $diseaseClusters = CropDiagnosis::select(
-                    'disease_name',
+                    'ai_result',
                     DB::raw('COUNT(*) as occurrences'),
-                    DB::raw('MAX(confidence) as max_confidence'),
-                    DB::raw('AVG(confidence) as avg_confidence')
+                    DB::raw('MAX(confidence_score) as max_confidence'),
+                    DB::raw('AVG(confidence_score) as avg_confidence')
                 )
-                ->groupBy('disease_name')
+                ->groupBy('ai_result')
                 ->orderByDesc('occurrences')
                 ->get();
 
@@ -270,8 +270,8 @@ class ReportController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('disease_name', 'like', "%{$search}%")
-                      ->orWhere('crop_type', 'like', "%{$search}%")
+                    $q->where('ai_result', 'like', "%{$search}%")
+                      ->orWhere('crop_name', 'like', "%{$search}%")
                       ->orWhereHas('user', function ($uq) use ($search) {
                           $uq->where('name', 'like', "%{$search}%");
                       });
@@ -289,11 +289,11 @@ class ReportController extends Controller
                     return [
                         'id' => $diag->id,
                         'farmer_name' => $diag->user ? $diag->user->name : 'Anonymous Farmer',
-                        'crop_type' => $diag->crop_type ?? 'Paddy / Wheat',
-                        'diagnosed_pathology' => $diag->disease_name,
-                        'confidence' => (float) $diag->confidence,
-                        'severity' => $diag->confidence > 0.85 ? 'HIGH_OUTBREAK_RISK' : 'MODERATE',
-                        'recommended_remedy' => $diag->treatment ?? 'Apply Nitrogen (N46%) + Copper Oxychloride',
+                        'crop_type' => $diag->crop_name ?? 'Paddy / Wheat',
+                        'diagnosed_pathology' => $diag->ai_result,
+                        'confidence' => (float) $diag->confidence_score,
+                        'severity' => $diag->confidence_score > 0.85 ? 'HIGH_OUTBREAK_RISK' : 'MODERATE',
+                        'recommended_remedy' => $diag->admin_notes ?? 'Apply Nitrogen (N46%) + Copper Oxychloride',
                         'scanned_at' => $diag->created_at->format('Y-m-d H:i:s'),
                     ];
                 });
@@ -305,12 +305,12 @@ class ReportController extends Controller
             return [
                 'summary' => [
                     'total_diagnoses_scanned' => $totalDiagnoses,
-                    'top_outbreak_pathology' => $diseaseClusters->first()->disease_name ?? 'None',
+                    'top_outbreak_pathology' => $diseaseClusters->first()->ai_result ?? 'None',
                     'active_hotspot_regions' => 'N/A',
                     'remedy_inventory_readiness' => '0%',
                 ],
-                'pathology_clusters' => $diseaseClusters,
-                'data' => $scans,
+                'pathology_clusters' => $diseaseClusters->toArray(),
+                'data' => $scans->toArray(),
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -401,8 +401,8 @@ class ReportController extends Controller
                         'role' => $u->roles->pluck('name')->first() ?? 'Staff',
                         'is_verified' => (bool) $u->is_verified,
                     ];
-                }),
-                'data' => $logs,
+                })->toArray(),
+                'data' => $logs->toArray(),
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -524,7 +524,7 @@ class ReportController extends Controller
                     'net_bank_settlement_est' => round($totalRevenue * 0.985, 2),
                     'razorpay_circuit_breaker' => $cbLabel,
                 ],
-                'data' => $reconciliationList,
+                'data' => $reconciliationList->toArray(),
                 'meta' => [
                     'current_page' => $page,
                     'last_page' => $lastPage,
@@ -536,9 +536,4 @@ class ReportController extends Controller
 
         return response()->json($report);
     }
-}
-}
-
-function typeof_is_object($val) {
-    return is_object($val) || is_array($val);
 }

@@ -381,9 +381,7 @@ export const Reports: React.FC = () => {
                                 volume: Number(item.total_qty_kg) || 0,
                               }))
                             : [
-                                { category: 'Chemical Fertilizers', volume: 1450 },
-                                { category: 'Subsidized Inputs', volume: 1120 },
-                                { category: 'Pesticides & Fungicides', volume: 680 },
+                                { category: 'No Data Yet', volume: 0 }
                               ]
                         }>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />

@@ -103,7 +103,7 @@ class DashboardController extends Controller
                     'image' => $p && $p->images_json ? $p->images_json[0] : null,
                     'total_sold' => (int) $item->total_sold
                 ];
-            });
+            })->values()->toArray();
 
             // Active Products
             $activeProducts = Product::where('is_active', true)->count();
@@ -123,7 +123,7 @@ class DashboardController extends Controller
                     'name' => $item->name,
                     'value' => (int) $item->value
                 ];
-            });
+            })->values()->toArray();
 
             return [
                 'stats' => [
