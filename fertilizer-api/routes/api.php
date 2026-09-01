@@ -145,6 +145,8 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->middleware('rbsc:orders.view');
     Route::get('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->middleware('rbsc:orders.view');
     Route::put('/orders/{id}', [\App\Http\Controllers\Admin\OrderController::class, 'update'])->middleware('rbsc:orders.edit,orders.status');
+    Route::post('/orders/{id}/claim-packing', [\App\Http\Controllers\Admin\OrderController::class, 'claimPacking'])->middleware('rbsc:orders.edit,orders.status');
+    Route::post('/orders/{id}/claim-delivery', [\App\Http\Controllers\Admin\OrderController::class, 'claimDelivery'])->middleware('rbsc:orders.edit,orders.status');
     Route::post('/orders/bulk-update', [\App\Http\Controllers\Admin\OrderController::class, 'bulkUpdate'])->middleware('rbsc:orders.edit,orders.status');
 
     // Customers CRM Management

@@ -249,7 +249,7 @@ class AdminNotificationController extends Controller
 
         // Scope 1: Inventory Management
         if ($isSuperAdmin || in_array('inventory.view', $effectivePermissions) || in_array('products.edit', $effectivePermissions)) {
-            $lowStockProducts = Product::where('stock_qty', '<=', 10)->get();
+            $lowStockProducts = Product::select('id', 'name', 'stock_qty', 'updated_at')->where('stock_qty', '<=', 10)->get();
             foreach ($lowStockProducts as $prod) {
                 $id = "live_inv_{$prod->id}";
                 $itemTs = $prod->updated_at ? $prod->updated_at->timestamp : now()->timestamp;
@@ -272,7 +272,7 @@ class AdminNotificationController extends Controller
 
         // Scope 2: Orders & Sales Fulfillment
         if ($isSuperAdmin || in_array('orders.view', $effectivePermissions)) {
-            $recentOrders = Order::latest()->take(5)->get();
+            $recentOrders = Order::select('id', 'order_number', 'total', 'status', 'shipping_address_json', 'created_at')->latest()->take(5)->get();
             foreach ($recentOrders as $ord) {
                 $id = "live_ord_{$ord->id}";
                 $itemTs = $ord->created_at ? $ord->created_at->timestamp : now()->timestamp;
@@ -296,12 +296,17 @@ class AdminNotificationController extends Controller
 
         // Scope 3: Agri AI Crop Diagnoses
         if ($isSuperAdmin || in_array('diagnoses.view', $effectivePermissions) || in_array('diagnoses.review', $effectivePermissions)) {
-            $pendingDiagnoses = CropDiagnosis::where('admin_reviewed', false)->orWhere('status', 'PENDING')->latest()->take(3)->get();
+            $pendingDiagnoses = CropDiagnosis::select('id', 'crop_name', 'growth_stage', 'created_at')
+                ->where('admin_reviewed', false)
+                ->orWhere('status', 'PENDING')
+                ->latest()
+                ->take(3)
+                ->get();
             foreach ($pendingDiagnoses as $diag) {
                 $id = "live_diag_{$diag->id}";
                 $itemTs = $diag->created_at ? $diag->created_at->timestamp : now()->timestamp;
                 $isRead = in_array($id, $readByArray) || ($readAllTs > 0 && $itemTs <= $readAllTs);
-                $crop = $diag->crop_name ?? $diag->crop ?? 'Crop';
+                $crop = $diag->crop_name ?: 'Crop';
                 $stage = $diag->growth_stage ?: 'Unspecified stage';
 
                 $alerts[] = [
@@ -321,7 +326,7 @@ class AdminNotificationController extends Controller
 
         // Scope 4: Team & Staff Management
         if ($isSuperAdmin || in_array('roles.manage', $effectivePermissions) || in_array('users.manage', $effectivePermissions)) {
-            $unverifiedAdmins = Admin::where('is_verified', false)->get();
+            $unverifiedAdmins = Admin::select('id', 'name', 'email', 'created_at')->where('is_verified', false)->get();
             foreach ($unverifiedAdmins as $unvAdmin) {
                 $id = "live_user_{$unvAdmin->id}";
                 $itemTs = $unvAdmin->created_at ? $unvAdmin->created_at->timestamp : now()->timestamp;

@@ -256,8 +256,8 @@ class OrderController extends Controller
 
     public function update(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-        
+        $currentUserId = auth()->id();
+
         if ($request->has('status') && is_string($request->status)) {
             $request->merge(['status' => str_replace(' ', '_', strtoupper($request->status))]);
         }
@@ -272,170 +272,308 @@ class OrderController extends Controller
 
         $newStatus = $request->input('status');
 
-        if ($newStatus === 'CANCELLED' && $order->status !== 'CANCELLED') {
-            // Guard: Cannot cancel shipped/delivered orders
-            if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Order #{$order->order_number} has already been shipped/delivered and cannot be cancelled."
-                ], 422);
-            }
+        try {
+            $response = \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $currentUserId, $newStatus) {
+                // 1. Pessimistic Row Lock on Order
+                $order = Order::with(['packer', 'driver'])->where('id', $id)->lockForUpdate()->firstOrFail();
 
-            $reason = $request->input('cancellation_reason') ?? 'Admin initiated cancellation';
-            
-            \Illuminate\Support\Facades\DB::transaction(function() use ($order, $reason) {
-                $refundReferenceId = null;
-                $refundStatus = 'NOT_APPLICABLE';
-                $paymentStatus = $order->payment_status;
-                $refundAmount = 0.00;
+                // 2. Packer Concurrency Lock Validation
+                $requestedPackerId = $request->input('packer_id');
+                $isPackingAction = in_array($newStatus, ['PROCESSING', 'PACKED', 'READY_FOR_PICKUP']) || !is_null($requestedPackerId);
 
-                if ($order->payment_status === 'PAID' || in_array(strtoupper($order->payment_method), ['ONLINE', 'RAZORPAY', 'UPI'])) {
-                    $paymentService = app(\App\Contracts\PaymentServiceInterface::class);
-                    $refundResult = $paymentService->processRefund($order, (float) $order->total, $reason);
-
-                    $refundReferenceId = $refundResult['refund_id'] ?? ('rfnd_' . \Illuminate\Support\Str::random(12));
-                    $refundStatus = 'REFUNDED';
-                    $paymentStatus = 'REFUNDED';
-                    $refundAmount = (float) $order->total;
-                } else if ($order->payment_method === 'COD') {
-                    $paymentStatus = 'CANCELLED';
-                    $refundStatus = 'NOT_APPLICABLE';
-
-                    \App\Models\DriverSettlement::where('order_id', $order->id)->update([
-                        'status' => 'CANCELLED',
-                        'notes' => "Cancelled by ADMIN: {$reason}"
-                    ]);
-                }
-
-                $order->update([
-                    'status' => 'CANCELLED',
-                    'cancelled_at' => now(),
-                    'cancelled_by' => 'ADMIN',
-                    'cancellation_reason' => $reason,
-                    'payment_status' => $paymentStatus,
-                    'refund_status' => $refundStatus,
-                    'refund_amount' => $refundAmount,
-                    'refund_reference_id' => $refundReferenceId
-                ]);
-
-                // Restock products & batches
-                foreach ($order->items as $item) {
-                    $product = \App\Models\Product::find($item->product_id);
-                    if ($product) {
-                        $product->increment('stock_qty', $item->qty);
-
-                        $batch = \App\Models\ProductBatch::where('product_id', $product->id)
-                            ->where('expiry_date', '>', now())
-                            ->orderBy('expiry_date', 'desc')
-                            ->first();
-
-                        if ($batch) {
-                            $batch->increment('stock_qty', $item->qty);
-                        }
-
-                        \App\Models\InventoryLog::create([
-                            'product_id' => $product->id,
-                            'type' => 'CANCEL_RESTOCK',
-                            'qty' => $item->qty,
-                            'reason' => "Order #{$order->order_number} admin cancellation restock: {$reason}",
-                            'admin_id' => auth()->id()
-                        ]);
+                if ($isPackingAction) {
+                    if ($order->packer_id !== null && $order->packer_id != $currentUserId && ($requestedPackerId !== null && $order->packer_id != $requestedPackerId)) {
+                        $packerName = $order->packer ? $order->packer->name : "Packer #{$order->packer_id}";
+                        return response()->json([
+                            'status' => 'error',
+                            'conflict' => true,
+                            'message' => "Concurrency Conflict: Order #{$order->order_number} is already locked & being packed by {$packerName}."
+                        ], 409);
                     }
                 }
-            });
-        } else {
-            if ($request->has('status')) {
-                $order->status = strtoupper($request->status);
 
-                if (in_array($order->status, ['PROCESSING', 'PACKED', 'READY_FOR_PICKUP'])) {
+                // 3. Driver Concurrency Lock Validation
+                $requestedDriverId = $request->input('driver_id');
+                $isShippingAction = in_array($newStatus, ['SHIPPED', 'OUT_FOR_DELIVERY']) || !is_null($requestedDriverId);
+
+                if ($isShippingAction) {
+                    if ($order->driver_id !== null && $order->driver_id != $currentUserId && ($requestedDriverId !== null && $order->driver_id != $requestedDriverId)) {
+                        $driverName = $order->driver ? $order->driver->name : "Driver #{$order->driver_id}";
+                        return response()->json([
+                            'status' => 'error',
+                            'conflict' => true,
+                            'message' => "Concurrency Conflict: Order #{$order->order_number} has already been claimed & assigned to driver {$driverName}."
+                        ], 409);
+                    }
+                }
+
+                // 4. Cancellation Logic
+                if ($newStatus === 'CANCELLED' && $order->status !== 'CANCELLED') {
+                    if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'])) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Order #{$order->order_number} has already been shipped/delivered and cannot be cancelled."
+                        ], 422);
+                    }
+
+                    $reason = $request->input('cancellation_reason') ?? 'Admin initiated cancellation';
+                    $refundReferenceId = null;
+                    $refundStatus = 'NOT_APPLICABLE';
+                    $paymentStatus = $order->payment_status;
+                    $refundAmount = 0.00;
+
+                    if ($order->payment_status === 'PAID' || in_array(strtoupper($order->payment_method), ['ONLINE', 'RAZORPAY', 'UPI'])) {
+                        $paymentService = app(\App\Contracts\PaymentServiceInterface::class);
+                        $refundResult = $paymentService->processRefund($order, (float) $order->total, $reason);
+
+                        $refundReferenceId = $refundResult['refund_id'] ?? ('rfnd_' . \Illuminate\Support\Str::random(12));
+                        $refundStatus = 'REFUNDED';
+                        $paymentStatus = 'REFUNDED';
+                        $refundAmount = (float) $order->total;
+                    } else if ($order->payment_method === 'COD') {
+                        $paymentStatus = 'CANCELLED';
+                        $refundStatus = 'NOT_APPLICABLE';
+
+                        \App\Models\DriverSettlement::where('order_id', $order->id)->update([
+                            'status' => 'CANCELLED',
+                            'notes' => "Cancelled by ADMIN: {$reason}"
+                        ]);
+                    }
+
+                    $order->update([
+                        'status' => 'CANCELLED',
+                        'cancelled_at' => now(),
+                        'cancelled_by' => 'ADMIN',
+                        'cancellation_reason' => $reason,
+                        'payment_status' => $paymentStatus,
+                        'refund_status' => $refundStatus,
+                        'refund_amount' => $refundAmount,
+                        'refund_reference_id' => $refundReferenceId
+                    ]);
+
+                    foreach ($order->items as $item) {
+                        $product = \App\Models\Product::find($item->product_id);
+                        if ($product) {
+                            $product->increment('stock_qty', $item->qty);
+
+                            $batch = \App\Models\ProductBatch::where('product_id', $product->id)
+                                ->where('expiry_date', '>', now())
+                                ->orderBy('expiry_date', 'desc')
+                                ->first();
+
+                            if ($batch) {
+                                $batch->increment('stock_qty', $item->qty);
+                            }
+
+                            \App\Models\InventoryLog::create([
+                                'product_id' => $product->id,
+                                'type' => 'CANCEL_RESTOCK',
+                                'qty' => $item->qty,
+                                'reason' => "Order #{$order->order_number} admin cancellation restock: {$reason}",
+                                'admin_id' => $currentUserId
+                            ]);
+                        }
+                    }
+                } else {
+                    if ($request->has('status')) {
+                        $order->status = strtoupper($request->status);
+
+                        if (in_array($order->status, ['PROCESSING', 'PACKED', 'READY_FOR_PICKUP'])) {
+                            if (!$order->packed_at) {
+                                $order->packed_at = now();
+                            }
+                            if (!$order->packer_id && $currentUserId) {
+                                $order->packer_id = $currentUserId;
+                            }
+                        }
+                        
+                        if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY'])) {
+                            if (!$order->shipped_at) {
+                                $order->shipped_at = now();
+                            }
+                            if (!$order->driver_id && $currentUserId) {
+                                $order->driver_id = $currentUserId;
+                            }
+                            if (!$order->tracking_number && $order->status === 'SHIPPED') {
+                                $order->tracking_number = 'TRACK-' . strtoupper(\Illuminate\Support\Str::random(8));
+                            }
+                        }
+                        
+                        if ($order->status === 'DELIVERED') {
+                            $order->delivered_at = now();
+                            $order->payment_status = 'PAID';
+                        }
+                    }
+                }
+
+                if ($request->has('packer_id') && $request->packer_id) {
+                    $order->packer_id = $request->packer_id;
+                    if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
+                        $order->status = 'PROCESSING';
+                    }
                     if (!$order->packed_at) {
                         $order->packed_at = now();
                     }
-                    if (!$order->packer_id && auth()->id()) {
-                        $order->packer_id = auth()->id();
-                    }
                 }
-                
-                if (in_array($order->status, ['SHIPPED', 'OUT_FOR_DELIVERY'])) {
+
+                if ($request->has('driver_id') && $request->driver_id) {
+                    $order->driver_id = $request->driver_id;
+                    if (in_array($order->status, ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED'])) {
+                        $order->status = 'OUT_FOR_DELIVERY';
+                    }
                     if (!$order->shipped_at) {
                         $order->shipped_at = now();
                     }
-                    if (!$order->driver_id && auth()->id()) {
-                        $order->driver_id = auth()->id();
-                    }
-                    if (!$order->tracking_number && $order->status === 'SHIPPED') {
-                        $order->tracking_number = 'TRACK-' . strtoupper(\Illuminate\Support\Str::random(8));
-                    }
                 }
-                
-                if ($order->status === 'DELIVERED') {
-                    $order->delivered_at = now();
-                    $order->payment_status = 'PAID';
+
+                if ($order->isDirty('driver_id') && $order->driver_id) {
+                    \App\Models\DriverSettlement::updateOrCreate(
+                        ['order_id' => $order->id],
+                        [
+                            'driver_id' => $order->driver_id,
+                            'cash_collected' => (float)$order->total,
+                            'status' => $order->status === 'DELIVERED' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
+                            'notes' => "Assigned to driver #{$order->driver_id} for order delivery."
+                        ]
+                    );
                 }
+
+                if ($request->has('tracking_number')) {
+                    $order->tracking_number = $request->tracking_number;
+                }
+
+                $order->save();
+                return $order;
+            });
+
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                return $response;
             }
-        }
 
-        // 1. Warehouse Packer Assignment -> Automatic Status Transition to PROCESSING / PACKED
-        if ($request->has('packer_id') && $request->packer_id) {
-            $order->packer_id = $request->packer_id;
-            if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
-                $order->status = 'PROCESSING';
+            $order = $response;
+            Cache::forget("admin_order_{$id}");
+            Cache::forget("admin_order_{$order->order_number}");
+            $this->clearOrderCaches();
+
+            app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);
+
+            try {
+                $order->load(['user', 'packer', 'driver']);
+                \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [
+                    'order_id' => $order->id,
+                    'status' => $order->status,
+                    'packer_name' => $order->packer->name ?? null,
+                    'driver_name' => $order->driver->name ?? null,
+                    'tracking_number' => $order->tracking_number,
+                    'user_phone' => $order->user->phone ?? 'Unknown',
+                ]);
+            } catch (\Exception $e) {
+                // Fail silently if webhook server is unreachable
             }
-            if (!$order->packed_at) {
-                $order->packed_at = now();
-            }
+
+            return response()->json(['message' => 'Order updated successfully', 'order' => $order]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    }
 
-        // 2. Logistics Driver Assignment -> Automatic Status Transition to OUT_FOR_DELIVERY
-        if ($request->has('driver_id') && $request->driver_id) {
-            $order->driver_id = $request->driver_id;
-            if (in_array($order->status, ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED'])) {
-                $order->status = 'OUT_FOR_DELIVERY';
-            }
-            if (!$order->shipped_at) {
-                $order->shipped_at = now();
-            }
-        }
-
-        if ($order->isDirty('driver_id') && $order->driver_id) {
-            \App\Models\DriverSettlement::updateOrCreate(
-                ['order_id' => $order->id],
-                [
-                    'driver_id' => $order->driver_id,
-                    'cash_collected' => (float)$order->total,
-                    'status' => $order->status === 'DELIVERED' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
-                    'notes' => "Assigned to driver #{$order->driver_id} for order delivery."
-                ]
-            );
-        }
-
-        if ($request->has('tracking_number')) {
-            $order->tracking_number = $request->tracking_number;
-        }
-
-        $order->save();
-
-        Cache::forget("admin_order_{$id}");
-        Cache::forget("admin_order_{$order->order_number}");
-        $this->clearOrderCaches();
-
-        app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);
+    /**
+     * POST /api/admin/orders/{id}/claim-packing
+     * Atomically lock & claim an order for packing by current packer.
+     */
+    public function claimPacking(Request $request, $id)
+    {
+        $currentUserId = auth()->id();
 
         try {
-            $order->load(['user', 'packer', 'driver']);
-            \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [
-                'order_id' => $order->id,
-                'status' => $order->status,
-                'packer_name' => $order->packer->name ?? null,
-                'driver_name' => $order->driver->name ?? null,
-                'tracking_number' => $order->tracking_number,
-                'user_phone' => $order->user->phone ?? 'Unknown',
-            ]);
-        } catch (\Exception $e) {
-            // Fail silently if webhook server is unreachable
-        }
+            $result = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $currentUserId) {
+                $order = Order::with('packer')->where('id', $id)->lockForUpdate()->firstOrFail();
 
-        return response()->json(['message' => 'Order updated successfully', 'order' => $order]);
+                if ($order->packer_id !== null && $order->packer_id != $currentUserId) {
+                    $packerName = $order->packer ? $order->packer->name : "Packer #{$order->packer_id}";
+                    return response()->json([
+                        'status' => 'error',
+                        'conflict' => true,
+                        'message' => "Order #{$order->order_number} is already locked & being packed by {$packerName}."
+                    ], 409);
+                }
+
+                $order->packer_id = $currentUserId;
+                if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
+                    $order->status = 'PROCESSING';
+                }
+                $order->packed_at = now();
+                $order->save();
+
+                return $order;
+            });
+
+            if ($result instanceof \Illuminate\Http\JsonResponse) {
+                return $result;
+            }
+
+            $this->clearOrderCaches();
+            return response()->json(['message' => 'Order packing claimed successfully', 'order' => $result]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * POST /api/admin/orders/{id}/claim-delivery
+     * Atomically lock & claim an order for shipping/delivery by current driver.
+     */
+    public function claimDelivery(Request $request, $id)
+    {
+        $currentUserId = auth()->id();
+
+        try {
+            $result = \Illuminate\Support\Facades\DB::transaction(function () use ($id, $currentUserId) {
+                $order = Order::with('driver')->where('id', $id)->lockForUpdate()->firstOrFail();
+
+                if ($order->driver_id !== null && $order->driver_id != $currentUserId) {
+                    $driverName = $order->driver ? $order->driver->name : "Driver #{$order->driver_id}";
+                    return response()->json([
+                        'status' => 'error',
+                        'conflict' => true,
+                        'message' => "Order #{$order->order_number} is already claimed & assigned to driver {$driverName}."
+                    ], 409);
+                }
+
+                $order->driver_id = $currentUserId;
+                if (in_array($order->status, ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED'])) {
+                    $order->status = 'OUT_FOR_DELIVERY';
+                }
+                if (!$order->shipped_at) {
+                    $order->shipped_at = now();
+                }
+                if (!$order->tracking_number) {
+                    $order->tracking_number = 'TRACK-' . strtoupper(\Illuminate\Support\Str::random(8));
+                }
+                $order->save();
+
+                \App\Models\DriverSettlement::updateOrCreate(
+                    ['order_id' => $order->id],
+                    [
+                        'driver_id' => $order->driver_id,
+                        'cash_collected' => (float)$order->total,
+                        'status' => 'DRIVER_COLLECTION_PENDING',
+                        'notes' => "Claimed by driver #{$currentUserId} for order delivery."
+                    ]
+                );
+
+                return $order;
+            });
+
+            if ($result instanceof \Illuminate\Http\JsonResponse) {
+                return $result;
+            }
+
+            $this->clearOrderCaches();
+            return response()->json(['message' => 'Order delivery claimed successfully', 'order' => $result]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 
     public function bulkUpdate(Request $request)

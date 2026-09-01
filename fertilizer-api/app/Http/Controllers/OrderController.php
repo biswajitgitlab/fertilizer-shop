@@ -305,10 +305,9 @@ class OrderController extends Controller
             // Trigger Notification Service (Redis + DB) for new order placement
             if ($order) {
                 if ($paymentMethod === 'COD') {
-                    $driverUser = \App\Models\User::where('role', 'driver')->first() ?? \App\Models\User::first();
                     \App\Models\DriverSettlement::create([
                         'order_id' => $order->id,
-                        'driver_id' => $driverUser ? $driverUser->id : null,
+                        'driver_id' => null,
                         'cash_collected' => $order->total,
                         'status' => 'DRIVER_COLLECTION_PENDING',
                     ]);
