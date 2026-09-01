@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useAuthStore } from '../../store/authStore';
 export const Orders: React.FC = () => {
+  const user = useAuthStore(state => state.user);
+  const isDriver = (user?.role || '').toLowerCase().includes('driver');
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +165,12 @@ export const Orders: React.FC = () => {
         {/* Status Filter Tabs */}
         <div className="flex items-center border border-emerald-200/70 dark:border-emerald-500/20 gap-3 overflow-x-auto text-xs font-bold bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-sm dark:shadow-xl justify-between">
           <div className="flex items-center gap-2 overflow-x-auto">
-            {['', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'].map(st => (
+            {['', 'Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled']
+              .filter(st => {
+                if (isDriver && (st === 'Pending' || st === 'Confirmed')) return false;
+                return true;
+              })
+              .map(st => (
               <button
                 key={st}
                 onClick={() => { setStatusFilter(st); setPage(1); }}

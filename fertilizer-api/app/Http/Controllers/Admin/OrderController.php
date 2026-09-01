@@ -43,7 +43,10 @@ class OrderController extends Controller
                     });
                 } else if ($currentUser->hasRole('Logistics Driver')) {
                     $query->where(function ($q) use ($currentUser) {
-                        $q->where('driver_id', $currentUser->id);
+                        $q->where('driver_id', $currentUser->id)
+                          ->orWhere(function ($q2) {
+                              $q2->where('status', 'PACKED')->whereNull('driver_id');
+                          });
                     });
                 }
             }

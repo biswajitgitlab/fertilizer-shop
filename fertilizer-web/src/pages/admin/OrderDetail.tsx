@@ -8,7 +8,10 @@ import { InvoiceDownloader } from '../../components/order/InvoiceDownloader';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useAuthStore } from '../../store/authStore';
 export const OrderDetail: React.FC = () => {
+  const user = useAuthStore(state => state.user);
+  const isDriver = (user?.role || '').toLowerCase().includes('driver');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
@@ -188,12 +191,12 @@ export const OrderDetail: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     onClick={() => handleStatusChange('Packed')}
-                    disabled={!['Pending', 'Confirmed'].includes(order.status)}
+                    disabled={isDriver || !['Pending', 'Confirmed'].includes(order.status)}
                     className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
                       ['Packed', 'Processing'].includes(order.status)
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                         : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    } disabled:opacity-50 disabled:cursor-not-allowed ${['Pending', 'Confirmed'].includes(order.status) ? 'cursor-pointer' : ''}`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed ${!isDriver && ['Pending', 'Confirmed'].includes(order.status) ? 'cursor-pointer' : ''}`}
                   >
                     1. Warehouse Packed
                   </button>
@@ -299,13 +302,13 @@ export const OrderDetail: React.FC = () => {
                     placeholder="e.g. DELHIVERY-890214"
                     value={trackingNo}
                     onChange={(e) => setTrackingNo(e.target.value)}
-                    disabled={order.status !== 'Shipped'}
+                    disabled={isDriver || order.status !== 'Shipped'}
                     className="flex-1 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button 
                     onClick={handleSaveTracking} 
-                    disabled={order.status !== 'Shipped'}
-                    className={`bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Shipped' ? 'cursor-pointer' : ''}`}
+                    disabled={isDriver || order.status !== 'Shipped'}
+                    className={`bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${!isDriver && order.status === 'Shipped' ? 'cursor-pointer' : ''}`}
                   >
                     Save Order Fulfillment
                   </button>
