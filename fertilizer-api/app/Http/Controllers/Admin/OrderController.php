@@ -328,6 +328,7 @@ class OrderController extends Controller
                     $order->delivered_at = now();
                     $order->payment_status = 'PAID';
 
+
                 }
             }
         }
@@ -396,7 +397,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'order_ids' => 'required|array',
-            'status' => 'required|in:PENDING,CONFIRMED,PROCESSING,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED'
+            'status' => 'required|in:PENDING,CONFIRMED,PROCESSING,PACKED,READY_FOR_PICKUP,SHIPPED,OUT_FOR_DELIVERY,DELIVERED,CANCELLED,REFUNDED'
         ]);
 
         Order::whereIn('id', $request->order_ids)->update(['status' => $request->status]);
