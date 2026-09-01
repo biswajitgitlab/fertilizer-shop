@@ -142,10 +142,10 @@ class ReportController extends Controller
 
             return [
                 'summary' => [
-                    'total_regulated_transactions' => $totalOrders > 0 ? $totalOrders : 42,
-                    'subsidy_quota_utilized_pct' => 68.4,
-                    'govt_audit_compliance_score' => '99.2%',
-                    'active_kisan_card_farmers' => User::where('is_verified', true)->count() ?: 4,
+                    'total_regulated_transactions' => $totalOrders,
+                    'subsidy_quota_utilized_pct' => 0.0, // Replace static 68.4 with 0 if no dynamic calculation
+                    'govt_audit_compliance_score' => $totalOrders > 0 ? '100%' : '0%', 
+                    'active_kisan_card_farmers' => User::where('is_verified', true)->count(),
                 ],
                 'breakdown' => $subsidizedCategories,
                 'data' => $ledgerItems,
@@ -220,7 +220,7 @@ class ReportController extends Controller
 
             return [
                 'summary' => [
-                    'total_batches_tracked' => $totalItems > 0 ? $totalItems : 15,
+                    'total_batches_tracked' => $totalItems,
                     'critical_expiry_batches' => $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->count(),
                     'fefo_dispatch_queue' => $batchAnalysis->where('status', 'FEFO_DISPATCH_PRIORITY')->count(),
                     'est_spoilage_risk_value' => $batchAnalysis->where('status', 'CRITICAL_EXPIRY_RISK')->sum(function($p) {
@@ -304,10 +304,10 @@ class ReportController extends Controller
 
             return [
                 'summary' => [
-                    'total_diagnoses_scanned' => $totalDiagnoses > 0 ? $totalDiagnoses : 3,
-                    'top_outbreak_pathology' => $diseaseClusters->first()->disease_name ?? 'Yellow Stripe Rust',
-                    'active_hotspot_regions' => 'Punjab, Haryana, West Bengal, Maharashtra',
-                    'remedy_inventory_readiness' => '94.5% Stocked',
+                    'total_diagnoses_scanned' => $totalDiagnoses,
+                    'top_outbreak_pathology' => $diseaseClusters->first()->disease_name ?? 'None',
+                    'active_hotspot_regions' => 'N/A',
+                    'remedy_inventory_readiness' => '0%',
                 ],
                 'pathology_clusters' => $diseaseClusters,
                 'data' => $scans,
@@ -388,10 +388,10 @@ class ReportController extends Controller
 
             return [
                 'summary' => [
-                    'active_staff_accounts' => $staffUsers->count() ?: 7,
+                    'active_staff_accounts' => $staffUsers->count(),
                     'security_policy_mode' => 'STRICT_RBSC_SANCTUM_ENFORCED',
-                    'failed_authorization_attempts_24h' => $failedAttempts24h ?: 3,
-                    'pii_exports_24h' => 1,
+                    'failed_authorization_attempts_24h' => $failedAttempts24h,
+                    'pii_exports_24h' => 0,
                 ],
                 'staff_privileges' => $staffUsers->map(function ($u) {
                     return [
@@ -518,10 +518,10 @@ class ReportController extends Controller
 
             return [
                 'summary' => [
-                    'gross_platform_revenue' => (float) ($totalRevenue > 0 ? $totalRevenue : 5515.00),
-                    'cod_pending_field_settlement' => (float) ($codOrders->sum('total') > 0 ? $codOrders->sum('total') : 758.00),
-                    'digital_pg_settled' => (float) ($onlineOrders->sum('total') > 0 ? $onlineOrders->sum('total') : 2307.00),
-                    'net_bank_settlement_est' => round(($totalRevenue > 0 ? $totalRevenue : 5515.00) * 0.985, 2),
+                    'gross_platform_revenue' => (float) $totalRevenue,
+                    'cod_pending_field_settlement' => (float) $codOrders->sum('total'),
+                    'digital_pg_settled' => (float) $onlineOrders->sum('total'),
+                    'net_bank_settlement_est' => round($totalRevenue * 0.985, 2),
                     'razorpay_circuit_breaker' => $cbLabel,
                 ],
                 'data' => $reconciliationList,

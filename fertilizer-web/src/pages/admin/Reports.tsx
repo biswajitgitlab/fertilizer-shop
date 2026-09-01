@@ -350,22 +350,22 @@ export const Reports: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Regulated Transactions</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.total_regulated_transactions || 42}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.total_regulated_transactions ?? 0}</p>
                       <p className="text-[10px] text-emerald-600 font-bold mt-0.5">PM-PRANAM Verified</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Subsidy Quota Consumed</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.subsidy_quota_utilized_pct || 68.4}%</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.subsidy_quota_utilized_pct ?? 0}%</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Within Seasonal Cap</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Audit Compliance Score</span>
-                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{regulatoryData?.summary?.govt_audit_compliance_score || '99.2%'}</p>
+                      <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{regulatoryData?.summary?.govt_audit_compliance_score ?? '0%'}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Form O/N Synchronized</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Verified Kisan Card Holders</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.active_kisan_card_farmers || 4}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{regulatoryData?.summary?.active_kisan_card_farmers ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Aadhaar Bio-Verified</p>
                     </div>
                   </div>
@@ -470,17 +470,17 @@ export const Reports: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Chemical Batches</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{fefoData?.summary?.total_batches_tracked || 15}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{fefoData?.summary?.total_batches_tracked ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Tracked in Main Warehouse</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Critical Expiry Risk (&lt;30 days)</span>
-                      <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{fefoData?.summary?.critical_expiry_batches || 2}</p>
+                      <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{fefoData?.summary?.critical_expiry_batches ?? 0}</p>
                       <p className="text-[10px] text-rose-500 font-bold mt-0.5">Action Required: Clearance Sale</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">FEFO Dispatch Queue</span>
-                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{fefoData?.summary?.fefo_dispatch_queue || 4}</p>
+                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{fefoData?.summary?.fefo_dispatch_queue ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Prioritized for Next Orders</p>
                     </div>
                   </div>
@@ -560,17 +560,17 @@ export const Reports: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Diagnoses Scanned</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{outbreakData?.summary?.total_diagnoses_scanned || 3}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{outbreakData?.summary?.total_diagnoses_scanned ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Leaf Scans Processed</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Top Outbreak Pathology</span>
-                      <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">{outbreakData?.summary?.top_outbreak_pathology || 'Yellow Stripe Rust'}</p>
+                      <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">{outbreakData?.summary?.top_outbreak_pathology ?? 'None'}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Prevalent in Wheat Canopy</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remedy Inventory Readiness</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{outbreakData?.summary?.remedy_inventory_readiness || '94.5%'}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{outbreakData?.summary?.remedy_inventory_readiness ?? '0%'}</p>
                       <p className="text-[10px] text-emerald-500 font-bold mt-0.5">Warehouse Ready</p>
                     </div>
                   </div>
@@ -638,12 +638,12 @@ export const Reports: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Staff Accounts</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{securityData?.summary?.active_staff_accounts || 7}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{securityData?.summary?.active_staff_accounts ?? 0}</p>
                       <p className="text-[10px] text-emerald-600 font-bold mt-0.5">RBSC Protected</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Failed Authorization Attempts (24h)</span>
-                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{securityData?.summary?.failed_authorization_attempts_24h || 3}</p>
+                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{securityData?.summary?.failed_authorization_attempts_24h ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Blocked by RBSC Guard</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
@@ -720,17 +720,17 @@ export const Reports: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Revenue Pipeline</span>
-                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">₹{financialData?.summary?.gross_platform_revenue || 3065}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">₹{financialData?.summary?.gross_platform_revenue ?? 0}</p>
                       <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Settled + Pending COD</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pending COD Field Collection</span>
-                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">₹{financialData?.summary?.cod_pending_field_settlement || 758}</p>
+                      <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">₹{financialData?.summary?.cod_pending_field_settlement ?? 0}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Driver Handover Pending</p>
                     </div>
                     <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
                       <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Razorpay Gateway Circuit</span>
-                      <p className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 font-mono">{financialData?.summary?.razorpay_circuit_breaker || 'CLOSED (OPERATIONAL)'}</p>
+                      <p className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 font-mono">{financialData?.summary?.razorpay_circuit_breaker ?? 'CLOSED'}</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Circuit Breaker Healthy</p>
                     </div>
                   </div>

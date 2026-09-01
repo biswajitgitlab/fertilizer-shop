@@ -29,7 +29,7 @@ class CheckPermission
         }
 
         // Super Admin bypasses all specific permission gates
-        if ($user->hasRole('Super Admin') || $user->role === 'Super Admin') {
+        if ($user->hasRole('Super Admin') || $user->role === 'Super Admin' || $user->is_super_admin) {
             return $next($request);
         }
 
