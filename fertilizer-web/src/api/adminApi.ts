@@ -130,6 +130,7 @@ export const normalizeAdminOrder = (o: any): Order => {
     if (rawStatus === 'CONFIRMED') status = 'Confirmed';
     else if (rawStatus === 'PACKED') status = 'Packed';
     else if (rawStatus === 'SHIPPED') status = 'Shipped';
+    else if (rawStatus === 'OUT_FOR_DELIVERY' || rawStatus === 'OUT FOR DELIVERY') status = 'Out for Delivery' as Order['status'];
     else if (rawStatus === 'DELIVERED') status = 'Delivered';
     else if (rawStatus === 'CANCELLED' || rawStatus === 'REFUNDED') status = 'Cancelled';
     else status = 'Pending';

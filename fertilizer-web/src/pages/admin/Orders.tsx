@@ -79,6 +79,7 @@ export const Orders: React.FC = () => {
         return { icon: Package, classes: 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800' };
       case 'SHIPPED':
       case 'OUT_FOR_DELIVERY':
+      case 'OUT FOR DELIVERY':
         return { icon: Truck, classes: 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' };
       case 'DELIVERED':
         return { icon: Check, classes: 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' };

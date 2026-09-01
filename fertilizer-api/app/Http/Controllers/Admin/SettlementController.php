@@ -24,7 +24,7 @@ class SettlementController extends Controller
             DriverSettlement::firstOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'driver_id' => $driverUser ? $driverUser->id : null,
+                    'driver_id' => $order->driver_id ?? ($driverUser ? $driverUser->id : null),
                     'cash_collected' => $order->total,
                     'status' => $order->payment_status === 'PAID' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
                     'notes' => 'Auto-generated COD field collection ledger for Order #' . $order->id,
@@ -38,7 +38,11 @@ class SettlementController extends Controller
         $search = trim($request->query('search', ''));
         $status = trim($request->query('status', 'ALL'));
 
-        $cacheKey = "settlements:p{$page}:pp{$perPage}:s{$search}:st{$status}";
+        $currentUser = auth()->user();
+        $currentUserId = $currentUser ? $currentUser->id : 0;
+        $currentRoles = $currentUser && method_exists($currentUser, 'getRoleNames') ? implode(',', $currentUser->getRoleNames()->toArray()) : 'all';
+
+        $cacheKey = "settlements:u{$currentUserId}:r{$currentRoles}:p{$page}:pp{$perPage}:s{$search}:st{$status}";
 
         $cachedResponse = Cache::get($cacheKey);
         if ($cachedResponse) {
@@ -49,6 +53,10 @@ class SettlementController extends Controller
         // 3. Build query
         $query = DriverSettlement::with(['order.user', 'driver', 'reconciler'])
             ->orderBy('created_at', 'desc');
+
+        if ($currentUser && method_exists($currentUser, 'hasRole') && $currentUser->hasRole('Logistics Driver')) {
+            $query->where('driver_id', $currentUser->id);
+        }
 
         if ($status !== 'ALL' && !empty($status)) {
             $query->where('status', $status);
@@ -69,8 +77,12 @@ class SettlementController extends Controller
 
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
+        $formattedItems = collect($paginated->items())->map(function ($settlement) {
+            return $settlement->toArray();
+        })->values()->toArray();
+
         $responseData = [
-            'data' => $paginated->items(),
+            'data' => $formattedItems,
             'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'per_page' => $paginated->perPage(),
@@ -112,17 +124,17 @@ class SettlementController extends Controller
     private function clearSettlementCaches()
     {
         try {
-            if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
+            try {
+                $redis = Cache::store('redis')->getRedis();
                 $keys = $redis->keys('*settlements:*');
                 foreach ($keys as $key) {
                     $redis->del($key);
                 }
-            } else {
+            } catch (\Throwable $e) {
                 Cache::flush();
             }
         } catch (\Throwable $e) {
-            Cache::flush();
+            // Silently fail if cache clearing encounters an unrecoverable error
         }
     }
 }

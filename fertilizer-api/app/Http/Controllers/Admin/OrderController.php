@@ -42,12 +42,13 @@ class OrderController extends Controller
                         $q->where('packer_id', $currentUser->id)->orWhereNull('packer_id');
                     });
                 } else if ($currentUser->hasRole('Logistics Driver')) {
-                    $query->where(function ($q) use ($currentUser) {
-                        $q->where('driver_id', $currentUser->id)
-                          ->orWhere(function ($q2) {
-                              $q2->where('status', 'PACKED')->whereNull('driver_id');
+                    $query->whereNotIn('status', ['PENDING', 'CONFIRMED'])
+                          ->where(function ($q) use ($currentUser) {
+                              $q->where('driver_id', $currentUser->id)
+                                ->orWhere(function ($q2) {
+                                    $q2->where('status', 'PACKED')->whereNull('driver_id');
+                                });
                           });
-                    });
                 }
             }
 
@@ -172,6 +173,8 @@ class OrderController extends Controller
 
     public function show($id)
     {
+        $currentUser = auth()->user();
+
         $orderData = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
             $order = Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])
                 ->where('id', $id)
@@ -229,7 +232,25 @@ class OrderController extends Controller
                 'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
             ];
         });
-        return response()->json($orderData);
+
+        if ($currentUser && method_exists($currentUser, 'hasRole')) {
+            if ($currentUser->hasRole('Warehouse Packer')) {
+                if ($orderData['packer_id'] !== null && $orderData['packer_id'] !== $currentUser->id) {
+                    abort(403, 'Unauthorized access to this order.');
+                }
+            } else if ($currentUser->hasRole('Logistics Driver')) {
+                if (in_array($orderData['status'], ['PENDING', 'CONFIRMED'])) {
+                    abort(403, 'Unauthorized access to this order.');
+                }
+                if ($orderData['driver_id'] !== null && $orderData['driver_id'] !== $currentUser->id) {
+                    abort(403, 'Unauthorized access to this order.');
+                }
+                if ($orderData['driver_id'] === null && $orderData['status'] !== 'PACKED') {
+                    abort(403, 'Unauthorized access to this order.');
+                }
+            }
+        }
+
         return response()->json($orderData);
     }
 
@@ -395,6 +416,7 @@ class OrderController extends Controller
         $order->save();
 
         Cache::forget("admin_order_{$id}");
+        Cache::forget("admin_order_{$order->order_number}");
         $this->clearOrderCaches();
 
         app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);

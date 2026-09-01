@@ -3,8 +3,11 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { apiClient as api } from '../../api/axiosInstances';
 import { Landmark, CheckCircle, RefreshCw, Search, Filter, ChevronLeft, ChevronRight, Zap, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../store/authStore';
 
 export const Settlements: React.FC = () => {
+  const user = useAuthStore(state => state.user);
+  const isDriver = (user?.role || '').toLowerCase().includes('driver');
   const [settlements, setSettlements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCached, setIsCached] = useState(false);
@@ -225,7 +228,7 @@ export const Settlements: React.FC = () => {
                         {s.order?.user?.name || 'Customer'}
                       </td>
                       <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-medium">
-                        {s.driver?.name || 'Field Officer Vikram'}
+                        {s.driver?.name || (isDriver ? user?.name : 'Unassigned Driver')}
                       </td>
                       <td className="py-3.5 px-4 font-bold text-emerald-600 dark:text-emerald-400 font-mono text-sm">
                         ₹{Number(s.cash_collected || s.order?.total || 0).toLocaleString('en-IN')}
@@ -248,6 +251,10 @@ export const Settlements: React.FC = () => {
                         {s.status === 'SETTLED_TO_BANK' ? (
                           <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold inline-flex items-center gap-1">
                             <CheckCircle className="w-3.5 h-3.5" /> Bank Settled
+                          </span>
+                        ) : isDriver ? (
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-bold inline-flex items-center gap-1">
+                            Pending Admin Verification
                           </span>
                         ) : (
                           <button

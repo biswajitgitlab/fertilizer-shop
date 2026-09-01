@@ -5,7 +5,7 @@ import { adminApi } from '../../api/adminApi';
 import { Order } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { InvoiceDownloader } from '../../components/order/InvoiceDownloader';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, CheckCircle, Clock, Package, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { useAuthStore } from '../../store/authStore';
@@ -71,12 +71,13 @@ export const OrderDetail: React.FC = () => {
     setSelectedPacker(packerId);
     if (!order) return;
     try {
-      const targetStatus = (order.status === 'Pending' || order.status === 'Confirmed') ? 'Packed' : order.status;
+      const currentStatus = (order.status || '').toUpperCase();
+      const targetStatus = (currentStatus === 'PENDING' || currentStatus === 'CONFIRMED') ? 'Packed' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, packerId, selectedDriver);
-      toast.success(`Warehouse Packer assigned! Order auto-updated to ${targetStatus}.`);
-      await fetchOrder();
-    } catch (e) {
-      toast.error("Failed to assign packer.");
+      fetchOrder();
+      toast.success('Warehouse Packer assigned');
+    } catch (error) {
+      toast.error('Failed to assign packer');
     }
   };
 
@@ -84,12 +85,13 @@ export const OrderDetail: React.FC = () => {
     setSelectedDriver(driverId);
     if (!order) return;
     try {
-      const targetStatus = (['Pending', 'Confirmed', 'Packed', 'Processing'].includes(order.status)) ? 'Shipped' : order.status;
+      const currentStatus = (order.status || '').toUpperCase();
+      const targetStatus = (['PENDING', 'CONFIRMED', 'PACKED', 'PROCESSING'].includes(currentStatus)) ? 'Shipped' : order.status;
       await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, selectedPacker, driverId);
-      toast.success(`Logistics Driver assigned! Order auto-updated to ${targetStatus}.`);
-      await fetchOrder();
-    } catch (e) {
-      toast.error("Failed to assign driver.");
+      fetchOrder();
+      toast.success('Logistics Driver assigned');
+    } catch (error) {
+      toast.error('Failed to assign driver');
     }
   };
 
@@ -145,7 +147,16 @@ export const OrderDetail: React.FC = () => {
           <div className="md:col-span-2 bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center justify-between">
               <span>Purchased Products</span>
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20 uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-500/20 uppercase tracking-wider flex items-center gap-1.5">
+                {(() => {
+                  const s = (order.status || '').toUpperCase();
+                  if (s === 'PENDING' || s === 'CONFIRMED') return <Clock className="w-3 h-3 animate-pulse text-amber-500" />;
+                  if (s === 'PACKED' || s === 'PROCESSING' || s === 'READY_FOR_PICKUP') return <Package className="w-3 h-3 animate-pulse text-blue-500" />;
+                  if (s === 'SHIPPED') return <Truck className="w-3 h-3 animate-bounce text-purple-500" />;
+                  if (s === 'OUT FOR DELIVERY' || s === 'OUT_FOR_DELIVERY') return <MapPin className="w-3 h-3 animate-bounce text-emerald-500" />;
+                  if (s === 'DELIVERED') return <CheckCircle className="w-3 h-3 animate-bounce text-emerald-500" />;
+                  return null;
+                })()}
                 {order.status}
               </span>
             </h3>
@@ -186,53 +197,56 @@ export const OrderDetail: React.FC = () => {
               <div className="p-4 rounded-2xl bg-slate-50/90 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">⚡ Fulfillment Workflow Actions</h4>
-                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Current: {order.status}</span>
+                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    Current: {order.status}
+                    {(() => {
+                      const s = (order.status || '').toUpperCase();
+                      if (s === 'PENDING' || s === 'CONFIRMED') return <Clock className="w-3.5 h-3.5 animate-pulse text-amber-500" />;
+                      if (s === 'PACKED' || s === 'PROCESSING' || s === 'READY_FOR_PICKUP') return <Package className="w-3.5 h-3.5 animate-pulse text-blue-500" />;
+                      if (s === 'SHIPPED') return <Truck className="w-3.5 h-3.5 animate-bounce text-purple-500" />;
+                      if (s === 'OUT FOR DELIVERY' || s === 'OUT_FOR_DELIVERY') return <MapPin className="w-3.5 h-3.5 animate-bounce text-emerald-500" />;
+                      if (s === 'DELIVERED') return <CheckCircle className="w-3.5 h-3.5 animate-bounce text-emerald-500" />;
+                      return null;
+                    })()}
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button
-                    onClick={() => handleStatusChange('Packed')}
-                    disabled={isDriver || !['Pending', 'Confirmed'].includes(order.status)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                      ['Packed', 'Processing'].includes(order.status)
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    } disabled:opacity-50 disabled:cursor-not-allowed ${!isDriver && ['Pending', 'Confirmed'].includes(order.status) ? 'cursor-pointer' : ''}`}
-                  >
-                    1. Warehouse Packed
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange('Shipped')}
-                    disabled={!['Packed', 'Processing'].includes(order.status)}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                      order.status === 'Shipped'
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    } disabled:opacity-50 disabled:cursor-not-allowed ${['Packed', 'Processing'].includes(order.status) ? 'cursor-pointer' : ''}`}
-                  >
-                    2. Shipped / In Transit
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange('Out for Delivery')}
-                    disabled={order.status !== 'Shipped'}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                      order.status === 'Out for Delivery'
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:border-emerald-500'
-                    } disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Shipped' ? 'cursor-pointer' : ''}`}
-                  >
-                    3. Out for Delivery
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange('Delivered')}
-                    disabled={order.status !== 'Out for Delivery'}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                      order.status === 'Delivered'
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 hover:bg-emerald-600 hover:text-white'
-                    } disabled:opacity-50 disabled:cursor-not-allowed ${order.status === 'Out for Delivery' ? 'cursor-pointer' : ''}`}
-                  >
-                    4. Delivered & Paid
-                  </button>
+                  {[
+                    { level: 1, label: '1. Warehouse Packed', action: 'Packed', disabled: isDriver || !['PENDING', 'CONFIRMED'].includes((order.status || '').toUpperCase()) },
+                    { level: 2, label: '2. Shipped / In Transit', action: 'Shipped', disabled: !['PACKED', 'PROCESSING'].includes((order.status || '').toUpperCase()) },
+                    { level: 3, label: '3. Out for Delivery', action: 'Out for Delivery', disabled: (order.status || '').toUpperCase() !== 'SHIPPED' },
+                    { level: 4, label: '4. Delivered & Paid', action: 'Delivered', disabled: !['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes((order.status || '').toUpperCase()) },
+                  ].map((btn) => {
+                    const s = (order.status || '').toUpperCase();
+                    let currentLevel = 0;
+                    if (['DELIVERED'].includes(s)) currentLevel = 4;
+                    else if (['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes(s)) currentLevel = 3;
+                    else if (['SHIPPED'].includes(s)) currentLevel = 2;
+                    else if (['PACKED', 'PROCESSING', 'READY_FOR_PICKUP'].includes(s)) currentLevel = 1;
+                    
+                    const isDone = currentLevel >= btn.level;
+                    const isActive = currentLevel === btn.level - 1;
+                    
+                    let buttonClass = '';
+                    if (isDone) {
+                      buttonClass = 'bg-emerald-600 text-white border-emerald-600 shadow-sm';
+                    } else if (isActive) {
+                      buttonClass = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-500 shadow-sm animate-pulse';
+                    } else {
+                      buttonClass = 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800';
+                    }
+
+                    return (
+                      <button
+                        key={btn.level}
+                        onClick={() => handleStatusChange(btn.action)}
+                        disabled={btn.disabled}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${buttonClass} disabled:opacity-50 disabled:cursor-not-allowed ${!btn.disabled ? 'cursor-pointer hover:border-emerald-400' : ''}`}
+                      >
+                        {btn.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

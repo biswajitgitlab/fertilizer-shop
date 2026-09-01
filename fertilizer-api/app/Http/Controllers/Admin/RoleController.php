@@ -215,7 +215,7 @@ class RoleController extends Controller
                         'permissions' => array_values(array_unique($effectivePermissions)),
                         'created_at' => $admin->created_at,
                     ];
-                });
+                })->toArray();
         });
 
         return response()->json($team);

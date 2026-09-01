@@ -121,7 +121,7 @@ class OrderController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $order = Order::with(['items.product', 'payment'])
+        $order = Order::with(['items.product', 'payment', 'driver'])
             ->where('user_id', $user->id)
             ->where(function($q) use ($id) {
                 $q->where('id', $id)->orWhere('order_number', $id);

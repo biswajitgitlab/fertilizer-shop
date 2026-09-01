@@ -85,7 +85,9 @@ const normalizeOrder = (raw: any): Order | null => {
     cancellationReason: o.cancellation_reason || o.cancellationReason,
     refundStatus: o.refund_status || o.refundStatus,
     refundAmount: Number(o.refund_amount || o.refundAmount || 0),
-    refundReferenceId: o.refund_reference_id || o.refundReferenceId
+    refundReferenceId: o.refund_reference_id || o.refundReferenceId,
+    driverName: o.driver?.name || o.driverName || null,
+    driverPhone: o.driver?.phone || o.driverPhone || null
   };
 };
 
@@ -201,9 +203,17 @@ export const OrderDetail: React.FC = () => {
         <h3 className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Shipment Tracking</h3>
         <OrderTimeline status={order.status} />
         {order.trackingNumber && (
-          <p className="text-xs text-center text-gray-600 dark:text-slate-400 font-medium pt-2 border-t border-gray-100 dark:border-slate-800">
-            Courier Tracking Number: <span className="font-bold text-emerald-800 dark:text-emerald-400">{order.trackingNumber}</span> (Delhivery Logistics)
-          </p>
+          <div className="pt-3 border-t border-gray-100 dark:border-slate-800 text-center space-y-1">
+            <p className="text-xs text-gray-600 dark:text-slate-400 font-medium">
+              Courier Tracking Number: <span className="font-bold text-emerald-800 dark:text-emerald-400">{order.trackingNumber}</span> (Logistics)
+            </p>
+            {order.status.toUpperCase() === 'OUT_FOR_DELIVERY' || order.status.toUpperCase() === 'OUT FOR DELIVERY' ? (
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center justify-center gap-1.5 pt-1">
+                <ShieldCheck className="w-4 h-4" />
+                Delivery Agent Phone: <span className="font-bold text-lg">{order.driverPhone || 'N/A'}</span>
+              </p>
+            ) : null}
+          </div>
         )}
       </div>
 
