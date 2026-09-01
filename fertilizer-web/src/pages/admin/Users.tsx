@@ -48,9 +48,7 @@ export const UsersPage: React.FC = () => {
 
   const [users, setUsers] = useState<StaffRecord[]>([]);
   const [stats, setStats] = useState<StaffStats>({ total_users: 0, staff_count: 0, customers_count: 0, unverified_count: 0 });
-  const [rolesList, setRolesList] = useState<string[]>([
-    'Super Admin', 'Admin', 'Store Manager', 'Customer Support', 'Warehouse Manager', 'Field Officer', 'Staff'
-  ]);
+  const [rolesList, setRolesList] = useState<string[]>([]);
   const [showDemoAccounts, setShowDemoAccounts] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -401,18 +399,18 @@ export const UsersPage: React.FC = () => {
         {/* Filter and Search Toolbar */}
         <div className="bg-white/90 dark:bg-slate-900/60 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm dark:shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3" />
             <input
               type="text"
               placeholder="Search staff name, email, or mobile..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
             />
-            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -420,30 +418,6 @@ export const UsersPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-400 shrink-0" />
-              <select
-                value={selectedRole}
-                onChange={(e) => { setSelectedRole(e.target.value); setPage(1); }}
-                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer font-bold"
-              >
-                <option value="ALL">All Roles</option>
-                {rolesList.map(r => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-            </div>
-
-            <select
-              value={selectedStatus}
-              onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer font-bold"
-            >
-              <option value="ALL">All Verification Statuses</option>
-              <option value="VERIFIED">Verified Accounts</option>
-              <option value="UNVERIFIED">Unverified Accounts</option>
-            </select>
-
             <select
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
@@ -453,6 +427,48 @@ export const UsersPage: React.FC = () => {
               <option value={25}>25 / page</option>
               <option value={50}>50 / page</option>
             </select>
+          </div>
+        </div>
+
+        {/* Status Filter Tabs */}
+        <div className="flex items-center border border-emerald-200/70 dark:border-emerald-500/20 gap-3 overflow-x-auto text-xs font-bold bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-sm dark:shadow-xl justify-between">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {[
+              { id: 'ALL', label: 'All Verification Statuses' },
+              { id: 'VERIFIED', label: 'Verified Accounts' },
+              { id: 'UNVERIFIED', label: 'Unverified Accounts' },
+            ].map(st => (
+              <button
+                key={st.id}
+                onClick={() => { setSelectedStatus(st.id); setPage(1); }}
+                className={`pb-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer border whitespace-nowrap ${
+                  selectedStatus === st.id
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-black shadow-xs'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                {st.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Role Filter Tabs */}
+        <div className="flex items-center border border-emerald-200/70 dark:border-emerald-500/20 gap-3 overflow-x-auto text-xs font-bold bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-3xl shadow-sm dark:shadow-xl justify-between">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {['ALL', ...rolesList].map(r => (
+              <button
+                key={r}
+                onClick={() => { setSelectedRole(r); setPage(1); }}
+                className={`pb-1 px-3 py-1.5 rounded-xl transition-all cursor-pointer border whitespace-nowrap ${
+                  selectedRole === r
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-black shadow-xs'
+                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                {r === 'ALL' ? 'All Roles' : r}
+              </button>
+            ))}
           </div>
         </div>
 
