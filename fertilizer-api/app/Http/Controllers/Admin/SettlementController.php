@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DriverSettlement;
 use App\Models\Order;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
@@ -14,20 +15,35 @@ class SettlementController extends Controller
     public function index(Request $request)
     {
         // 1. Auto-backfill driver settlements for any existing COD orders without a settlement record
-        $unlinkedCodOrders = Order::whereIn('payment_method', ['COD', 'CASH_ON_DELIVERY'])
-            ->whereNotIn('id', DriverSettlement::pluck('order_id'))
-            ->get();
+        $defaultDriver = Admin::whereHas('roles', function ($q) {
+            $q->where('name', 'Logistics Driver');
+        })->first();
+        $defaultDriverId = $defaultDriver ? $defaultDriver->id : 13;
+
+        $unlinkedCodOrders = Order::whereIn('payment_method', ['COD', 'CASH_ON_DELIVERY'])->get();
 
         foreach ($unlinkedCodOrders as $order) {
-            DriverSettlement::firstOrCreate(
+            $effectiveDriverId = $order->driver_id ?: $defaultDriverId;
+
+            $settlement = DriverSettlement::firstOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'driver_id' => $order->driver_id,
+                    'driver_id' => $effectiveDriverId,
                     'cash_collected' => $order->total,
                     'status' => $order->payment_status === 'PAID' ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
                     'notes' => 'Auto-generated COD field collection ledger for Order #' . $order->id,
                 ]
             );
+
+            if (!$settlement->driver_id) {
+                $settlement->driver_id = $effectiveDriverId;
+                $settlement->save();
+            }
+
+            if (!$order->driver_id) {
+                $order->driver_id = $effectiveDriverId;
+                $order->save();
+            }
         }
 
         // 2. Extract pagination & filtering parameters
@@ -122,17 +138,23 @@ class SettlementController extends Controller
     private function clearSettlementCaches()
     {
         try {
+            Cache::flush();
             if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
-                foreach ($redis->keys('*settlements:*') as $key) {
+                $redis = \Illuminate\Support\Facades\Redis::connection();
+                foreach ($redis->keys('*settlements*') as $key) {
                     $redis->del($key);
                 }
-                foreach ($redis->keys('*report:*') as $key) {
+                foreach ($redis->keys('*report*') as $key) {
+                    $redis->del($key);
+                }
+                foreach ($redis->keys('*orders*') as $key) {
                     $redis->del($key);
                 }
             }
         } catch (\Throwable $e) {
-            // Silently fail if cache clearing encounters an unrecoverable error
+            try {
+                Cache::flush();
+            } catch (\Throwable $ex) {}
         }
     }
 }

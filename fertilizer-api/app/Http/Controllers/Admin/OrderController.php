@@ -610,21 +610,24 @@ class OrderController extends Controller
         try {
             Cache::forget('admin_dashboard_stats');
             Cache::forget('admin_analytics_metrics');
+            Cache::flush();
             
             if (config('cache.default') === 'redis') {
-                $redis = Cache::redis();
-                foreach ($redis->keys('*orders:*') as $key) {
+                $redis = \Illuminate\Support\Facades\Redis::connection();
+                foreach ($redis->keys('*orders*') as $key) {
                     $redis->del($key);
                 }
-                foreach ($redis->keys('*settlements:*') as $key) {
+                foreach ($redis->keys('*settlements*') as $key) {
                     $redis->del($key);
                 }
-                foreach ($redis->keys('*report:*') as $key) {
+                foreach ($redis->keys('*report*') as $key) {
                     $redis->del($key);
                 }
             }
         } catch (\Throwable $e) {
-            // Ignore
+            try {
+                Cache::flush();
+            } catch (\Throwable $ex) {}
         }
     }
 }

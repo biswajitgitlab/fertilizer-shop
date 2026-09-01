@@ -84,12 +84,15 @@ export const Settlements: React.FC = () => {
 
   const handleSettle = async (id: number) => {
     setSettlingId(id);
+    // Optimistic UI Update: change status instantly in local React state
+    setSettlements(prev => prev.map(s => s.id === id ? { ...s, status: 'SETTLED_TO_BANK' } : s));
     try {
       await api.post(`/admin/settlements/${id}/settle`);
       toast.success('COD cash reconciled & settled to bank!');
-      fetchSettlements();
+      await fetchSettlements();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Settlement execution failed');
+      fetchSettlements();
     } finally {
       setSettlingId(null);
     }
