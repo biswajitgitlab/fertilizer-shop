@@ -29,6 +29,18 @@ export const ChatWidget: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleClearChat = async () => {
+    await chatApi.startSession();
+    setMessages([
+      {
+        id: `msg-${Date.now()}`,
+        sender: "bot",
+        text: "Chat history cleared! How can I help you today?",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
+
   useEffect(() => {
     if (chatOpen) {
       scrollToBottom();
@@ -36,6 +48,7 @@ export const ChatWidget: React.FC = () => {
   }, [messages, chatOpen]);
 
   const handleSendMessage = async (textToSend?: string) => {
+    if (isTyping) return;
     const text = textToSend || inputMessage;
     if (!text.trim()) return;
 
@@ -115,7 +128,7 @@ export const ChatWidget: React.FC = () => {
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className="w-[92vw] sm:w-[380px] h-[520px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 flex flex-col justify-between overflow-hidden"
           >
-            <ChatHeader onClose={() => setChatOpen(false)} />
+            <ChatHeader onClose={() => setChatOpen(false)} onClear={handleClearChat} />
 
             {/* Messages Scroll Area */}
             <div className="flex-1 overflow-y-auto p-3 bg-slate-50/50 dark:bg-slate-950/50">
@@ -126,14 +139,14 @@ export const ChatWidget: React.FC = () => {
               {isTyping && (
                 <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 p-2 italic font-semibold">
                   <AnimatedSparkles size={16} className="text-emerald-500" />
-                  <span>KrishiMitra is analyzing...</span>
+                  <span>KrishiMitra AI is generating advice...</span>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Quick Reply Chips */}
-            <QuickReplies onSelect={(query) => handleSendMessage(query)} />
+            <QuickReplies disabled={isTyping} onSelect={(query) => handleSendMessage(query)} />
 
             {/* Input Bar */}
             <form
@@ -142,17 +155,18 @@ export const ChatWidget: React.FC = () => {
             >
               <input
                 type="text"
-                placeholder="Ask about crops, fertilizers, pests..."
+                disabled={isTyping}
+                placeholder={isTyping ? "KrishiMitra AI is replying..." : "Ask about crops, fertilizers, pests..."}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className="flex-1 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                className="flex-1 text-xs bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-400 focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
               />
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={!isTyping && inputMessage.trim() ? { scale: 1.05 } : {}}
+                whileTap={!isTyping && inputMessage.trim() ? { scale: 0.95 } : {}}
                 type="submit"
-                disabled={!inputMessage.trim()}
-                className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-40 transition-colors cursor-pointer"
+                disabled={isTyping || !inputMessage.trim()}
+                className="p-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 <Send className="w-4 h-4" />
               </motion.button>

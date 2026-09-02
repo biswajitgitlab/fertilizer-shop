@@ -1,11 +1,12 @@
 import React from 'react';
-import { Sprout, X, Minus } from 'lucide-react';
+import { Sprout, X, Trash2 } from 'lucide-react';
 
 interface ChatHeaderProps {
   onClose: () => void;
+  onClear?: () => void;
 }
 
-export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose }) => {
+export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose, onClear }) => {
   return (
     <div className="bg-emerald-950 text-white p-3.5 flex items-center justify-between border-b border-emerald-900 rounded-t-2xl">
       <div className="flex items-center gap-2.5">
@@ -21,12 +22,24 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onClose }) => {
         </div>
       </div>
 
-      <button
-        onClick={onClose}
-        className="p-1 hover:bg-emerald-900 text-emerald-200 hover:text-white rounded-lg transition-colors cursor-pointer"
-      >
-        <X className="w-5 h-5" />
-      </button>
+      <div className="flex items-center gap-1">
+        {onClear && (
+          <button
+            onClick={onClear}
+            className="p-1 hover:bg-emerald-900 text-emerald-200 hover:text-white rounded-lg transition-colors cursor-pointer"
+            title="Clear Chat"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-emerald-900 text-emerald-200 hover:text-white rounded-lg transition-colors cursor-pointer"
+          title="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 };
