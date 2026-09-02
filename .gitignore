@@ -1,21 +1,8 @@
-# Dependencies
 node_modules/
-fertilizer-api/vendor/
-fertilizer-web/node_modules/
-
-# Environment files
-.env
-.env*
-fertilizer-api/.env
-fertilizer-web/.env
-
-# Build outputs & caches
-fertilizer-web/dist/
-fertilizer-web/.vite/
-fertilizer-api/bootstrap/cache/*
-fertilizer-api/storage/*.key
-fertilizer-api/storage/logs/*
-
-# System / IDE
+build/
+dist/
+coverage/
 .DS_Store
 *.log
+.env*
+!.env.example
