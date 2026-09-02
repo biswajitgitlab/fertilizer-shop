@@ -3,6 +3,7 @@ import { CheckCircle2, AlertCircle, RefreshCw, Banknote, Lock, X, Loader2, Shiel
 import { formatCurrency } from '../../utils/formatters';
 import { orderApi } from '../../api/orderApi';
 import toast from 'react-hot-toast';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   amount,
   onSuccess
 }) => {
+  const { appName } = useSiteSettingsStore();
   const [processStep, setProcessStep] = useState<'idle' | 'gateway_connect' | 'verifying_signature' | 'success' | 'failed'>('idle');
   const [txnDetails, setTxnDetails] = useState<{ txnId: string; date: string; gateway: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -72,7 +74,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_TVWk5BV07S6AvH',
         amount: orderRes.amount || amountInPaise,
         currency: orderRes.currency || 'INR',
-        name: 'Sarkar Fertilizer',
+        name: appName || 'App Name',
         description: `Payment for Order #${orderId}`,
         order_id: razorpayOrderId,
         handler: async function (response: {

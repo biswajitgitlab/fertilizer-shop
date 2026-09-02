@@ -1,4 +1,5 @@
 import { publicApi } from './axiosInstances';
+import { useSiteSettingsStore } from '../store/siteSettingsStore';
 
 export const chatApi = {
   startSession: async () => {
@@ -15,7 +16,7 @@ export const chatApi = {
       const res = await publicApi.post('/chat/message', { message });
       return res.data;
     } catch (e) {
-      let replyText = "Namaste! I am KrishiMitra, your SarkarFertilizer fertilizer assistant. How can I help you today?";
+      let replyText = `Namaste! I am KrishiMitra, your ${useSiteSettingsStore.getState().appName} fertilizer assistant. How can I help you today?`;
       const q = message.toLowerCase();
       if (q.includes("paddy") || q.includes("rice")) {
         replyText = "For Paddy crops, apply Zinc EDTA 12% to prevent leaf yellowing and NPK 19:19:19 for maximum tillers!";

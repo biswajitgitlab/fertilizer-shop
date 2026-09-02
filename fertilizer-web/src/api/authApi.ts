@@ -15,12 +15,12 @@ export const authApi = {
         throw e; // Backend responded with an error (e.g., 401 or 422)
       }
       // Fallback response for offline or preview testing
-      const isAdmin = data.credential === 'admin@sarkarfertilizer.com' || data.credential === 'admin@fertilizershop.com' || data.credential === '9999999999';
+      const isAdmin = data.credential === 'admin@fertilizershop.com' || data.credential === '9999999999';
       return {
         token: 'jwt-demo-token-12345',
         user: {
           id: isAdmin ? 'admin-1' : 'u1',
-          name: isAdmin ? 'Admin SarkarFertilizer' : 'Ramesh Patel',
+          name: isAdmin ? 'Admin' : 'Ramesh Patel',
           email: data.credential?.includes('@') ? data.credential : 'ramesh.patel@agri.com',
           phone: !data.credential?.includes('@') ? data.credential : '9876543210',
           farmLocation: 'Karnal, Haryana',
@@ -58,7 +58,7 @@ export const authApi = {
           id: 'u-otp',
           name: 'Verified Farmer',
           phone: data.phone,
-          email: 'farmer@sarkarfertilizer.com',
+          email: 'farmer@example.com',
           farmLocation: 'Punjab, India',
           farmSize: '10 Acres',
           role: 'Customer'

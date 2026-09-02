@@ -9,6 +9,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { PasswordInput } from '../../components/common/PasswordInput';
 import { useAuthStore } from '../../store/authStore';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 interface StaffRecord {
   id: number;
@@ -42,6 +43,7 @@ interface StaffDetailData {
 
 export const UsersPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
+  const { appName } = useSiteSettingsStore();
   const currentRole = currentUser?.role || '';
   const isSuperAdminOrAdmin = ['Super Admin', 'Admin'].includes(currentRole) || 
     (currentUser?.effective_permissions && (currentUser.effective_permissions.includes('roles.edit') || currentUser.effective_permissions.includes('users.edit')));
@@ -268,7 +270,7 @@ export const UsersPage: React.FC = () => {
 
   const demoAccounts = [
     { name: 'Super Admin (Executive)', role: 'Super Admin', email: 'superadmin@fertilizershop.com', pass: 'admin123', perms: 'All 35 Perms', badge: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300' },
-    { name: 'Admin SarkarFertilizer', role: 'Admin', email: 'admin@fertilizershop.com', pass: 'admin123', perms: 'All 35 Perms', badge: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300' },
+    { name: `Admin ${appName.replace(/\s+/g, '')}`, role: 'Admin', email: 'admin@fertilizershop.com', pass: 'admin123', perms: 'All 35 Perms', badge: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300' },
     { name: 'Vikram Singh', role: 'Store Manager', email: 'store.manager@fertilizershop.com', pass: 'staff123', perms: '13 Perms', badge: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300' },
     { name: 'Ananya Sharma', role: 'Customer Support', email: 'support@fertilizershop.com', pass: 'staff123', perms: '6 Perms', badge: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300' },
     { name: 'Rajesh Kumar', role: 'Warehouse Manager', email: 'warehouse@fertilizershop.com', pass: 'staff123', perms: '6 Perms', badge: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300' },

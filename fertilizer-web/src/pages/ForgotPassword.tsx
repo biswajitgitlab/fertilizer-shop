@@ -4,11 +4,13 @@ import { authApi } from '../api/authApi';
 import { ShieldCheck, ArrowLeft, KeyRound, CheckCircle2, Phone, Lock, Sparkles, Leaf, Wheat, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
+import { useSiteSettingsStore } from '../store/siteSettingsStore';
 
 import { PasswordInput } from '../components/common/PasswordInput';
 
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
+  const { appName } = useSiteSettingsStore();
 
   const [credential, setCredential] = useState('');
   const [otp, setOtp] = useState('');
@@ -112,7 +114,7 @@ export const ForgotPassword: React.FC = () => {
               In 3 Easy Steps
             </h2>
             <p className="text-emerald-100/80 text-sm leading-relaxed max-w-sm">
-              Verify your mobile or email with an instant OTP to safely set up a new password for your SarkarFertilizer account.
+              Verify your mobile or email with an instant OTP to safely set up a new password for your {appName} account.
             </p>
           </div>
 
@@ -132,7 +134,7 @@ export const ForgotPassword: React.FC = () => {
         </div>
 
         <p className="relative z-10 text-emerald-400/60 text-[10px]">
-          © {new Date().getFullYear()} SarkarFertilizer. All rights reserved.
+          © {new Date().getFullYear()} {appName}. All rights reserved.
         </p>
       </div>
 

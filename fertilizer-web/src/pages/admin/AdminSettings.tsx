@@ -258,7 +258,7 @@ export const AdminSettings: React.FC = () => {
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  placeholder="e.g. Sarkar Fertilizer, AgriShop, E-Store"
+                  placeholder="e.g. AgriShop, E-Store"
                   className="w-full px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                   required
                 />
@@ -406,7 +406,7 @@ export const AdminSettings: React.FC = () => {
                   </div>
                   <div className="h-10 rounded-xl bg-slate-200 dark:bg-slate-900 px-3 flex items-center gap-2 border border-slate-300 dark:border-slate-800">
                     <img src={faviconUrl || '/favicon.ico'} alt="Favicon Tab Preview" className="w-5 h-5 object-contain" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[180px]">{appName || 'Sarkar Fertilizer'}</span>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[180px]">{appName || 'App Name'}</span>
                   </div>
                 </div>
 

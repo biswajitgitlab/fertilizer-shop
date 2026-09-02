@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, ShieldCheck, Truck, Headphones, Award } from 'lucide-react';
 import { Logo } from './Logo';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 const FernFrondSVG: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -34,6 +35,8 @@ const FernFrondSVG: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export const Footer: React.FC = () => {
+  const { appName } = useSiteSettingsStore();
+
   return (
     <footer className="bg-emerald-950 text-emerald-100/90 pt-16 pb-12 border-t border-emerald-800/40 relative overflow-hidden">
       {/* High Quality Authentic Fern Frond Leaves Photo Background Overlay */}
@@ -111,7 +114,7 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-400" />
-                <span>support@sarkarfertilizer.com</span>
+                <span>support@{appName.toLowerCase().replace(/\s+/g, '')}.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-emerald-400" />
@@ -150,7 +153,7 @@ export const Footer: React.FC = () => {
             <p className="text-xs text-emerald-200/70 mb-4">
               Get weekly seasonal crop advisory, weather alerts, and special fertilizer discount coupons.
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); alert("Subscribed to SarkarFertilizer newsletter!"); }} className="space-y-2">
+            <form onSubmit={(e) => { e.preventDefault(); alert(`Subscribed to ${appName} newsletter!`); }} className="space-y-2">
               <input
                 type="email"
                 placeholder="Enter email or mobile..."
@@ -170,7 +173,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Copyright */}
         <div className="pt-8 border-t border-emerald-800/40 text-center text-xs text-emerald-200/50 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} SarkarFertilizer Agriculture Platform. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {appName} Agriculture Platform. All rights reserved.</p>
           <div className="flex gap-6">
             <span className="hover:text-emerald-200 cursor-pointer">Privacy Policy</span>
             <span className="hover:text-emerald-200 cursor-pointer">Terms of Service</span>

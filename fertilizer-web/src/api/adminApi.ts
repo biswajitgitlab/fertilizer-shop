@@ -836,7 +836,7 @@ export const adminApi = {
 
     return [
       { id: 1, name: 'Super Admin (Executive)', email: 'superadmin@fertilizershop.com', role: 'Super Admin' },
-      { id: 6, name: 'Admin SarkarFertilizer', email: 'admin@fertilizershop.com', role: 'Admin' },
+      { id: 6, name: 'Admin', email: 'admin@fertilizershop.com', role: 'Admin' },
       { id: 7, name: 'Vikram Singh (Store Manager)', email: 'store.manager@fertilizershop.com', role: 'Store Manager' },
       { id: 8, name: 'Ananya Sharma (Customer Support)', email: 'support@fertilizershop.com', role: 'Customer Support' },
       { id: 9, name: 'Rajesh Kumar (Warehouse Manager)', email: 'warehouse@fertilizershop.com', role: 'Warehouse Manager' },
@@ -870,7 +870,7 @@ export const adminApi = {
       console.warn("Failed to fetch users list, using fallback staff roster:", e);
       let fallback = [
         { id: 1, name: 'Super Admin (Executive)', email: 'superadmin@fertilizershop.com', phone: '9999999999', role: 'Super Admin', roles: ['Super Admin'], is_verified: true, effective_permissions_count: 35, created_at: new Date().toISOString() },
-        { id: 6, name: 'Admin SarkarFertilizer', email: 'admin@fertilizershop.com', phone: '9888888888', role: 'Admin', roles: ['Admin'], is_verified: true, effective_permissions_count: 35, created_at: new Date().toISOString() },
+        { id: 6, name: 'Admin', email: 'admin@fertilizershop.com', phone: '9888888888', role: 'Admin', roles: ['Admin'], is_verified: true, effective_permissions_count: 35, created_at: new Date().toISOString() },
         { id: 7, name: 'Vikram Singh (Store Manager)', email: 'store.manager@fertilizershop.com', phone: '9777777777', role: 'Store Manager', roles: ['Store Manager'], is_verified: true, effective_permissions_count: 13, created_at: new Date().toISOString() },
         { id: 8, name: 'Ananya Sharma (Customer Support)', email: 'support@fertilizershop.com', phone: '9666666666', role: 'Customer Support', roles: ['Customer Support'], is_verified: true, effective_permissions_count: 6, created_at: new Date().toISOString() },
         { id: 9, name: 'Rajesh Kumar (Warehouse)', email: 'warehouse@fertilizershop.com', phone: '9555555555', role: 'Warehouse Manager', roles: ['Warehouse Manager'], is_verified: true, effective_permissions_count: 6, created_at: new Date().toISOString() },

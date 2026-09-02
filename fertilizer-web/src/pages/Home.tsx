@@ -12,6 +12,7 @@ import { PageTransition } from '../components/common/PageTransition';
 import { RecentlyViewedSection } from '../components/product/RecentlyViewedSection';
 import { TrendingProductsSection } from '../components/product/TrendingProductsSection';
 import { HeroCarousel } from '../components/home/HeroCarousel';
+import { useSiteSettingsStore } from '../store/siteSettingsStore';
 import { DynamicCouponOfferBanner } from '../components/common/DynamicCouponOfferBanner';
 import { CategoryCarousel } from '../components/home/CategoryCarousel';
 import { ServicesCarousel } from '../components/home/ServicesCarousel';
@@ -49,6 +50,7 @@ export const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  const { appName } = useSiteSettingsStore();
   const [featured, setFeatured] = useState<Product[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -375,7 +377,7 @@ export const Home: React.FC = () => {
           </span>
           
           <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            Start Growing Smarter with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">SarkarFertilizer</span>
+            Start Growing Smarter with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">{appName.replace(/\s+/g, '')}</span>
           </h2>
           
           <p className="text-sm text-emerald-100/90 font-medium">

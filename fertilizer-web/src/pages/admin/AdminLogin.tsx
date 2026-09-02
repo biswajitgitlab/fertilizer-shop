@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { adminAuthApi } from '../../api/adminApi';
 import { useAuthStore } from '../../store/authStore';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 import { ShieldCheck, Lock, Mail, ArrowRight, KeyRound, Server, AlertCircle, ArrowLeft, Building2, Cpu, BarChart3 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../../components/common/Logo';
@@ -12,6 +13,7 @@ export const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuthStore();
+  const { appName } = useSiteSettingsStore();
 
   const from = location.state?.from?.pathname || '/admin/dashboard';
 
@@ -121,7 +123,7 @@ export const AdminLogin: React.FC = () => {
         </div>
 
         <p className="relative z-10 text-slate-500 text-[11px]">
-          © {new Date().getFullYear()} SarkarFertilizer Enterprise Systems. All access is audited.
+          © {new Date().getFullYear()} {appName} Enterprise Systems. All access is audited.
         </p>
       </div>
 

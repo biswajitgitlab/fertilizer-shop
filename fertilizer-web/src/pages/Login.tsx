@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
+import { useSiteSettingsStore } from '../store/siteSettingsStore';
 import { User, Lock, ArrowRight, ShieldCheck, Leaf, Wheat, ArrowLeft, KeyRound, CheckCircle2, Phone, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
-
+import { Link } from 'react-router-dom';
 import { PasswordInput } from '../components/common/PasswordInput';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const { appName } = useSiteSettingsStore();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -174,7 +176,7 @@ export const Login: React.FC = () => {
         </div>
 
         <p className="relative z-10 text-emerald-400/60 text-[10px]">
-          © 2024 SarkarFertilizer. All rights reserved.
+          © {new Date().getFullYear()} {appName}. All rights reserved.
         </p>
       </div>
 
@@ -247,7 +249,7 @@ export const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setCredential('farmer@sarkarfertilizer.com');
+                    setCredential('farmer@example.com');
                     setPassword('password123');
                     toast.success("Set credentials for Ramesh Kumar");
                   }}
@@ -310,7 +312,7 @@ export const Login: React.FC = () => {
             </button>
 
             <div className="pt-4 border-t border-emerald-500/20 text-center text-xs text-emerald-300/80 font-medium">
-              New to SarkarFertilizer?{' '}
+              New to {appName}?{' '}
               <Link to="/register" className="font-black text-emerald-400 hover:underline">
                 Create Free Account
               </Link>

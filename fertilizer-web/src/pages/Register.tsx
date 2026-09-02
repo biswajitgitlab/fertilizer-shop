@@ -5,11 +5,12 @@ import { Sprout, Phone, User, MapPin, Lock, ArrowRight, ShieldCheck, Leaf, Wheat
 import { INDIAN_STATES } from '../utils/constants';
 import toast from 'react-hot-toast';
 import { Logo } from '../components/common/Logo';
-
 import { PasswordInput } from '../components/common/PasswordInput';
+import { useSiteSettingsStore } from '../store/siteSettingsStore';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { appName } = useSiteSettingsStore();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -81,14 +82,14 @@ export const Register: React.FC = () => {
               {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />)}
             </div>
             <p className="text-white/90 text-xs leading-relaxed italic">
-              "Yield increased by 22% after using IFFCO NPK from SarkarFertilizer. Delivered in 2 days directly to my farm in Karnal!"
+              "Yield increased by 22% after using IFFCO NPK from {appName}. Delivered in 2 days directly to my farm in Karnal!"
             </p>
             <p className="text-emerald-300 text-[10px] font-bold">— Gurpreet Singh, Ludhiana (25 Acre Wheat Farm)</p>
           </div>
         </div>
 
         <p className="relative z-10 text-emerald-400/60 text-[10px]">
-          © 2024 SarkarFertilizer. All rights reserved.
+          © {new Date().getFullYear()} {appName}. All rights reserved.
         </p>
       </div>
 

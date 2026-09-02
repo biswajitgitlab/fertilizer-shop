@@ -3,8 +3,10 @@ import { Order } from '../../types';
 import { Download, FileText } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import toast from 'react-hot-toast';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 export const InvoiceDownloader: React.FC<{ order: Order }> = ({ order }) => {
+  const { appName } = useSiteSettingsStore();
   const handleDownload = () => {
     const windowPrint = window.open('', '', 'width=800,height=900');
     if (!windowPrint) {
@@ -34,7 +36,7 @@ export const InvoiceDownloader: React.FC<{ order: Order }> = ({ order }) => {
       <body>
         <div class="header">
           <div>
-            <div class="logo">SarkarFertilizer</div>
+            <div class="logo">${appName.replace(/\s+/g, '')}</div>
             <div>Certified Agriculture Store</div>
             <div>Govt. License: HYR-2026-9041</div>
           </div>

@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Activity, Database, Lock, Command, Sparkles, ExternalLink } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 import { Logo } from '../common/Logo';
 
 export const AdminFooter: React.FC = () => {
   const { theme } = useUIStore();
+  const { appName } = useSiteSettingsStore();
 
   return (
     <footer className={`mt-auto border-t px-4 sm:px-8 py-5 transition-colors duration-300 backdrop-blur-xl relative z-10 ${
@@ -92,7 +94,7 @@ export const AdminFooter: React.FC = () => {
           </div>
 
           <p className="text-center sm:text-right text-slate-500 dark:text-slate-400 font-medium">
-            © {new Date().getFullYear()} SarkarFertilizer Inc. All Rights Reserved. Enterprise Admin Portal.
+            © {new Date().getFullYear()} {appName} Inc. All Rights Reserved. Enterprise Admin Portal.
           </p>
         </div>
       </div>

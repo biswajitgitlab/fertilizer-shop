@@ -8,6 +8,7 @@ import { Button } from '../../components/common/Button';
 import { SearchableSelect } from '../../components/common/SearchableSelect';
 import { ArrowLeft, Save, Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 const PRESET_AGRICULTURE_IMAGES = [
   { label: 'NPK Granules / Bags', url: 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&q=80&w=600' },
@@ -20,6 +21,7 @@ const PRESET_AGRICULTURE_IMAGES = [
 export const ProductForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { appName } = useSiteSettingsStore();
   const isEdit = Boolean(id);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -166,7 +168,7 @@ export const ProductForm: React.FC = () => {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
-              placeholder="e.g. Sarkar NPK 19:19:19 Soluble Fertilizer"
+              placeholder={`e.g. ${appName} NPK 19:19:19 Soluble Fertilizer`}
               required
             />
           </div>

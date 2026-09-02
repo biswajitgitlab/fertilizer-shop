@@ -4,11 +4,13 @@ import { adminAuthApi } from '../../api/adminApi';
 import { ShieldCheck, ArrowLeft, KeyRound, CheckCircle2, Mail, Lock, Building2, Server, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Logo } from '../../components/common/Logo';
+import { useSiteSettingsStore } from '../../store/siteSettingsStore';
 
 import { PasswordInput } from '../../components/common/PasswordInput';
 
 export const AdminForgotPassword: React.FC = () => {
   const navigate = useNavigate();
+  const { appName } = useSiteSettingsStore();
 
   const [credential, setCredential] = useState('');
   const [otp, setOtp] = useState('');
@@ -156,7 +158,7 @@ export const AdminForgotPassword: React.FC = () => {
         </div>
 
         <p className="relative z-10 text-slate-500 text-[11px]">
-          © {new Date().getFullYear()} SarkarFertilizer Enterprise Systems. Audit Log Active.
+          © {new Date().getFullYear()} {appName} Enterprise Systems. Audit Log Active.
         </p>
       </div>
 
