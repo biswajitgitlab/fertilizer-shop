@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { diagnoseApi } from '../api/diagnoseApi';
 import { Diagnosis } from '../types';
-import { Stethoscope, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
+import { Stethoscope, ArrowRight, ShieldCheck, Clock, Search, Filter } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { Pagination } from '../components/common/Pagination';
 
 export const DiagnoseHistory: React.FC = () => {
   const [history, setHistory] = useState<Diagnosis[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCrop, setFilterCrop] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -24,8 +29,34 @@ export const DiagnoseHistory: React.FC = () => {
     fetchHistory();
   }, []);
 
+  // Filter diagnoses based on Search and Selected Crop
+  const filteredHistory = history.filter((diag) => {
+    const matchesCrop = filterCrop === 'all' || diag.crop.toLowerCase().includes(filterCrop.toLowerCase());
+    const matchesSearch =
+      diag.crop.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (diag.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (diag.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCrop && matchesSearch;
+  });
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterCrop, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+  const paginatedHistory = filteredHistory.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Extract unique crop list for filter dropdown
+  const uniqueCrops = Array.from(new Set(history.map((d) => d.crop))).filter(Boolean);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold shrink-0">
@@ -41,12 +72,61 @@ export const DiagnoseHistory: React.FC = () => {
 
         <Link
           to="/diagnose"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shrink-0"
         >
           + New Crop Scan
         </Link>
       </div>
 
+      {/* Filter & Search Toolbar */}
+      {history.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search reports or crops..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Crop:</span>
+              <select
+                value={filterCrop}
+                onChange={(e) => setFilterCrop(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs text-gray-900 dark:text-white rounded-lg px-2.5 py-1.5 focus:outline-none"
+              >
+                <option value="all">All Crops</option>
+                {uniqueCrops.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+              <span>Per page:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs text-gray-900 dark:text-white rounded-lg px-2 py-1.5 focus:outline-none"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content List */}
       {isLoading ? (
         <div className="space-y-4 animate-pulse">
           <div className="h-28 bg-gray-200 dark:bg-slate-800 rounded-3xl" />
@@ -61,9 +141,19 @@ export const DiagnoseHistory: React.FC = () => {
             Start Free AI Diagnosis
           </Link>
         </div>
+      ) : filteredHistory.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-8 text-center space-y-2">
+          <p className="text-sm font-bold text-gray-800 dark:text-white">No reports matching your search or filter</p>
+          <button
+            onClick={() => { setSearchQuery(''); setFilterCrop('all'); }}
+            className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+          >
+            Clear Filters
+          </button>
+        </div>
       ) : (
         <div className="space-y-4">
-          {history.map((diag) => {
+          {paginatedHistory.map((diag) => {
             const isVerified = Boolean(diag.adminReviewed);
             return (
               <div 
@@ -106,6 +196,16 @@ export const DiagnoseHistory: React.FC = () => {
               </div>
             );
           })}
+
+          {/* Pagination Controls */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredHistory.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            className="mt-6"
+          />
         </div>
       )}
     </div>

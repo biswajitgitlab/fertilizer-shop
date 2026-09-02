@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CROPS_LIST, GROWTH_STAGES } from '../../utils/constants';
+import { CROPS_LIST, getGrowthStagesForCrop, getSymptomsForCrop } from '../../utils/constants';
 import { SymptomSelector } from './SymptomSelector';
 import { ImageUploader } from './ImageUploader';
 import { Button } from '../common/Button';
@@ -12,24 +12,36 @@ import {
   ArrowLeft, 
   Sparkles, 
   Loader2, 
-  ScanLine, 
-  Activity, 
-  Cpu, 
-  ShieldCheck, 
-  Database 
+  Database, 
+  ShieldCheck 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const DiagnosisWizard: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [selectedCrop, setSelectedCrop] = useState('Tomato');
-  const [growthStage, setGrowthStage] = useState('Flowering & Booting');
-  const [symptoms, setSymptoms] = useState<string[]>(['Yellowing Leaves (Chlorosis)', 'Brown / Black Spots']);
-  const [images, setImages] = useState<string[]>([]);
+  const [selectedCrop, setSelectedCrop] = useState('Rice / Paddy');
+  const [growthStage, setGrowthStage] = useState('Active Tillering Stage');
+  const [symptoms, setSymptoms] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+
   const [loadingProgress, setLoadingProgress] = useState(15);
   const [loadingStageText, setLoadingStageText] = useState('Extracting leaf pathology & growth stage parameters...');
+
+  // Automatically update Growth Stages & Default Symptoms whenever Selected Crop changes
+  useEffect(() => {
+    const stages = getGrowthStagesForCrop(selectedCrop);
+    if (stages.length > 0) {
+      setGrowthStage(stages[0]);
+    }
+    const cropSyms = getSymptomsForCrop(selectedCrop);
+    if (cropSyms.length > 0) {
+      setSymptoms([cropSyms[0].label]);
+    } else {
+      setSymptoms([]);
+    }
+  }, [selectedCrop]);
 
   const handleToggleSymptom = (label: string) => {
     if (symptoms.includes(label)) {
@@ -41,19 +53,19 @@ export const DiagnosisWizard: React.FC = () => {
 
   // Dynamic progress animation for AI Diagnostic Loading Screen
   useEffect(() => {
-    let timer1: any, timer2: any, timer3: any, timer4: any;
+    let timer1: any, timer2: any, timer3: any;
     if (isSubmitting) {
       setLoadingProgress(18);
       setLoadingStageText('Extracting leaf pathology & growth stage parameters...');
 
       timer1 = setTimeout(() => {
         setLoadingProgress(45);
-        setLoadingStageText('Running Gemini 2.5 AI Pathology Vision Model...');
+        setLoadingStageText(`Running Gemini 2.5 AI Vision Model on ${selectedCrop}...`);
       }, 1000);
 
       timer2 = setTimeout(() => {
         setLoadingProgress(78);
-        setLoadingStageText('Matching targeted bio-treatments in store database...');
+        setLoadingStageText('Matching ICAR approved bio-treatments in store database...');
       }, 2200);
 
       timer3 = setTimeout(() => {
@@ -65,9 +77,8 @@ export const DiagnosisWizard: React.FC = () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      clearTimeout(timer4);
     };
-  }, [isSubmitting]);
+  }, [isSubmitting, selectedCrop]);
 
   const handleSubmit = async () => {
     if (!selectedCrop) {
@@ -105,6 +116,8 @@ export const DiagnosisWizard: React.FC = () => {
     }
   };
 
+  const availableGrowthStages = getGrowthStagesForCrop(selectedCrop);
+
   return (
     <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 sm:p-10 shadow-xl space-y-8 relative overflow-hidden">
       
@@ -131,10 +144,10 @@ export const DiagnosisWizard: React.FC = () => {
           <div className="space-y-2 max-w-md mx-auto">
             <div className="inline-flex items-center gap-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold px-3 py-1 rounded-full">
               <Sparkles className="w-4 h-4 text-emerald-500 animate-spin" />
-              <span>Dr. Krishi AI Vision Engine</span>
+              <span>Krishi Doctor AI Vision Engine</span>
             </div>
             <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-              Analyzing {selectedCrop} Crop Health
+              Analyzing {selectedCrop} Health
             </h2>
             <p className="text-xs text-gray-500 dark:text-slate-400">
               Processing leaf pathology, disease vectors & selecting store remedies
@@ -187,14 +200,14 @@ export const DiagnosisWizard: React.FC = () => {
                 <Stethoscope className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-gray-900 dark:text-white">AI Crop Disease & Nutrient Diagnosis</h2>
-                <p className="text-xs text-gray-500 dark:text-slate-400">Detect fungal, insect, and deficiency issues in under 10 seconds</p>
+                <h2 className="text-xl font-black text-gray-900 dark:text-white">AI Crop Disease & Pest Diagnostic Wizard</h2>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Indian ICAR Agronomy & Plant Pathology Expert System</p>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="grid grid-cols-4 gap-2 pt-2">
-              {['Crop & Stage', 'Symptoms', 'Photos', 'Review'].map((label, i) => (
+              {['Select Crop', 'Growth Stage', 'Symptoms', 'Review & Scan'].map((label, i) => (
                 <div key={i} className="space-y-1">
                   <div className={`h-2 rounded-full transition-all ${
                     step >= i + 1 ? 'bg-emerald-600' : 'bg-gray-100 dark:bg-slate-800'
@@ -207,45 +220,38 @@ export const DiagnosisWizard: React.FC = () => {
             </div>
           </div>
 
-          {/* STEP 1: CROP & GROWTH STAGE */}
+          {/* STEP 1: CROP SELECTION */}
           {step === 1 && (
             <div className="space-y-6 animate-fade-in">
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">1. Select Your Crop</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">1. Select Your Crop (फ़सल चुनें)</h3>
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-md">
+                    Indian Agronomy Matrix
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {CROPS_LIST.map((c) => (
                     <button
                       type="button"
                       key={c.name}
                       onClick={() => setSelectedCrop(c.name)}
-                      className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer ${
+                      className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                         selectedCrop === c.name
-                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-bold shadow-sm ring-2 ring-emerald-500/20'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-500 text-emerald-950 dark:text-emerald-100 font-bold shadow-md ring-2 ring-emerald-500/30'
                           : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
-                      <span className="text-2xl">{c.icon}</span>
-                      <span className="text-xs">{c.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">2. Current Growth Stage</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {GROWTH_STAGES.map((stage) => (
-                    <button
-                      type="button"
-                      key={stage}
-                      onClick={() => setGrowthStage(stage)}
-                      className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all cursor-pointer ${
-                        growthStage === stage
-                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                          : 'bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      {stage}
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl">{c.icon}</span>
+                        <span className="text-[9px] uppercase font-extrabold text-gray-400 dark:text-slate-500">{c.category}</span>
+                      </div>
+                      <div className="mt-2">
+                        <span className="text-xs font-bold block">{c.name}</span>
+                        {c.hindiName && (
+                          <span className="text-[10px] text-gray-500 dark:text-slate-400 font-medium">{c.hindiName}</span>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -253,22 +259,43 @@ export const DiagnosisWizard: React.FC = () => {
 
               <div className="flex justify-end pt-4">
                 <Button onClick={() => setStep(2)} icon={<ArrowRight className="w-4 h-4" />}>
-                  Next: Select Symptoms
+                  Next: Select Growth Stage ({selectedCrop})
                 </Button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: SYMPTOMS */}
+          {/* STEP 2: CROP-SPECIFIC GROWTH STAGE */}
           {step === 2 && (
             <div className="space-y-6 animate-fade-in">
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Select Observed Leaf or Plant Symptoms</h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Choose all that apply to your crop</p>
-                <SymptomSelector
-                  selectedSymptoms={symptoms}
-                  onToggleSymptom={handleToggleSymptom}
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                    2. Select Growth Stage for <strong className="text-emerald-700 dark:text-emerald-400">{selectedCrop}</strong>
+                  </h3>
+                  <span className="text-xs text-gray-500 dark:text-slate-400">Step 2 of 4</span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
+                  Disease vulnerability and nutrient requirements change drastically per growth stage.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {availableGrowthStages.map((stage) => (
+                    <button
+                      type="button"
+                      key={stage}
+                      onClick={() => setGrowthStage(stage)}
+                      className={`p-4 rounded-2xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
+                        growthStage === stage
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/30'
+                          : 'bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-200 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span>{stage}</span>
+                      {growthStage === stage && <CheckCircle2 className="w-4 h-4 text-white" />}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="flex justify-between pt-4">
@@ -276,21 +303,27 @@ export const DiagnosisWizard: React.FC = () => {
                   Back
                 </Button>
                 <Button onClick={() => setStep(3)} icon={<ArrowRight className="w-4 h-4" />}>
-                  Next: Upload Photos
+                  Next: Observed Symptoms
                 </Button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: PHOTOS */}
+          {/* STEP 3: CROP-SPECIFIC SYMPTOMS */}
           {step === 3 && (
             <div className="space-y-6 animate-fade-in">
               <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Upload Close-up Photos</h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Clear pictures improve AI accuracy up to 98%</p>
-                <ImageUploader
-                  images={images}
-                  onChangeImages={setImages}
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                  3. Select Observed Symptoms on <strong className="text-emerald-700 dark:text-emerald-400">{selectedCrop}</strong>
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
+                  ICAR agronomy diagnostic symptoms tailored specifically for {selectedCrop}
+                </p>
+
+                <SymptomSelector
+                  selectedCrop={selectedCrop}
+                  selectedSymptoms={symptoms}
+                  onToggleSymptom={handleToggleSymptom}
                 />
               </div>
 
@@ -299,35 +332,44 @@ export const DiagnosisWizard: React.FC = () => {
                   Back
                 </Button>
                 <Button onClick={() => setStep(4)} icon={<ArrowRight className="w-4 h-4" />}>
-                  Next: Review & Submit
+                  Next: Photos & Review
                 </Button>
               </div>
             </div>
           )}
 
-          {/* STEP 4: REVIEW & SUBMIT */}
+          {/* STEP 4: PHOTOS & SUBMIT */}
           {step === 4 && (
             <div className="space-y-6 animate-fade-in">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">4. Upload Leaf or Field Photos (Optional)</h3>
+                <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Gemini Vision AI analyzes photo textures for 98% diagnostic accuracy</p>
+                <ImageUploader
+                  images={images}
+                  onChangeImages={setImages}
+                />
+              </div>
+
               <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-5 border border-emerald-200 dark:border-emerald-800 space-y-3">
-                <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-200 border-b border-emerald-200 dark:border-emerald-800 pb-2">
-                  Diagnosis Input Summary
-                </h3>
+                <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-200 uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-800 pb-2">
+                  Diagnostic Case File Summary
+                </h4>
                 <div className="grid grid-cols-2 gap-4 text-xs text-emerald-950 dark:text-emerald-100 font-medium">
                   <div>
                     <span className="text-emerald-700 dark:text-emerald-400 block text-[10px] uppercase font-bold">Target Crop</span>
-                    <span className="font-bold">{selectedCrop}</span>
+                    <span className="font-bold text-sm">{selectedCrop}</span>
                   </div>
                   <div>
                     <span className="text-emerald-700 dark:text-emerald-400 block text-[10px] uppercase font-bold">Growth Stage</span>
-                    <span>{growthStage}</span>
+                    <span className="font-bold">{growthStage}</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-emerald-700 dark:text-emerald-400 block text-[10px] uppercase font-bold mb-1">Selected Symptoms</span>
-                  <div className="flex flex-wrap gap-1">
+                  <span className="text-emerald-700 dark:text-emerald-400 block text-[10px] uppercase font-bold mb-1">Selected Symptoms ({symptoms.length})</span>
+                  <div className="flex flex-wrap gap-1.5">
                     {symptoms.map((s, idx) => (
-                      <span key={idx} className="bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      <span key={idx} className="bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-xs">
                         {s}
                       </span>
                     ))}
