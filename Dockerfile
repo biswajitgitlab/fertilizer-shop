@@ -30,7 +30,14 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-pl
 # Set permissions for Laravel storage and cache
 RUN chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 10000
 
+ENTRYPOINT ["docker-entrypoint.sh"]
+
 # Start Laravel production server
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+

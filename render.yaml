@@ -21,8 +21,8 @@ services:
       - key: DB_DATABASE
         value: test
       - key: DB_USERNAME
-        value: 42q4dtwPzyHgdnS.root
+        value: 3eCgi4UsxEwgW2y.root
       - key: DB_PASSWORD
-        value: NsihG290LlPf7iaP
+        value: LHD7svJ9h9xbqiTq
       - key: MYSQL_ATTR_SSL_CA
         value: /etc/ssl/certs/ca-certificates.crt
