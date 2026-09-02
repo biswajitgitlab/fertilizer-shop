@@ -110,18 +110,22 @@ export const productApi = {
   getFeatured: async () => {
     try {
       const res = await publicApi.get('/products/featured');
-      return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
+      const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      if (list.length > 0) return list.map(mapProduct);
+      return INITIAL_PRODUCTS.filter(p => (p as any).isFeatured || p.rating >= 4.5).slice(0, 8);
     } catch (e) {
-      return INITIAL_PRODUCTS.filter(p => p.isFeatured);
+      return INITIAL_PRODUCTS.filter(p => (p as any).isFeatured || p.rating >= 4.5).slice(0, 8);
     }
   },
 
   getTrending: async () => {
     try {
       const res = await publicApi.get('/products/trending');
-      return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
+      const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      if (list.length > 0) return list.map(mapProduct);
+      return INITIAL_PRODUCTS.filter(p => (p as any).isTrending || p.rating >= 4.0).slice(0, 6);
     } catch (e) {
-      return INITIAL_PRODUCTS.filter(p => p.isTrending);
+      return INITIAL_PRODUCTS.filter(p => (p as any).isTrending || p.rating >= 4.0).slice(0, 6);
     }
   },
 

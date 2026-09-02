@@ -7,7 +7,7 @@ import { CartItem } from './CartItem';
 import { formatCurrency } from '../../utils/formatters';
 import { Button } from '../common/Button';
 import toast from 'react-hot-toast';
-import { apiClient } from '../../api/axiosInstances';
+import { publicApi } from '../../api/axiosInstances';
 import {
   AnimatedCart,
   AnimatedTruck,
@@ -45,7 +45,7 @@ export const CartDrawer: React.FC = () => {
   ]);
 
   useEffect(() => {
-    apiClient.get('/coupons/public').then((res) => {
+    publicApi.get('/coupons/public').then((res) => {
       const data = res.data;
       const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
       if (list.length > 0) {

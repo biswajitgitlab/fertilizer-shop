@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Tag, Clock, Sparkles, TrendingUp, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiClient } from '../../api/axiosInstances';
+import { publicApi } from '../../api/axiosInstances';
 import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
 
@@ -187,7 +187,7 @@ export const DynamicCouponOfferBanner: React.FC = () => {
   useEffect(() => {
     const fetchPublicCoupons = async () => {
       try {
-        const res = await apiClient.get('/coupons/public');
+        const res = await publicApi.get('/coupons/public');
         const data = res.data;
         let list: PublicCoupon[] = [];
         if (Array.isArray(data.data)) {

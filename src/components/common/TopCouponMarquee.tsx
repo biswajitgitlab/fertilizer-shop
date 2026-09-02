@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Tag, ArrowRight, Zap, Copy, Check } from 'lucide-react';
-import { apiClient } from '../../api/axiosInstances';
+import { publicApi } from '../../api/axiosInstances';
 import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
 
@@ -12,7 +12,7 @@ export const TopCouponMarquee: React.FC = () => {
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
-        const res = await apiClient.get('/coupons/public');
+        const res = await publicApi.get('/coupons/public');
         const data = res.data;
         const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
         if (list.length > 0) {

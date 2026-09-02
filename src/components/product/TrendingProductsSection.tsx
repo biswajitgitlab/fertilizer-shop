@@ -68,6 +68,10 @@ export const TrendingProductsSection: React.FC = () => {
     });
   }, [trending, activeCategory]);
 
+  const dynamicSearchFormatted = useMemo(() => {
+    return liveStats.searches_today.toLocaleString();
+  }, [liveStats.searches_today]);
+
   if (!isLoading && trending.length === 0) return null;
 
   const categories = [
@@ -87,10 +91,6 @@ export const TrendingProductsSection: React.FC = () => {
     const defaultRank = { label: views ? `${views.toLocaleString()} Visits` : '🔥 Popular', color: 'from-slate-700 to-slate-900 text-white' };
     return ranks[idx] || defaultRank;
   };
-
-  const dynamicSearchFormatted = useMemo(() => {
-    return liveStats.searches_today.toLocaleString();
-  }, [liveStats.searches_today]);
 
   return (
     <section className="py-6 sm:py-8 space-y-4">
