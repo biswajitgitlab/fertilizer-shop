@@ -248,3 +248,23 @@ div[role="status"] > div:first-child {
 .animate-validation-bounce {
   animation: validation-bounce 2s ease-in-out infinite;
 }
+
+@keyframes laser-scan {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 95%;
+    opacity: 1;
+  }
+  100% {
+    top: 0%;
+    opacity: 0.8;
+  }
+}
+
+.animate-laser-scan {
+  animation: laser-scan 2.2s ease-in-out infinite;
+}
+

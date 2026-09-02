@@ -679,17 +679,33 @@ export const adminApi = {
       }
     }
 
-    if (list.length === 0) {
-      list = DEMO_FALLBACK_DIAGNOSES;
-    }
-    return list;
+    const saved = localStorage.getItem('krishi_diagnoses');
+    const localList = saved ? JSON.parse(saved) : [];
+
+    const combinedMap = new Map();
+    [...localList, ...list, ...DEMO_FALLBACK_DIAGNOSES].forEach((item: any) => {
+      if (item && item.id && !combinedMap.has(String(item.id))) {
+        combinedMap.set(String(item.id), item);
+      }
+    });
+
+    return Array.from(combinedMap.values());
   },
   reviewDiagnosis: async (id: string, data?: any) => {
+    const saved = localStorage.getItem('krishi_diagnoses');
+    if (saved) {
+      const history = JSON.parse(saved);
+      const updated = history.map((d: any) =>
+        String(d.id) === String(id) ? { ...d, adminReviewed: true, ...data } : d
+      );
+      localStorage.setItem('krishi_diagnoses', JSON.stringify(updated));
+    }
+
     try {
       const res = await apiClient.put(`/admin/diagnoses/${id}`, data || {});
       return res.data;
     } catch (e) {
-      return { id, ...data };
+      return { id, adminReviewed: true, ...data };
     }
   },
   getOrderById: async (id: string) => {

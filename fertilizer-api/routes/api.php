@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('throttle:diagnosis')->group(function () {
         Route::post('/diagnose', [\App\Http\Controllers\DiagnosisController::class, 'store']);
     });
+    Route::get('/diagnose', [\App\Http\Controllers\DiagnosisController::class, 'index']);
     Route::get('/diagnose/history', [\App\Http\Controllers\DiagnosisController::class, 'index']);
     Route::get('/diagnose/{id}', [\App\Http\Controllers\DiagnosisController::class, 'show']);
 
@@ -197,6 +198,7 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::delete('/bundles/{bundle}', [\App\Http\Controllers\Admin\BundleController::class, 'destroy'])->middleware('rbsc:products.delete');
 
     // Crop Diagnoses Triage
+    Route::get('/diagnoses', [\App\Http\Controllers\Admin\DiagnosisController::class, 'index'])->middleware('rbsc:crop_plans.manage');
     Route::put('/diagnoses/{id}', [\App\Http\Controllers\Admin\DiagnosisController::class, 'update'])->middleware('rbsc:crop_plans.manage');
 
     // User Management (Staff Accounts)
