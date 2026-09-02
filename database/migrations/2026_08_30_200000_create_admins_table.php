@@ -27,27 +27,29 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Migrate any existing staff/admin accounts from users to admins table
-        $existingAdmins = DB::table('users')->where('role', '!=', 'Customer')->whereNotNull('role')->get();
-        foreach ($existingAdmins as $admin) {
-            DB::table('admins')->updateOrInsert(
-                ['email' => $admin->email],
-                [
-                    'name' => $admin->name,
-                    'phone' => $admin->phone,
-                    'password' => $admin->password,
-                    'role' => $admin->role ?: 'Admin',
-                    'revoked_permissions' => $admin->revoked_permissions ?? null,
-                    'avatar' => $admin->avatar ?? null,
-                    'is_verified' => true,
-                    'created_at' => $admin->created_at ?? now(),
-                    'updated_at' => $admin->updated_at ?? now(),
-                ]
-            );
-        }
+        // Migrate any existing staff/admin accounts from users to admins table if role column exists
+        if (Schema::hasColumn('users', 'role')) {
+            $existingAdmins = DB::table('users')->where('role', '!=', 'Customer')->whereNotNull('role')->get();
+            foreach ($existingAdmins as $admin) {
+                DB::table('admins')->updateOrInsert(
+                    ['email' => $admin->email],
+                    [
+                        'name' => $admin->name,
+                        'phone' => $admin->phone,
+                        'password' => $admin->password,
+                        'role' => $admin->role ?: 'Admin',
+                        'revoked_permissions' => $admin->revoked_permissions ?? null,
+                        'avatar' => $admin->avatar ?? null,
+                        'is_verified' => true,
+                        'created_at' => $admin->created_at ?? now(),
+                        'updated_at' => $admin->updated_at ?? now(),
+                    ]
+                );
+            }
 
-        // Clean up staff entries from users table so users table is strictly Customers
-        DB::table('users')->where('role', '!=', 'Customer')->whereNotNull('role')->delete();
+            // Clean up staff entries from users table so users table is strictly Customers
+            DB::table('users')->where('role', '!=', 'Customer')->whereNotNull('role')->delete();
+        }
 
         // Seed default Admin if empty
         if (DB::table('admins')->count() === 0) {
