@@ -90,12 +90,12 @@ When modifying or generating code for this repository, **you MUST follow these s
                      │      users       │
                      └────────┬─────────┘
                               │ 1:N
-             ┌────────────────┼────────────────┐
-             │ 1:N            │ 1:N            │ 1:N
-             ▼                ▼                ▼
-     ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-     │    orders    │ │    carts     │ │ crop_diagn...│
-     └───────┬──────┘ └──────────────┘ └──────────────┘
+             ┌────────────────┼────────────────┬────────────────┐
+             │ 1:N            │ 1:N            │ 1:N            │ 1:N
+             ▼                ▼                ▼                ▼
+     ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+     │    orders    │ │    carts     │ │ crop_diagn...│ │driver_settle.│
+     └───────┬──────┘ └──────────────┘ └──────────────┘ └──────────────┘
              │ 1:N
      ┌───────┴──────┐
      │  order_items │
@@ -104,20 +104,40 @@ When modifying or generating code for this repository, **you MUST follow these s
              ▼
      ┌──────────────┐
      │   products   │
+     └───────┬──────┘
+             │ 1:N
+             ▼
+     ┌──────────────┐
+     │product_batch.│
      └──────────────┘
 ```
 
 #### `products`
 - `id` (PK), `name`, `slug`, `category_id` (FK), `description`, `price` (decimal 10,2), `discount_price` (decimal 10,2), `stock_qty` (integer), `sku`, `unit` (kg/L/bag), `image_url`, `is_featured` (boolean).
 
+#### `product_batches`
+- `id` (PK), `product_id` (FK), `batch_number` (string), `mfd` (date), `expiry_date` (date), `quantity` (integer), `cost_price` (decimal 10,2), `is_active` (boolean).
+
+#### `product_bundles`
+- `id` (PK), `name`, `slug`, `description`, `bundle_price` (decimal 10,2), `items_json` (json), `is_active` (boolean).
+
+#### `warehouse_zones`
+- `id` (PK), `name` (string), `code` (string), `capacity` (integer), `manager_id` (FK to users).
+
 #### `orders`
-- `id` (PK), `user_id` (FK), `order_number` (string unique), `status` (`PENDING`, `CONFIRMED`, `SHIPPED`, `DELIVERED`, `CANCELLED`), `subtotal`, `discount`, `tax`, `shipping_cost`, `total`, `payment_method` (`COD`, `ONLINE`), `payment_status` (`PENDING`, `PAID`, `FAILED`), `shipping_address_json`, `billing_address_json`, `tracking_number`.
+- `id` (PK), `user_id` (FK), `driver_id` (FK nullable to users), `order_number` (string unique), `status` (`PENDING`, `CONFIRMED`, `PACKED`, `SHIPPED`, `OUT_FOR_DELIVERY`, `DELIVERED`, `CANCELLED`), `subtotal`, `discount`, `tax`, `shipping_cost`, `total`, `payment_method` (`COD`, `ONLINE`), `payment_status` (`PENDING`, `PAID`, `FAILED`), `shipping_address_json`, `billing_address_json`, `tracking_number`.
+
+#### `driver_settlements`
+- `id` (PK), `driver_id` (FK to users), `order_id` (FK to orders), `collected_amount` (decimal 10,2), `status` (`PENDING`, `RECONCILED`, `DISCREPANCY`), `reconciled_at` (datetime), `notes` (text).
 
 #### `payments`
 - `id` (PK), `order_id` (FK), `gateway` (`RAZORPAY`, `CASH_ON_DELIVERY`, `AUTO_RECONCILE`), `transaction_id`, `amount`, `status` (`PENDING`, `SUCCESS`, `FAILED`, `PENDING_COD`), `response_json`.
 
 #### `inventory_logs`
 - `id` (PK), `product_id` (FK), `type` (`SALE`, `RESTOCK`, `ADJUSTMENT`), `qty` (signed int), `reason` (string), `admin_id` (FK).
+
+#### `audit_logs`
+- `id` (PK), `user_id` (FK), `action` (string), `module` (string), `payload_json` (json), `ip_address` (string).
 
 #### `coupons`
 - `id` (PK), `code` (string unique), `type` (`FIXED`, `PERCENT`), `value` (decimal), `min_order` (decimal), `expires_at` (datetime), `is_active` (boolean).
@@ -130,12 +150,12 @@ When modifying or generating code for this repository, **you MUST follow these s
 - `GET /api/products` — Product listing with category filters and pagination.
 - `GET /api/products/{slug}` — Product detailed view.
 - `GET /api/categories` — Category catalog list.
-- `GET /api/coupons/public` — Active discount tokens for Cart Drawer quick-apply.
-- `POST /api/chat/message` — AI Agronomist chatbot endpoint (Throttled: 20 req/min).
+- `GET /api/coupons/public` — Active discount tokens & banners for Cart Drawer quick-apply.
+- `POST /api/chat/message` — KrishiMitra Gemini AI Agronomist chatbot endpoint (Throttled: 20 req/min).
 
 ### Authenticated Customer Routes (`auth:sanctum`)
 - `GET /api/cart` / `POST /api/cart/add` / `DELETE /api/cart/remove/{id}` — DB Cart operations.
-- `POST /api/cart/apply-coupon` — Coupon discount validator.
+- `POST /api/cart/apply-coupon` — Async server-side coupon discount validator.
 - `POST /api/orders` — High-concurrency transaction order placement.
 - `GET /api/orders/{id}` — Order details.
 - `POST /api/orders/{id}/verify-payment` — HMAC Razorpay signature verification.
@@ -143,8 +163,19 @@ When modifying or generating code for this repository, **you MUST follow these s
 - `POST /api/diagnose` — Upload crop pathology image (Throttled: 5 req/min).
 - `GET /api/planner` / `POST /api/planner` — Crop scheduler calendar management.
 
-### Admin Routes (`auth:sanctum`, `role:Admin`)
-- `GET /api/admin/dashboard` — Platform revenue & order metrics.
+### Logistics Driver Routes (`auth:sanctum`, `role:Logistics Driver`)
+- `GET /api/driver/orders` — View assigned & available packed orders for delivery.
+- `POST /api/driver/orders/{id}/status` — Update order delivery status (`OUT_FOR_DELIVERY` -> `DELIVERED`).
+- `POST /api/driver/settlements` — Submit COD collected cash settlement batch.
+
+### Admin & Staff Routes (`auth:sanctum`, Spatie Roles)
+- `GET /api/admin/dashboard` — Platform revenue, sales metrics & category breakdowns.
+- `GET /api/admin/users` — Tab-filtered staff & customer account management.
+- `GET /api/admin/roles` — Spatie role assignment & permissions registry.
+- `GET /api/admin/settlements` — Driver COD cash collection reconciliation dashboard.
+- `POST /api/admin/settlements/{id}/reconcile` — Execute optimistic UI settlement reconciliation.
+- `GET /api/admin/batches` / `POST /api/admin/batches` — Product batch & expiry tracking.
+- `GET /api/admin/bundles` / `POST /api/admin/bundles` — Product promotional bundle management.
 - `GET /api/admin/inventory` — Stock management overview.
 - `GET /api/admin/inventory/{id}/logs` — Audit log trail for stock movements.
 - `GET /api/payment-gateway/status` — Circuit breaker health check.

@@ -29,23 +29,25 @@
 
 ```mermaid
 graph TD
-    User([Farmer / Customer]) -->|HTTP / React UI| Frontend[React 18 + Vite Glassmorphic Web App]
+    User([Farmer / Customer / Driver]) -->|HTTP / React UI| Frontend[React 18 + Vite Glassmorphic Web App]
     Frontend -->|REST API + Bearer Sanctum| API[Laravel 11 REST API Gateway]
     
     subgraph Storage & Concurrency
-        API -->|Tier-1 Redis Lock / Cache / Rate-Limiting| Redis[(Redis Server)]
+        API -->|Tier-1 Redis Lock / Targeted Cache / Rate-Limiting| Redis[(Redis Server)]
         API -->|Tier-2 MySQL Pessimistic Row Lock| DB[(MySQL 8.0 DB)]
     end
     
-    subgraph Payment Infrastructure
+    subgraph Payment & Logistics Infrastructure
         API -->|Order Creation & Verification| Razorpay[Razorpay Gateway API]
         API -->|Circuit Breaker & Fallback| COD[Cash on Delivery Engine]
+        API -->|Driver Cash Reconciliation| DriverSettlements[Logistics Driver COD Settlement Engine]
         CLI[Artisan Command: orders:reconcile-payments] -->|Auto Verification| Razorpay
     end
     
     subgraph AI & Automation Orchestration
+        API -->|KrishiMitra Agri Assistant| GeminiSDK[Google Gemini AI SDK]
         API -->|Webhooks| N8N[n8n Automation Engine]
-        N8N -->|Vision API Analysis| Gemini[Google Gemini AI / Plantix AI]
+        N8N -->|Vision API Pathology Analysis| Gemini[Google Gemini 3.6 / 1.5 Flash]
         N8N -->|Order & Reminder Alerts| WhatsApp[WhatsApp / SMS Webhook]
     end
 ```
@@ -58,28 +60,30 @@ graph TD
 - **Framework & Language:** React 18, TypeScript, Vite 5.
 - **Styling & Theme:** Custom Glassmorphism CSS Architecture, Dynamic HSL Palettes, Modern Typography.
 - **Icons & UI Utilities:** Lucide React, Framer Motion (micro-animations), Axios HTTP Client.
-- **Features:** Dynamic Bento Grid Layout, Interactive Cart Drawer with Free Delivery Tracker, Quick-Apply Coupon Claiming, AI Chat & Vision Diagnosis Uploaders, Smart Crop Scheduler Calendar.
+- **Features:** Dynamic Bento Grid Layout, Interactive Cart Drawer with Free Delivery Tracker, Promotional Offer Banners, Quick-Apply Coupon Claiming, KrishiMitra AI Agronomist Chatbot, Vision Crop Diagnosis Uploader, Smart Crop Scheduler Calendar, Driver Delivery & Settlement Dashboard.
 
 ### **Backend API (`/fertilizer-api`)**
 - **Framework & Environment:** PHP 8.2+, Laravel 11.x, Artisan CLI.
-- **Authentication & Authorization:** Laravel Sanctum (Token-based API auth), Spatie Laravel-Permission (Role-Based Access Control: `Customer`, `Admin`).
+- **Authentication & Authorization:** Laravel Sanctum (Token-based API auth), Spatie Laravel-Permission with Granular Roles (`Customer`, `Super Admin`, `Admin`, `Logistics Driver`, `Warehouse Manager`, `Packer`).
 - **Database ORM & Migrations:** Eloquent ORM, Foreign Key Constraints, Index Optimizations.
-- **Concurrency & Caching:** Redis Cache Engine (`Cache::lock` distributed locks), Redis Rate Limiting Middleware (`throttle:auth`, `throttle:diagnosis`, `throttle:chat`).
+- **Concurrency & Targeted Caching:** Redis Cache Engine with targeted key pattern invalidation (`Cache::lock` distributed locks, pattern-matched cache invalidation avoiding global flushes), Redis Rate Limiting Middleware (`throttle:auth`, `throttle:diagnosis`, `throttle:chat`).
+- **AI Integration:** Google Gemini SDK (`google-gemini-php`) powering KrishiMitra Agricultural Assistant.
 - **PDF Generation:** Barryvdh DomPDF for downloadable tax invoices.
 
 ### **Database & State Management**
-- **Primary Relational DB:** MySQL 8.0 (InnoDB engine supporting ACID transactions & `FOR UPDATE` row locks).
-- **In-Memory Store:** Redis 7.x (High-speed key-value locking, session store, rate limits).
+- **Primary Relational DB:** MySQL 8.0 (InnoDB engine supporting ACID transactions, `FOR UPDATE` row locks, audit logging).
+- **In-Memory Store:** Redis 7.x (High-speed key-value locking, session store, granular invalidation, rate limits).
 
 ### **Automation & AI Engine (`/n8n-workflows`)**
 - **Orchestration:** n8n Workflow Automation Platform.
-- **AI Models:** Google Gemini 1.5 Flash / 3.6 Vision API for disease identification and multi-turn agronomy chat.
+- **AI Models:** Google Gemini 1.5 Flash / 3.6 Vision API for crop disease pathology identification and multi-turn agronomy chat.
 - **Workflow Pipelines:** 5 Custom JSON workflows (`1_chatbot.json`, `2_diagnosis.json`, `3_order_notifications.json`, `4_abandoned_cart.json`, `5_fertilizer_reminders.json`).
 
 ### **Payments & Security**
 - **Payment Gateway:** Razorpay REST API SDK (`Razorpay\Api\Api`).
+- **Logistics & COD Settlements:** Driver settlement portal (`DriverSettlement`) for tracking driver-collected Cash on Delivery payments, optimistic UI reconciliation, and automated backfilling.
 - **Resilience Pattern:** Custom `PaymentCircuitBreaker` service (Auto trips on failure threshold, fallback to COD).
-- **Security:** HMAC SHA256 Signature Verification, Input Validation, CORS policy protection.
+- **Security:** HMAC SHA256 Signature Verification, Role-Based Route Guards, Input Validation, CORS policy protection.
 
 ---
 
@@ -89,15 +93,16 @@ graph TD
 | :--- | :--- |
 | **🛒 E-Commerce & Checkout** | Interactive Product Catalog with Bento Grid visual layout, dynamic product filtering, search, and stock status indicators. |
 | **📦 Smart Cart Drawer** | Slide-out Cart Drawer featuring a **Real-Time Free Delivery Progress Tracker** (calculating progress towards ₹999 threshold) and a **Quick-Apply Coupon List**. |
-| **🎟️ Coupon Engine** | Support for fixed amount and percentage discounts, minimum order threshold validation, and first-order restriction for codes like `NEWFARMER`. |
+| **🎟️ Coupon Engine & Banners** | Dynamic coupon offer banners, asynchronous server-side coupon validation supporting fixed amount and percentage discounts, minimum order threshold validation, and first-order restriction (`NEWFARMER`). |
+| **🚚 Logistics & Driver Settlements** | Dedicated Logistics Driver portal for viewing packed orders, updating delivery status (`OUT_FOR_DELIVERY` -> `DELIVERED`), collecting COD payments, and performing cash settlement reconciliations (`DriverSettlement`). |
 | **⚡ High-Concurrency Locking** | **Two-Tier Concurrency System**: Tier-1 Redis Distributed Lock (`Cache::lock`) + Tier-2 MySQL Pessimistic Row Lock (`lockForUpdate`) preventing overselling during flash sales. |
 | **💳 Payment Gateway** | Dual-payment integration (Razorpay Online + Cash on Delivery). Includes HMAC SHA256 signature verification and order status transitions (`PENDING` -> `CONFIRMED`). |
 | **🛡️ Payment Circuit Breaker** | Self-healing circuit breaker (`PaymentCircuitBreaker`) monitoring gateway health. Automatically opens upon 3 consecutive gateway failures to route customers safely to COD. |
 | **⏰ Payment Reconciliation** | Automated background job (`orders:reconcile-payments`) checking pending online orders created in the last 24 hours and reconciling statuses without manual user interaction. |
 | **🌾 Plantix AI Diagnosis** | Visual Crop Disease Identifier allowing farmers to upload crop leaf images. Integrates with n8n + Gemini AI to output disease diagnosis, confidence score, organic cure, and recommended fertilizers. |
-| **🤖 AI Agronomist Chatbot** | Conversational assistant providing real-time crop advice, fertilizing advice, weather tips, and product recommendations. Throttled via Redis to 20 requests/minute. |
+| **🤖 KrishiMitra AI Agronomist** | Gemini-powered conversational AI assistant providing expert crop advice, fertilizing guidance, weather tips, and product recommendations. Throttled via Redis to 20 requests/minute. |
 | **📅 Crop Planner & Calendar** | Smart crop task schedule generator calculating sowing-to-harvest fertilizing steps and marking tasks completed. |
-| **📊 Admin Dashboard** | Full back-office management for products, stock adjustments, order status bulk updates, inventory audit logging (`InventoryLog`), and payment circuit breaker controls. |
+| **📊 Admin Dashboard & Audit Logs** | Comprehensive back-office management for products, product batches (`ProductBatch`), bundles, warehouse zones (`WarehouseZone`), tab-based user filtering, driver settlements, inventory audit logs (`InventoryLog`, `AuditLog`), and circuit breaker controls. |
 
 ---
 
