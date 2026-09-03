@@ -30,13 +30,7 @@ class CouponController extends Controller
 
         $cacheKey = "coupons:p{$page}:pp{$perPage}:s{$search}";
 
-        try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
-            $cacheStore = Cache::store();
-        }
-
-        $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search) {
+        $fetchData = function () use ($page, $perPage, $search) {
             $query = Coupon::query();
 
             if (!empty($search)) {
@@ -64,7 +58,17 @@ class CouponController extends Controller
                     'total' => $total,
                 ],
             ];
-        });
+        };
+
+        try {
+            $result = Cache::store('redis')->remember($cacheKey, 300, $fetchData);
+        } catch (\Throwable $e) {
+            try {
+                $result = Cache::remember($cacheKey, 300, $fetchData);
+            } catch (\Throwable $e2) {
+                $result = $fetchData();
+            }
+        }
 
         if (!$request->has('page') && !$request->has('search') && !$request->has('per_page')) {
             return response()->json($result['data']);

@@ -22,13 +22,7 @@ class BatchController extends Controller
 
         $cacheKey = "batches:p{$page}:pp{$perPage}:s{$search}:st{$status}";
 
-        try {
-            $cacheStore = \Illuminate\Support\Facades\Cache::store('redis');
-        } catch (\Throwable $e) {
-            $cacheStore = \Illuminate\Support\Facades\Cache::store();
-        }
-
-        $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search, $status) {
+        $fetchData = function () use ($page, $perPage, $search, $status) {
             $query = ProductBatch::with(['product', 'warehouseZone']);
 
             if ($search) {
@@ -63,7 +57,17 @@ class BatchController extends Controller
                     'total' => $total,
                 ],
             ];
-        });
+        };
+
+        try {
+            $result = \Illuminate\Support\Facades\Cache::store('redis')->remember($cacheKey, 300, $fetchData);
+        } catch (\Throwable $e) {
+            try {
+                $result = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, $fetchData);
+            } catch (\Throwable $e2) {
+                $result = $fetchData();
+            }
+        }
 
         // If simple array requested without page param, return data for legacy callers
         if (!$request->has('page') && !$request->has('search')) {
