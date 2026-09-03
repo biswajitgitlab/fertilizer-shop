@@ -193,14 +193,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         {/* Top Accent Gradient Bar */}
         <div className="h-0.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 via-cyan-500 to-emerald-600 animate-gradient" />
 
-        <div className="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+        <div className="px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* LEFT SECTION: Mobile Hamburger, Logo, Title & Live Status */}
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 flex-1">
             {/* Mobile Sidebar Hamburger Toggle */}
             <button
               onClick={onOpenMobileSidebar}
-              className={`lg:hidden p-2 rounded-xl transition-all duration-200 border cursor-pointer ${
+              className={`lg:hidden p-2 rounded-xl transition-all duration-200 border cursor-pointer shrink-0 ${
                 theme === 'dark'
                   ? 'text-slate-300 hover:text-white bg-slate-900/60 hover:bg-slate-800 border-slate-800'
                   : 'text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border-slate-200'
@@ -216,12 +216,15 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               <Logo variant="icon" size="sm" />
             </div>
 
-            {/* Live System Status Badge */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 uppercase tracking-wider shadow-xs shrink-0">
+            {/* Page Title & Live Badge */}
+            <div className="min-w-0 flex-1 flex items-center gap-2">
+              <h1 className="text-xs sm:text-sm md:text-base font-extrabold truncate leading-tight tracking-tight">
+                {title}
+              </h1>
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 uppercase tracking-wider shadow-xs shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 absolute" />
-                <span className="ml-2">Live System</span>
+                <span className="ml-2">Live</span>
               </span>
             </div>
           </div>
@@ -252,7 +255,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           </div>
 
           {/* RIGHT SECTION: Actions, Notifications, Theme Toggle, Profile */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             
             {/* Mobile Search Icon Trigger */}
             <button
@@ -271,7 +274,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             <div className="relative" ref={quickActionRef}>
               <button
                 onClick={() => setQuickActionOpen(!quickActionOpen)}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md border ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md border ${
                   theme === 'dark'
                     ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-emerald-500/30 shadow-emerald-950/40'
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500/40 shadow-emerald-600/20'
@@ -279,13 +282,13 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                 title="Quick Creation Actions"
               >
                 <Plus className="w-4 h-4" />
-                <span>Action</span>
+                <span className="hidden sm:inline">Action</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${quickActionOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Quick Action Dropdown */}
               {quickActionOpen && (
-                <div className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
+                <div className={`absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                   theme === 'dark'
                     ? 'bg-slate-900/95 border-slate-800 text-slate-100 backdrop-blur-xl shadow-black/80'
                     : 'bg-white border-slate-200 text-slate-900 shadow-xl'
@@ -378,7 +381,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
               {/* Notification Center Popover */}
               {notificationsOpen && (
-                <div className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-2xl border p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
+                <div className={`absolute right-[-0.5rem] sm:right-0 mt-2 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm sm:max-w-md rounded-2xl shadow-2xl border p-3 sm:p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                   theme === 'dark'
                     ? 'bg-slate-900/95 border-slate-800 text-slate-100 backdrop-blur-xl shadow-black/80'
                     : 'bg-white border-slate-200 text-slate-900 shadow-xl'
@@ -577,7 +580,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
               {/* Admin Profile Executive Menu */}
               {profileOpen && (
-                <div className={`absolute right-0 mt-2 w-64 rounded-2xl shadow-2xl border p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
+                <div className={`absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl shadow-2xl border p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                   theme === 'dark'
                     ? 'bg-slate-900/95 border-slate-800 text-slate-100 backdrop-blur-xl shadow-black/90'
                     : 'bg-white border-slate-200 text-slate-900 shadow-2xl'

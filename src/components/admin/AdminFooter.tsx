@@ -10,7 +10,7 @@ export const AdminFooter: React.FC = () => {
   const { appName } = useSiteSettingsStore();
 
   return (
-    <footer className={`mt-auto border-t px-4 sm:px-8 py-5 transition-colors duration-300 backdrop-blur-xl relative z-10 ${
+    <footer className={`mt-auto border-t px-4 sm:px-8 pt-5 pb-20 lg:pb-5 transition-colors duration-300 backdrop-blur-xl relative z-10 ${
       theme === 'dark'
         ? 'bg-slate-950/70 border-slate-800/80 text-slate-400'
         : 'bg-white/80 border-slate-200 text-slate-600'
@@ -20,13 +20,11 @@ export const AdminFooter: React.FC = () => {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-xs">
           
           {/* Left: Branding & Enterprise Badge */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+          <div className="flex items-center justify-between lg:justify-start w-full lg:w-auto gap-3">
             <div className="flex items-center gap-2 font-black text-slate-900 dark:text-white">
               <Logo variant="icon" size="xs" />
               <span className="tracking-tight text-sm">Fertilizer Shop Admin</span>
             </div>
-
-            <span className="hidden sm:inline text-slate-300 dark:text-slate-800">•</span>
 
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
               v2.4.0 Enterprise
@@ -42,7 +40,7 @@ export const AdminFooter: React.FC = () => {
             </span>
 
             {/* API Latency */}
-            <span className="hidden sm:inline-flex items-center gap-1 font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
+            <span className="inline-flex items-center gap-1 font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
               <Activity className="w-3.5 h-3.5 text-cyan-400" />
               <span>18ms Latency</span>
             </span>
@@ -61,20 +59,17 @@ export const AdminFooter: React.FC = () => {
           </div>
 
           {/* Right: Quick Links */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 text-[11px] font-semibold">
-            <Link to="/admin/analytics" className="hover:text-emerald-500 transition-colors">
+          <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 text-[11px] font-semibold">
+            <Link to="/admin/analytics" className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:text-emerald-500 transition-colors">
               Analytics
             </Link>
-            <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link to="/admin/roles" className="hover:text-emerald-500 transition-colors">
+            <Link to="/admin/roles" className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:text-emerald-500 transition-colors">
               Roles & Access
             </Link>
-            <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link to="/admin/inventory" className="hover:text-emerald-500 transition-colors">
+            <Link to="/admin/inventory" className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:text-emerald-500 transition-colors">
               Stock Audit
             </Link>
-            <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link to="/" className="hover:text-emerald-500 transition-colors flex items-center gap-1">
+            <Link to="/" className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 hover:text-emerald-500 transition-colors flex items-center gap-1">
               <span>Storefront</span>
               <ExternalLink className="w-3 h-3" />
             </Link>
@@ -86,14 +81,14 @@ export const AdminFooter: React.FC = () => {
         <div className={`pt-3 border-t text-[11px] flex flex-col sm:flex-row items-center justify-between gap-2 text-slate-400 ${
           theme === 'dark' ? 'border-slate-800/60' : 'border-slate-200'
         }`}>
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
               <Command className="w-3 h-3" /> K
             </span>
             <span>Press for Command Palette</span>
           </div>
 
-          <p className="text-center sm:text-right text-slate-500 dark:text-slate-400 font-medium">
+          <p className="text-center sm:text-right text-slate-500 dark:text-slate-400 font-medium w-full sm:w-auto">
             © {new Date().getFullYear()} {appName} Inc. All Rights Reserved. Enterprise Admin Portal.
           </p>
         </div>
@@ -101,3 +96,4 @@ export const AdminFooter: React.FC = () => {
     </footer>
   );
 };
+

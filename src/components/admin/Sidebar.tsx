@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Stethoscope,
   BarChart2, Warehouse, Tag, ArrowLeft, LogOut, ShieldCheck,
-  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen, FileText, Settings
+  Sun, Moon, UserCheck, PanelLeftClose, PanelLeftOpen, FileText, Settings, X
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUIStore } from '../../store/uiStore';
@@ -69,7 +69,19 @@ export const Sidebar: React.FC<{
           theme === 'dark' ? 'border-slate-800/80' : 'border-slate-200'
         }`}>
           <Logo variant="sidebar" collapsed={isCollapsed} />
-          {!onCloseMobile && (
+          {onCloseMobile ? (
+            <button
+              onClick={onCloseMobile}
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                theme === 'dark'
+                  ? 'text-slate-400 hover:text-white hover:bg-slate-800 border-slate-800'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 border-slate-200'
+              }`}
+              title="Close Drawer Menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          ) : (
             <button
               onClick={toggleSidebarCollapsed}
               title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
