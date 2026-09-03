@@ -104,17 +104,19 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <PageTransition className="space-y-0 pb-0 bg-emerald-50/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
+    <PageTransition className="w-full space-y-0 pb-0 bg-emerald-50/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 font-sans selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-300">
       
       {/* ─── 1. LIQUID GLASS HERO SPOTLIGHT CAROUSEL ─── */}
-      <section className="pt-20 sm:pt-24 pb-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4">
-        <HeroCarousel />
-        <DynamicCouponOfferBanner />
+      <section className="w-full pt-3 sm:pt-6 pb-4">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10 space-y-4">
+          <HeroCarousel />
+          <DynamicCouponOfferBanner />
+        </div>
       </section>
 
       {/* ─── SMART CROP ADVISORY BAR ─── */}
-      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-emerald-50/90 dark:bg-emerald-950 border-y border-emerald-200/60 dark:border-emerald-800/40 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <section className="w-full py-8 sm:py-10 bg-emerald-50/90 dark:bg-emerald-950 border-y border-emerald-200/60 dark:border-emerald-800/40 relative overflow-hidden backdrop-blur-md transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-wider bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -163,8 +165,8 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 2. VISUAL PHOTO BANNER GRID ─── */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-emerald-900/80 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full py-8 sm:py-12 bg-emerald-100/50 dark:bg-emerald-900/80 transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
           <div className="text-center mb-6 sm:mb-8 space-y-1">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Explore By Category
@@ -243,22 +245,22 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 3. HIGH-YIELD SMART FARMING SERVICES CAROUSEL ─── */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full py-12 sm:py-16 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
           <ServicesCarousel isAuthenticated={isAuthenticated} />
         </div>
       </section>
 
       {/* ─── 4. CATEGORIES LIST WITH RICH IMAGE TILES ─── */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-emerald-100/50 dark:bg-emerald-900/80 text-emerald-950 dark:text-emerald-50 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full py-10 sm:py-12 bg-emerald-100/50 dark:bg-emerald-900/80 text-emerald-950 dark:text-emerald-50 transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
           <CategoryCarousel categories={categories} getCategoryImage={getCategoryImage} />
         </div>
       </section>
 
       {/* ─── 5. FEATURED HIGH-YIELD FERTILIZERS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <section className="w-full py-12 sm:py-16 bg-emerald-50/60 dark:bg-emerald-950 relative transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10 space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
@@ -297,22 +299,22 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 6. TRENDING & MOST VISITED PRODUCTS ─── */}
-      <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-amber-500/5 via-orange-500/5 to-transparent dark:from-amber-950/20 dark:via-orange-950/10 dark:to-transparent">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full py-4 sm:py-6 bg-gradient-to-b from-amber-500/5 via-orange-500/5 to-transparent dark:from-amber-950/20 dark:via-orange-950/10 dark:to-transparent">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
           <TrendingProductsSection />
         </div>
       </section>
 
       {/* ─── 6.5 RECENTLY VIEWED PRODUCTS (RETARGETING) ─── */}
-      <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-emerald-500/5 via-teal-500/5 to-transparent dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-transparent">
-        <div className="max-w-7xl mx-auto">
+      <section className="w-full py-4 sm:py-6 bg-gradient-to-b from-emerald-500/5 via-teal-500/5 to-transparent dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-transparent">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
           <RecentlyViewedSection />
         </div>
       </section>
 
       {/* ─── 7. FARMER TESTIMONIALS ─── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-emerald-100/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 relative transition-colors duration-300">
-        <div className="max-w-7xl mx-auto space-y-10">
+      <section className="w-full py-12 sm:py-16 bg-emerald-100/60 dark:bg-emerald-950 text-emerald-950 dark:text-emerald-50 relative transition-colors duration-300">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10 space-y-10">
           <div className="text-center space-y-2">
             <span className="text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
               Verified Success
@@ -362,7 +364,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ─── 8. FINAL CALLOUT ─── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 text-center relative overflow-hidden">
+      <section className="w-full py-16 sm:py-24 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 text-center relative overflow-hidden">
         {/* High Quality Authentic Fern Frond Leaves Photo Background Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"

@@ -72,7 +72,7 @@ export const Cart: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-gray-900 dark:text-white">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-32 md:pb-10 space-y-4 sm:space-y-6 text-gray-900 dark:text-white">
       <h1 className="text-2xl font-black text-gray-900 dark:text-white">Your Shopping Cart ({items.length} Products)</h1>
 
       {/* FREE SHIPPING PROGRESS BAR */}
@@ -104,10 +104,10 @@ export const Cart: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-start">
         
         {/* Cart Items Column */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-3 sm:space-y-4">
           {/* OUT OF STOCK WARNING BANNER */}
           {hasOutOfStockItems && (
             <div className="p-4 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 rounded-3xl space-y-3 text-rose-900 dark:text-rose-200 shadow-sm">
@@ -214,8 +214,8 @@ export const Cart: React.FC = () => {
           </div>
         </div>
 
-        {/* Order Summary Side Card */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-6">
+        {/* Order Summary Side Card — desktop only; mobile uses sticky footer bar */}
+        <div className="hidden lg:block lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-xs space-y-6 sticky top-24">
           <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-800 pb-3">
             Cart Summary
           </h3>
@@ -288,6 +288,35 @@ export const Cart: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* MOBILE STICKY CHECKOUT BAR — shown below cart items on mobile only */}
+      <div className="lg:hidden fixed bottom-16 left-0 right-0 z-50 px-3 py-2 bg-white/96 dark:bg-slate-900/96 backdrop-blur-2xl border-t border-emerald-200/60 dark:border-slate-700/60 shadow-[0_-8px_30px_rgba(0,0,0,0.18)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center gap-3">
+          {/* Price summary pill */}
+          <div className="flex-1 min-w-0 space-y-0.5">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-black text-emerald-800 dark:text-emerald-400">{formatCurrency(total)}</span>
+              {discount > 0 && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md">
+                  -{formatCurrency(discount)} saved
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-gray-500 dark:text-slate-400 font-medium truncate">
+              {shippingFee === 0 ? '🎉 Free Delivery Unlocked' : `+${formatCurrency(shippingFee)} delivery`} • GST incl.
+            </p>
+          </div>
+          {/* Checkout CTA */}
+          <Button
+            onClick={() => navigate('/checkout')}
+            disabled={hasOutOfStockItems}
+            className="shrink-0 px-5 py-3 text-sm font-black disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-manipulation active:scale-[0.97] transition-transform"
+            icon={<ArrowRight className="w-4 h-4" />}
+          >
+            {hasOutOfStockItems ? 'Fix Cart' : 'Checkout'}
+          </Button>
+        </div>
       </div>
 
       {/* RECENTLY VIEWED PRODUCTS FOR EASY ADD-BACK */}

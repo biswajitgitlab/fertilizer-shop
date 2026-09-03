@@ -3,14 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ArrowRight, Truck, Sparkles } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { formatCurrency } from '../../utils/formatters';
+import { useLocation } from 'react-router-dom';
 
 export const FloatingCartBanner: React.FC = () => {
   const { itemCount, total, subtotal, freeShippingThreshold, setDrawerOpen, isOpen } = useCart();
+  const location = useLocation();
 
   const amountForFreeDelivery = Math.max(0, freeShippingThreshold - subtotal);
 
-  // Hide when cart is empty or when the main CartDrawer is already open
-  if (itemCount === 0 || isOpen) return null;
+  // Pages where the floating cart banner should NOT appear
+  const suppressedPaths = ['/cart', '/checkout', '/orders', '/diagnose', '/planner'];
+  const isSuppressed = suppressedPaths.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
+
+  // Hide when cart is empty, drawer is open, or on irrelevant pages
+  if (itemCount === 0 || isOpen || isSuppressed) return null;
 
   return (
     <AnimatePresence>

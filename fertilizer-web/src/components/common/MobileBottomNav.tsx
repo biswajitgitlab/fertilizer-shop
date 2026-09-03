@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, Stethoscope, ShoppingBag, User } from 'lucide-react';
+import { Home, ShoppingCart, Stethoscope, Package, User } from 'lucide-react';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -10,15 +10,18 @@ export const MobileBottomNav: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
+  const isCartActive = isActive('/cart');
+  const isOrdersActive = isActive('/orders') || location.pathname.startsWith('/orders/');
+  const isProfileActive = isActive('/profile') || isActive('/login');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-emerald-500/20 px-3 py-2 shadow-[0_-10px_35px_rgba(0,0,0,0.25)] dark:shadow-[0_-10px_35px_rgba(0,0,0,0.85)] transition-all duration-300">
-      <div className="flex items-center justify-between relative max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-white/96 dark:bg-slate-900/96 backdrop-blur-2xl border-t border-emerald-500/20 shadow-[0_-10px_35px_rgba(0,0,0,0.25)] dark:shadow-[0_-10px_35px_rgba(0,0,0,0.85)] transition-all duration-300">
+      <div className="flex items-center justify-between relative max-w-md mx-auto px-2 py-1.5">
         
         {/* 1. Home */}
         <Link
           to="/"
-          className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
+          className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
             isActive('/')
               ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 font-black shadow-xs'
               : 'text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200'
@@ -28,17 +31,17 @@ export const MobileBottomNav: React.FC = () => {
           <span className="leading-none">Home</span>
         </Link>
 
-        {/* 2. My Crops */}
+        {/* 2. Orders (My Orders) */}
         <Link
-          to="/planner"
-          className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
-            isActive('/planner')
+          to={isAuthenticated ? "/orders" : "/products"}
+          className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
+            isOrdersActive
               ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 font-black shadow-xs'
               : 'text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200'
           }`}
         >
-          <Calendar className={`w-5 h-5 ${isActive('/planner') ? 'stroke-[2.5]' : 'stroke-2'}`} />
-          <span className="leading-none">My Crops</span>
+          <Package className={`w-5 h-5 ${isOrdersActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          <span className="leading-none">{isAuthenticated ? 'Orders' : 'Store'}</span>
         </Link>
 
         {/* 3. Center Stacked Elevated Heal Crop Button */}
@@ -56,37 +59,39 @@ export const MobileBottomNav: React.FC = () => {
           </span>
         </Link>
 
-        {/* 4. Store */}
+        {/* 4. Cart — most important ecom CTA */}
         <Link
-          to="/products"
-          className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold relative transition-all px-3 py-1.5 rounded-2xl ${
-            isActive('/products')
+          to="/cart"
+          className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold relative transition-all px-3 py-1.5 rounded-2xl ${
+            isCartActive
               ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 font-black shadow-xs'
-              : 'text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200'
+              : itemCount > 0
+                ? 'text-emerald-700 dark:text-emerald-400'
+                : 'text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200'
           }`}
         >
           <div className="relative">
-            <ShoppingBag className={`w-5 h-5 ${isActive('/products') ? 'stroke-[2.5]' : 'stroke-2'}`} />
+            <ShoppingCart className={`w-5 h-5 ${isCartActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 bg-emerald-500 text-slate-950 text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md border border-white dark:border-slate-900">
-                {itemCount}
+              <span className="absolute -top-1.5 -right-2 bg-emerald-500 text-slate-950 text-[9px] font-black min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center shadow-md border border-white dark:border-slate-900">
+                {itemCount > 9 ? '9+' : itemCount}
               </span>
             )}
           </div>
-          <span className="leading-none">Store</span>
+          <span className="leading-none">Cart</span>
         </Link>
 
-        {/* 5. Profile */}
+        {/* 5. Profile / Account */}
         <Link
           to={isAuthenticated ? "/profile" : "/login"}
-          className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
-            isActive('/profile') || isActive('/login')
+          className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold transition-all px-3 py-1.5 rounded-2xl ${
+            isProfileActive
               ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 font-black shadow-xs'
               : 'text-gray-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-slate-200'
           }`}
         >
-          <User className={`w-5 h-5 ${isActive('/profile') || isActive('/login') ? 'stroke-[2.5]' : 'stroke-2'}`} />
-          <span className="leading-none">{isAuthenticated ? "Profile" : "Account"}</span>
+          <User className={`w-5 h-5 ${isProfileActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          <span className="leading-none">{isAuthenticated ? "Me" : "Login"}</span>
         </Link>
 
       </div>
