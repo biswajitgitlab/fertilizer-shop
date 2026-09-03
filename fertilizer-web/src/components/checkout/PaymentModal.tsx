@@ -13,6 +13,28 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
+const loadRazorpaySDK = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const existingScript = document.getElementById('razorpay-checkout-sdk');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(true));
+      existingScript.addEventListener('error', () => resolve(false));
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = 'razorpay-checkout-sdk';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   isOpen,
   onClose,
@@ -32,6 +54,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setErrorMessage('');
       setIsCircuitOpen(false);
       document.body.style.overflow = 'hidden';
+      // Pre-fetch Razorpay SDK asynchronously when modal opens
+      loadRazorpaySDK();
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -46,6 +70,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     try {
       setProcessStep('gateway_connect');
       setIsCircuitOpen(false);
+
+      const sdkLoaded = await loadRazorpaySDK();
+      if (!sdkLoaded) {
+        toast.error("Unable to load Razorpay payment SDK. Please check your network connection.");
+        setProcessStep('idle');
+        return;
+      }
+
       const amountInPaise = Math.max(100, Math.round(amount * 100));
 
       const orderRes = await orderApi.createRazorpayOrder(

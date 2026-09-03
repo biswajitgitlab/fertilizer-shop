@@ -18,11 +18,9 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
-        $adminUser = \App\Models\Admin::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['Super Admin', 'Admin', 'Store Manager']);
-        })->first() ?? \App\Models\Admin::first();
+        $auditUserId = $users[0];
 
-        $adminUserId = $adminUser ? $adminUser->id : $users[0];
+        $driverAdmin = \App\Models\Admin::where('role', 'Logistics Driver')->first() ?? \App\Models\Admin::first();
 
         // 1. Seed Driver Settlements for all COD orders
         $codOrders = Order::whereIn('payment_method', ['COD', 'CASH_ON_DELIVERY'])->get();
@@ -30,7 +28,7 @@ class DemoDataSeeder extends Seeder
             DriverSettlement::firstOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'driver_id' => $adminUserId,
+                    'driver_id' => $driverAdmin ? $driverAdmin->id : null,
                     'cash_collected' => $order->total,
                     'status' => $index % 2 === 0 ? 'SETTLED_TO_BANK' : 'DRIVER_COLLECTION_PENDING',
                 ]
@@ -177,7 +175,7 @@ class DemoDataSeeder extends Seeder
 
         foreach ($logsData as $idx => $log) {
             AuditLog::create([
-                'user_id' => $adminUserId,
+                'user_id' => $auditUserId,
                 'action' => $log['action'],
                 'target' => $log['target'],
                 'details' => $log['details'],

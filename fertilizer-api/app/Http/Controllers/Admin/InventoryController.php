@@ -16,16 +16,10 @@ class InventoryController extends Controller
         $perPage = max(1, min(100, (int) $request->get('per_page', 10)));
         $search = strtolower(trim($request->get('search', '')));
 
-        $cacheKey = "inventory:p{$page}:pp{$perPage}:s{$search}";
+        $cacheKey = "admin_inventory:p{$page}:pp{$perPage}:s{$search}";
 
-        try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
-            $cacheStore = Cache::store();
-        }
-
-        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $search) {
-            $query = Product::with('category')->select('id', 'name', 'category_id', 'stock_qty', 'price', 'is_active');
+        $result = Cache::remember($cacheKey, 180, function () use ($page, $perPage, $search) {
+            $query = Product::with('category')->select('id', 'name', 'category_id', 'stock_qty', 'price', 'is_active', 'unit', 'images_json');
 
             if ($search) {
                 $query->where('name', 'like', "%{$search}%");
@@ -37,7 +31,11 @@ class InventoryController extends Controller
             $items = $query->orderBy('stock_qty', 'asc')
                 ->skip(($page - 1) * $perPage)
                 ->take($perPage)
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                    return $item->toArray();
+                })
+                ->toArray();
 
             return [
                 'data' => $items,

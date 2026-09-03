@@ -7,6 +7,7 @@ import { InvoiceDownloader } from '../components/order/InvoiceDownloader';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { ArrowLeft, Package, MapPin, CreditCard, ShieldCheck, XCircle, AlertCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { PaymentModal } from '../components/checkout/PaymentModal';
+import { echo } from '../utils/echo';
 
 const normalizeOrder = (raw: any): Order | null => {
   if (!raw) return null;
@@ -136,24 +137,25 @@ export const OrderDetail: React.FC = () => {
   useEffect(() => {
     fetchOrder();
 
-    // Auto-poll status every 4 seconds if payment is pending (for 30 seconds max)
-    let intervalId: any = null;
-    let pollCount = 0;
+    if (!id) return;
 
-    if (order?.paymentStatus !== 'Paid' && order?.paymentMethod === 'Online Payment') {
-      intervalId = setInterval(() => {
-        pollCount++;
-        fetchOrder();
-        if (pollCount >= 8) {
-          clearInterval(intervalId);
-        }
-      }, 4000);
-    }
+    // Real-time WebSocket update via Laravel Reverb
+    const channelName = `orders.${id}`;
+    const channel = echo.channel(channelName);
+    
+    channel.listen('.OrderStatusUpdated', (e: any) => {
+      fetchOrder();
+    });
+
+    // Fail-safe backup poll every 10s
+    const intervalId = setInterval(fetchOrder, 10000);
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      channel.stopListening('.OrderStatusUpdated');
+      echo.leaveChannel(channelName);
+      clearInterval(intervalId);
     };
-  }, [id, order?.paymentStatus]);
+  }, [id]);
 
   const handleVerifyPaymentStatus = async () => {
     if (!id) return;

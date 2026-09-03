@@ -13,7 +13,6 @@ export const Orders: React.FC = () => {
     const fetchOrders = async () => {
       try {
         const data = await orderApi.getMyOrders();
-        // Handle both array and paginated object ({ data: [...], total, ... })
         let list: any[] = [];
         if (Array.isArray(data)) {
           list = data;
@@ -31,7 +30,10 @@ export const Orders: React.FC = () => {
         setIsLoading(false);
       }
     };
+
     fetchOrders();
+    const intervalId = setInterval(fetchOrders, 4000);
+    return () => clearInterval(intervalId);
   }, []);
 
   return (

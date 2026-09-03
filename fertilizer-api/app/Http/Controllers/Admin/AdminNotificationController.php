@@ -30,8 +30,7 @@ class AdminNotificationController extends Controller
         $readByArray = CacheGetAdminReadIds($admin->id);
         $readAllTs = (int) Cache::get("admin_read_all_{$admin->id}", 0);
 
-        // Seed initial notifications if needed
-        $this->ensureInitialAdminNotifications();
+        // Ensure real notifications only (no static mock seeding)
 
         // Leverage Redis caching for notification list (TTL 15 seconds)
         $cacheKey = "admin_notifications_{$admin->id}_v2";

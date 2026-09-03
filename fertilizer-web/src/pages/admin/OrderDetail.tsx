@@ -9,6 +9,8 @@ import { ArrowLeft, MapPin, CheckCircle, Clock, Package, Truck } from 'lucide-re
 import toast from 'react-hot-toast';
 
 import { useAuthStore } from '../../store/authStore';
+import { echo } from '../../utils/echo';
+
 export const OrderDetail: React.FC = () => {
   const user = useAuthStore(state => state.user);
   const isDriver = (user?.role || '').toLowerCase().includes('driver') || (user?.roles || []).some((r: any) => (typeof r === 'string' ? r : r.name).toLowerCase().includes('driver'));
@@ -18,32 +20,8 @@ export const OrderDetail: React.FC = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<Order | null>(null);
   const [trackingNo, setTrackingNo] = useState('');
-  const [selectedPacker, setSelectedPacker] = useState<string>('');
-  const [selectedDriver, setSelectedDriver] = useState<string>('');
-  const [staffList, setStaffList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchOrderAndStaff = async () => {
-      try {
-        if (!id) return;
-        const [data, team] = await Promise.all([
-          adminApi.getOrderById(id),
-          adminApi.getTeam().catch(() => [])
-        ]);
-        setOrder(data);
-        if (data.trackingNumber) setTrackingNo(data.trackingNumber);
-        if (data.packerId) setSelectedPacker(String(data.packerId));
-        if (data.driverId) setSelectedDriver(String(data.driverId));
-        setStaffList(Array.isArray(team) ? team : []);
-      } catch (e) {
-        console.error("Admin order detail error:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchOrderAndStaff();
-  }, [id]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchOrder = async () => {
     if (!id) return;
@@ -51,60 +29,64 @@ export const OrderDetail: React.FC = () => {
       const data = await adminApi.getOrderById(id);
       setOrder(data);
       if (data.trackingNumber) setTrackingNo(data.trackingNumber);
-      if (data.packerId) setSelectedPacker(String(data.packerId));
-      if (data.driverId) setSelectedDriver(String(data.driverId));
     } catch (e) {
-      console.error(e);
+      console.error("Admin getOrderById error:", e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchOrder();
+
+    if (!id) return;
+
+    const channelName = `orders.${id}`;
+    const channel = echo.channel(channelName);
+    
+    channel.listen('.OrderStatusUpdated', () => {
+      fetchOrder();
+    });
+
+    return () => {
+      channel.stopListening('.OrderStatusUpdated');
+      echo.leaveChannel(channelName);
+    };
+  }, [id]);
+
   const handleSaveTracking = async () => {
-    if (!order) return;
+    if (!order || isUpdating) return;
+    setIsUpdating(true);
     try {
-      await adminApi.updateOrderStatus(order.id, order.status, trackingNo, selectedPacker, selectedDriver);
+      await adminApi.updateOrderStatus(order.id, order.status, trackingNo);
       toast.success("Order fulfillment saved!");
       await fetchOrder();
     } catch (e) {
       toast.error("Failed to update order details.");
-    }
-  };
-
-  const handlePackerSelect = async (packerId: string) => {
-    setSelectedPacker(packerId);
-    if (!order) return;
-    try {
-      const currentStatus = (order.status || '').toUpperCase();
-      const targetStatus = (currentStatus === 'PENDING' || currentStatus === 'CONFIRMED') ? 'Packed' : order.status;
-      await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, packerId, selectedDriver);
-      fetchOrder();
-      toast.success('Warehouse Packer assigned');
-    } catch (error) {
-      toast.error('Failed to assign packer');
-    }
-  };
-
-  const handleDriverSelect = async (driverId: string) => {
-    setSelectedDriver(driverId);
-    if (!order) return;
-    try {
-      const currentStatus = (order.status || '').toUpperCase();
-      const targetStatus = (['PENDING', 'CONFIRMED', 'PACKED', 'PROCESSING'].includes(currentStatus)) ? 'Shipped' : order.status;
-      await adminApi.updateOrderStatus(order.id, targetStatus, trackingNo, selectedPacker, driverId);
-      fetchOrder();
-      toast.success('Logistics Driver assigned');
-    } catch (error) {
-      toast.error('Failed to assign driver');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleStatusChange = async (newStatus: string) => {
-    if (!order) return;
+    if (!order || isUpdating) return;
+    const currentStatusNormalized = (order.status || '').toUpperCase().replace(/ /g, '_');
+    const newStatusNormalized = newStatus.toUpperCase().replace(/ /g, '_');
+
+    if (currentStatusNormalized === newStatusNormalized) {
+      toast.error(`Order is already in ${order.status} status.`);
+      return;
+    }
+
+    setIsUpdating(true);
     try {
-      await adminApi.updateOrderStatus(order.id, newStatus, trackingNo, selectedPacker, selectedDriver);
+      await adminApi.updateOrderStatus(order.id, newStatus, trackingNo);
       toast.success(`Status updated to ${newStatus}${newStatus === 'Delivered' ? ' & Payment Collected' : ''}!`);
       await fetchOrder();
     } catch (e) {
       toast.error("Failed to update order status.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -181,11 +163,11 @@ export const OrderDetail: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-emerald-800 dark:text-emerald-300">📦 Pick Location:</span>
                       <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
-                        {it.product.category?.includes('Organic') ? 'ZONE-B' : it.product.category?.includes('Insect') ? 'ZONE-C' : it.product.category?.includes('Micro') ? 'ZONE-D' : 'ZONE-A'}
+                        {(it as any).warehouse_zone || (it as any).warehouseZone || 'ZONE-A'}
                       </span>
                     </div>
                     <span className="text-slate-500 dark:text-slate-400 font-mono text-[10px]">
-                      FEFO Priority Dispatch: <strong className="text-slate-700 dark:text-slate-200">{(it as any).assigned_batch || 'Earliest Lot Batch'}</strong>
+                      FEFO Lot Batch: <strong className="text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-100/50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{(it as any).assigned_batch || (it as any).batch_code || 'AUTO-BATCH'}</strong>
                     </span>
                   </div>
                 </div>
@@ -197,120 +179,67 @@ export const OrderDetail: React.FC = () => {
             <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
               {/* Sequential Operational Workflow Progress Bar */}
               <div className="p-4 rounded-2xl bg-slate-50/90 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">⚡ Fulfillment Workflow Actions</h4>
-                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    Current: {order.status}
+                  <span className="font-bold text-[11px] uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    Current: <span className="text-slate-900 dark:text-white font-black">{order.status}</span>
                     {(() => {
                       const s = (order.status || '').toUpperCase();
                       if (s === 'PENDING' || s === 'CONFIRMED') return <Clock className="w-3.5 h-3.5 animate-pulse text-amber-500" />;
                       if (s === 'PACKED' || s === 'PROCESSING' || s === 'READY_FOR_PICKUP') return <Package className="w-3.5 h-3.5 animate-pulse text-blue-500" />;
                       if (s === 'SHIPPED') return <Truck className="w-3.5 h-3.5 animate-bounce text-purple-500" />;
                       if (s === 'OUT FOR DELIVERY' || s === 'OUT_FOR_DELIVERY') return <MapPin className="w-3.5 h-3.5 animate-bounce text-emerald-500" />;
-                      if (s === 'DELIVERED') return <CheckCircle className="w-3.5 h-3.5 animate-bounce text-emerald-500" />;
+                      if (s === 'DELIVERED') return <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />;
                       return null;
                     })()}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { level: 1, label: '1. Warehouse Packed', action: 'Packed', disabled: isDriver || !['PENDING', 'CONFIRMED'].includes((order.status || '').toUpperCase()) },
-                    { level: 2, label: '2. Shipped / In Transit', action: 'Shipped', disabled: !canShip || !['PACKED', 'PROCESSING'].includes((order.status || '').toUpperCase()) },
-                    { level: 3, label: '3. Out for Delivery', action: 'Out for Delivery', disabled: !canShip || (order.status || '').toUpperCase() !== 'SHIPPED' },
-                    { level: 4, label: '4. Delivered & Paid', action: 'Delivered', disabled: !canShip || !['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes((order.status || '').toUpperCase()) },
+                    { level: 1, label: '1. Warehouse Packed', action: 'Packed', disabled: isDriver },
+                    { level: 2, label: '2. Shipped / In Transit', action: 'Shipped', disabled: !canShip },
+                    { level: 3, label: '3. Out for Delivery', action: 'Out for Delivery', disabled: false },
+                    { level: 4, label: '4. Delivered & Paid', action: 'Delivered', disabled: false },
                   ].map((btn) => {
-                    const s = (order.status || '').toUpperCase();
+                    const s = (order.status || '').toUpperCase().replace(/ /g, '_');
                     let currentLevel = 0;
                     if (['DELIVERED'].includes(s)) currentLevel = 4;
-                    else if (['OUT FOR DELIVERY', 'OUT_FOR_DELIVERY'].includes(s)) currentLevel = 3;
+                    else if (['OUT_FOR_DELIVERY'].includes(s)) currentLevel = 3;
                     else if (['SHIPPED'].includes(s)) currentLevel = 2;
                     else if (['PACKED', 'PROCESSING', 'READY_FOR_PICKUP'].includes(s)) currentLevel = 1;
                     
-                    const isDone = currentLevel >= btn.level;
-                    const isActive = currentLevel === btn.level - 1;
+                    const isDone = currentLevel > btn.level;
+                    const isActive = currentLevel === btn.level;
+                    const isAlreadyCurrentOrPast = currentLevel >= btn.level;
+                    const isDisabled = btn.disabled || isUpdating || isAlreadyCurrentOrPast;
                     
                     let buttonClass = '';
-                    if (isDone) {
-                      buttonClass = 'bg-emerald-600 text-white border-emerald-600 shadow-sm';
-                    } else if (isActive) {
-                      buttonClass = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-500 shadow-sm animate-pulse';
+                    if (isActive) {
+                      buttonClass = 'bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-500/50';
+                    } else if (isDone) {
+                      buttonClass = 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
                     } else {
-                      buttonClass = 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800';
+                      buttonClass = 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:border-emerald-500 cursor-pointer';
                     }
 
                     return (
                       <button
                         key={btn.level}
                         onClick={() => handleStatusChange(btn.action)}
-                        disabled={btn.disabled}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${buttonClass} disabled:opacity-50 disabled:cursor-not-allowed ${!btn.disabled ? 'cursor-pointer hover:border-emerald-400' : ''}`}
+                        disabled={isDisabled}
+                        title={isActive ? `Order is currently ${order.status}` : isDone ? `Completed stage` : `Advance order status to ${btn.action}`}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${buttonClass} disabled:opacity-60 disabled:cursor-not-allowed`}
                       >
-                        {btn.label}
+                        <span className="flex items-center justify-center gap-1">
+                          {isDone && <CheckCircle className="w-3 h-3 text-emerald-500 shrink-0" />}
+                          {btn.label}
+                          {isActive && <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-white/20 ml-1">Current</span>}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <span>📦 Warehouse Packer</span>
-                  </label>
-                  <select
-                    value={selectedPacker}
-                    onChange={(e) => handlePackerSelect(e.target.value)}
-                    disabled={true}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Unassigned</option>
-                    <optgroup label="✓ Operational Warehouse Packers">
-                      {staffList.filter(s => (s.role || '').toLowerCase().includes('packer') || (s.role || '').toLowerCase().includes('warehouse')).map(s => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name} — ({s.role})
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Other Admin / Management Staff">
-                      {staffList.filter(s => !(s.role || '').toLowerCase().includes('packer') && !(s.role || '').toLowerCase().includes('warehouse')).map(s => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name} ({s.role || 'Staff'})
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <span>🚚 Logistics Driver</span>
-                  </label>
-                  <select
-                    value={selectedDriver}
-                    onChange={(e) => handleDriverSelect(e.target.value)}
-                    disabled={true}
-                    className="w-full text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Unassigned</option>
-                    <optgroup label="✓ Operational Logistics Drivers">
-                      {staffList.filter(s => (s.role || '').toLowerCase().includes('driver') || (s.role || '').toLowerCase().includes('logistics') || (s.role || '').toLowerCase().includes('field')).map(s => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name} — ({s.role})
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Other Operations / Staff">
-                      {staffList.filter(s => !(s.role || '').toLowerCase().includes('driver') && !(s.role || '').toLowerCase().includes('logistics') && !(s.role || '').toLowerCase().includes('field')).map(s => (
-                        <option key={s.id} value={String(s.id)}>
-                          {s.name} ({s.role || 'Staff'})
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
-                </div>
-              </div>
-
-
             </div>
           </div>
 
@@ -329,11 +258,11 @@ export const OrderDetail: React.FC = () => {
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1 text-[11px]">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Packer:</span>
-                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.packerName || 'Not Assigned'}</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.packer?.name || (order as any).packer_name || order.packerName || 'Not Assigned'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Driver:</span>
-                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.driverName || 'Not Assigned'}</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{order.driver?.name || (order as any).driver_name || order.driverName || 'Not Assigned'}</span>
                 </div>
               </div>
             </div>
@@ -348,7 +277,7 @@ export const OrderDetail: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-slate-500 dark:text-slate-400">
                   <span>Shipping & Handling</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.shippingCost || 0)}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(order.shippingCost ?? order.shippingFee ?? (order as any).shipping_fee ?? 0)}</span>
                 </div>
                 {order.tax > 0 && (
                   <div className="flex justify-between text-slate-500 dark:text-slate-400">

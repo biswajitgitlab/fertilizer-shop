@@ -31,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
 
+    // Customer Notification Routes
+    Route::get('/user/notifications', [\App\Http\Controllers\UserNotificationController::class, 'index']);
+    Route::post('/user/notifications/{id}/read', [\App\Http\Controllers\UserNotificationController::class, 'markAsRead']);
+    Route::post('/user/notifications/read-all', [\App\Http\Controllers\UserNotificationController::class, 'markAllAsRead']);
+
     // Admin Auth Sanctum routes
     Route::post('/admin/auth/logout', [AdminAuthController::class, 'logout']);
     Route::get('/admin/auth/me', [AdminAuthController::class, 'me']);
@@ -219,7 +224,7 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::put('/team/{id}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'updateUserPermissions'])->middleware('rbsc:roles.edit,users.edit');
 
     // Admin Real Notifications with Permission Scopes
-    Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index'])->middleware('rbsc:notifications.view');
-    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead'])->middleware('rbsc:notifications.view');
-    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead'])->middleware('rbsc:notifications.view');
+    Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead']);
 });

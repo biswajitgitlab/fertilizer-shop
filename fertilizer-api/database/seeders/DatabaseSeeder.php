@@ -211,6 +211,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ConstantsSeeder::class,
+            WarehouseZoneSeeder::class,
+            ProductBatchSeeder::class,
+            OrderSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

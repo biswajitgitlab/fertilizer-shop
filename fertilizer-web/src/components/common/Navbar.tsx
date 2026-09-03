@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, User, Globe, Menu, X,
-  LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon, Sprout
+  LogOut, Package, Calendar, Stethoscope, ChevronDown, LayoutDashboard, Sun, Moon, Sprout,
+  Bell, CheckCheck, Clock
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
@@ -17,6 +18,8 @@ import {
   AnimatedSearch
 } from './AnimatedIcons';
 import { productApi } from '../../api/productApi';
+import { userNotificationApi, UserNotification } from '../../api/userNotificationApi';
+import { echo } from '../../utils/echo';
 import { Logo } from './Logo';
 import { TopCouponMarquee } from './TopCouponMarquee';
 
@@ -30,7 +33,57 @@ export const Navbar: React.FC = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [notifFilter, setNotifFilter] = useState<'unread' | 'all'>('unread');
+
+  const fetchNotifications = async () => {
+    if (!isAuthenticated || isAdmin) return;
+    const res = await userNotificationApi.getNotifications();
+    setNotifications(res.notifications || []);
+    setUnreadCount(res.unread_count || 0);
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+
+    if (isAuthenticated && !isAdmin) {
+      const channel = echo.channel('admin-orders');
+      channel.listen('.OrderStatusUpdated', () => {
+        fetchNotifications();
+      });
+
+      return () => {
+        channel.stopListening('.OrderStatusUpdated');
+        echo.leaveChannel('admin-orders');
+      };
+    }
+  }, [isAuthenticated, isAdmin]);
+
+  const handleMarkAllRead = async () => {
+    await userNotificationApi.markAllAsRead();
+    setUnreadCount(0);
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
+
+  const handleNotificationClick = async (notif: UserNotification) => {
+    if (notif.unread) {
+      await userNotificationApi.markAsRead(notif.id);
+      setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, unread: false } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    }
+    setNotifDropdownOpen(false);
+    if (notif.link) {
+      navigate(notif.link);
+    }
+  };
+
+  const displayedNotifications = notifFilter === 'unread'
+    ? notifications.filter(n => n.unread)
+    : notifications;
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,13 +239,133 @@ export const Navbar: React.FC = () => {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
-                      className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-sm"
+                      className="absolute -top-0.5 -right-0.5 bg-emerald-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs"
                     >
                       {itemCount}
                     </motion.span>
                   )}
                 </AnimatePresence>
               </motion.button>
+            )}
+
+            {/* Notification Bell Button — only for logged-in non-admin */}
+            {isAuthenticated && !isAdmin && (
+              <div className="relative">
+                <motion.button
+                  onClick={() => {
+                    setNotifDropdownOpen(!notifDropdownOpen);
+                    setUserDropdownOpen(false);
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2 text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
+                  aria-label="View Notifications"
+                >
+                  <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-700 dark:text-emerald-400" />
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="absolute -top-0.5 -right-0.5 bg-rose-600 text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs"
+                      >
+                        {unreadCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                {notifDropdownOpen && (
+                  <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 py-3 z-50 animate-fade-in text-gray-900 dark:text-white">
+                    <div className="px-4 pb-2 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
+                        {unreadCount > 0 && (
+                          <span className="bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <CheckCheck className="w-3.5 h-3.5" />
+                          <span>Mark all read</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <div className="flex border-b border-gray-100 dark:border-slate-800 px-3 py-1.5 gap-2 bg-gray-50/50 dark:bg-slate-800/40">
+                      <button
+                        onClick={() => setNotifFilter('unread')}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                          notifFilter === 'unread'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'text-gray-600 dark:text-slate-400 hover:bg-gray-200/60 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        Unread ({unreadCount})
+                      </button>
+                      <button
+                        onClick={() => setNotifFilter('all')}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                          notifFilter === 'all'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'text-gray-600 dark:text-slate-400 hover:bg-gray-200/60 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        All ({notifications.length})
+                      </button>
+                    </div>
+
+                    <div className="max-h-72 sm:max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800/60">
+                      {displayedNotifications.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-gray-500 dark:text-slate-400 space-y-1">
+                          <CheckCheck className="w-6 h-6 text-emerald-500 mx-auto mb-1 opacity-80" />
+                          <p className="font-semibold text-gray-700 dark:text-slate-300">
+                            {notifFilter === 'unread' ? 'All caught up!' : 'No order notifications'}
+                          </p>
+                          <p className="text-[11px] text-gray-400 dark:text-slate-500">
+                            {notifFilter === 'unread'
+                              ? 'No unread status updates at this moment.'
+                              : 'Real order status changes will appear here.'}
+                          </p>
+                        </div>
+                      ) : (
+                        displayedNotifications.map((n) => (
+                          <div
+                            key={n.id}
+                            onClick={() => handleNotificationClick(n)}
+                            className={`p-3 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/70 flex gap-3 items-start ${
+                              n.unread ? 'bg-emerald-50/50 dark:bg-emerald-950/20 font-semibold' : ''
+                            }`}
+                          >
+                            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 shrink-0 mt-0.5">
+                              <Package className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 space-y-1 text-xs">
+                              <div className="flex items-center justify-between gap-1">
+                                <p className="font-bold text-gray-900 dark:text-white leading-tight">{n.title}</p>
+                                {n.unread && <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />}
+                              </div>
+                              <p className="text-gray-600 dark:text-slate-300 line-clamp-2">{n.message}</p>
+                              <p className="text-[10px] text-gray-400 dark:text-slate-500 flex items-center gap-1 pt-0.5">
+                                <Clock className="w-3 h-3" />
+                                <span>{n.time}</span>
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Auth Dropdown / Login */}
@@ -372,6 +545,23 @@ export const Navbar: React.FC = () => {
                     <User className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                     <span>My Profile</span>
                   </Link>
+                  <button
+                    onClick={() => {
+                      setNotifDropdownOpen(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800/80 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Bell className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Notifications</span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </button>
                   <Link
                     to="/orders"
                     onClick={() => setMobileMenuOpen(false)}

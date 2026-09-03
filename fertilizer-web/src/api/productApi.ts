@@ -1,5 +1,5 @@
 import { publicApi } from './axiosInstances';
-import { INITIAL_PRODUCTS, CATEGORIES } from '../utils/constants';
+import { CATEGORIES } from '../utils/constants';
 
 export const mapProduct = (p: any): any => {
   if (!p) return p;
@@ -39,90 +39,40 @@ export const mapProduct = (p: any): any => {
 
 export const productApi = {
   getProducts: async (params?: Record<string, any>) => {
-    try {
-      const res = await publicApi.get('/products', { params });
-      const rawProducts = res.data.data || res.data;
-      const products = Array.isArray(rawProducts) ? rawProducts.map(mapProduct) : [];
-      return {
-        products,
-        total: res.data.total || products.length,
-        categories: CATEGORIES
-      };
-    } catch (e) {
-      let filtered = [...INITIAL_PRODUCTS];
-      if (params?.category) {
-        filtered = filtered.filter(p => p.categorySlug === params.category || p.category === params.category);
-      }
-      if (params?.search) {
-        const q = String(params.search).toLowerCase();
-        let terms = [q];
-        if (['urea', 'nitrogen'].includes(q)) terms.push('urea', 'nitrogen');
-        if (['dap', 'phosphate'].includes(q)) terms.push('dap', 'phosphate');
-        if (['potash', 'mop'].includes(q)) terms.push('potash', 'mop');
-        if (['paddy', 'rice'].includes(q)) terms.push('paddy', 'rice');
-
-        filtered = filtered.filter(p => {
-          const text = `${p.name} ${p.category} ${p.categorySlug} ${p.description} ${p.shortDescription || ''} ${(p.suitableCrops || []).join(' ')}`.toLowerCase();
-          return terms.some(t => text.includes(t));
-        });
-      }
-      if (params?.crop) {
-        const cVal = String(params.crop).toLowerCase();
-        filtered = filtered.filter(p => 
-          (Array.isArray(p.suitableCrops) && p.suitableCrops.some((c: string) => c.toLowerCase().includes(cVal))) ||
-          p.name.toLowerCase().includes(cVal) ||
-          p.description.toLowerCase().includes(cVal)
-        );
-      }
-      if (params?.sort === 'price_asc' || params?.sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
-      if (params?.sort === 'price_desc' || params?.sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
-      if (params?.sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
-
-      return { products: filtered, total: filtered.length, categories: CATEGORIES };
-    }
+    const res = await publicApi.get('/products', { params });
+    const rawProducts = res.data.data || res.data;
+    const products = Array.isArray(rawProducts) ? rawProducts.map(mapProduct) : [];
+    return {
+      products,
+      total: res.data.total || products.length,
+      categories: CATEGORIES
+    };
   },
 
   getProduct: async (slug: string) => {
-    try {
-      const res = await publicApi.get(`/products/${slug}`);
-      const rawProduct = res.data.product || res.data;
-      return mapProduct(rawProduct);
-    } catch (e) {
-      const p = INITIAL_PRODUCTS.find(prod => prod.slug === slug || prod.id === slug);
-      if (!p) throw new Error('Product not found');
-      return p;
-    }
+    const res = await publicApi.get(`/products/${slug}`);
+    const rawProduct = res.data.product || res.data;
+    if (!rawProduct) throw new Error('Product not found');
+    return mapProduct(rawProduct);
   },
 
   getCategories: async () => {
-    try {
-      const res = await publicApi.get('/categories');
-      return res.data.map((c: any) => ({
-        ...c,
-        image: c.icon || c.image || 'https://via.placeholder.com/150',
-        count: c.products_count || c.count || 0
-      }));
-    } catch (e) {
-      return CATEGORIES;
-    }
+    const res = await publicApi.get('/categories');
+    return (Array.isArray(res.data) ? res.data : []).map((c: any) => ({
+      ...c,
+      image: c.icon || c.image || 'https://via.placeholder.com/150',
+      count: c.products_count || c.count || 0
+    }));
   },
 
   getFeatured: async () => {
-    try {
-      const res = await publicApi.get('/products/featured');
-      return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
-    } catch (e) {
-      return INITIAL_PRODUCTS.filter(p => p.isFeatured);
-    }
+    const res = await publicApi.get('/products/featured');
+    return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
   },
 
   getTrending: async () => {
-    try {
-      const res = await publicApi.get('/products/trending');
-      return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
-    } catch (e) {
-      return INITIAL_PRODUCTS.filter(p => p.isTrending);
-    }
+    const res = await publicApi.get('/products/trending');
+    return (Array.isArray(res.data) ? res.data : []).map(mapProduct);
   },
 
   getLiveStats: async () => {
@@ -170,7 +120,11 @@ export const productApi = {
   getProductById: async (id: string) => productApi.getProduct(id),
   getProductBySlug: async (slug: string) => productApi.getProduct(slug),
   getRelated: async (category: string, excludeId?: string) => {
-    const res = await productApi.getProducts({ category });
-    return res.products.filter((p: any) => p.id !== excludeId).slice(0, 4);
+    try {
+      const res = await productApi.getProducts({ category });
+      return res.products.filter((p: any) => p.id !== excludeId).slice(0, 4);
+    } catch (e) {
+      return [];
+    }
   }
 };

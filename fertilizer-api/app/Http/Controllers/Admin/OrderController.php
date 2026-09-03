@@ -125,19 +125,45 @@ class OrderController extends Controller
                     'shipping_address_json' => $order->shipping_address_json,
                     'tracking_number' => $order->tracking_number,
                     'packer_id' => $order->packer_id,
+                    'packer_name' => $order->packer ? $order->packer->name : null,
                     'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
                     'driver_id' => $order->driver_id,
+                    'driver_name' => $order->driver ? $order->driver->name : null,
                     'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
-                    'items' => $order->items->map(function ($item) {
+                    'items' => $order->items->map(function ($item) use ($order) {
                         $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
-                        $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->where('stock_qty', '>', 0)->orderBy('expiry_date', 'asc')->first();
+                        $log = \App\Models\InventoryLog::where('product_id', $item->product_id)
+                            ->where('reason', 'like', '%' . $order->order_number . '%')
+                            ->first();
+
+                        $batchCode = null;
+                        $zoneCode = null;
+
+                        if ($log) {
+                            if (preg_match('/Zone\s+([A-Z0-9_-]+)/i', $log->reason, $mZone)) {
+                                $zoneCode = $mZone[1];
+                            }
+                            if (preg_match('/(LOT-[A-Z0-9_-]+|BATCH-[A-Z0-9_-]+)/i', $log->reason, $mBatch)) {
+                                $batchCode = $mBatch[1];
+                            }
+                        }
+
+                        if (!$batchCode || in_array(strtolower($batchCode), ['deducted', 'auto'])) {
+                            $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->orderBy('expiry_date', 'asc')->first();
+                            if ($earliestBatch) {
+                                $batchCode = $earliestBatch->batch_code;
+                                $zoneCode = $zoneCode ?: $earliestBatch->warehouse_zone;
+                            }
+                        }
+
                         return [
                             'id' => $item->id,
                             'product_id' => $item->product_id,
                             'qty' => $item->qty,
                             'unit_price' => $effectiveUnitPrice,
                             'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
-                            'assigned_batch' => $earliestBatch ? $earliestBatch->batch_code : 'AUTO-BATCH',
+                            'assigned_batch' => $batchCode ?: 'AUTO-BATCH',
+                            'warehouse_zone' => $zoneCode ?: 'ZONE-A',
                             'product' => $item->product ? [
                                 'id' => $item->product->id,
                                 'name' => $item->product->name,
@@ -175,81 +201,87 @@ class OrderController extends Controller
     {
         $currentUser = auth()->user();
 
-        $orderData = Cache::remember("admin_order_{$id}", 300, function () use ($id) {
-            $order = Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])
-                ->where('id', $id)
-                ->orWhere('order_number', $id)
-                ->firstOrFail();
+        $order = Order::with(['user', 'packer', 'driver', 'items.product', 'payment'])
+            ->where('id', $id)
+            ->orWhere('order_number', $id)
+            ->firstOrFail();
 
-            $customerName = (is_array($order->shipping_address_json) && !empty($order->shipping_address_json['name'])) ? $order->shipping_address_json['name'] : ($order->user ? $order->user->name : 'Valued Customer');
+        $customerName = (is_array($order->shipping_address_json) && !empty($order->shipping_address_json['name'])) ? $order->shipping_address_json['name'] : ($order->user ? $order->user->name : 'Valued Customer');
 
-            return [
-                'id' => $order->id,
-                'order_number' => $order->order_number,
-                'user_id' => $order->user_id,
-                'customer_name' => $customerName,
-                'user' => $order->user ? [
-                    'id' => $order->user->id,
-                    'name' => $order->user->name,
-                    'phone' => $order->user->phone,
-                    'email' => $order->user->email,
-                ] : null,
-                'status' => $order->status,
-                'payment_status' => $order->payment_status,
-                'payment_method' => $order->payment_method,
-                'subtotal' => (float)$order->subtotal,
-                'shipping_cost' => (float)$order->shipping_cost,
-                'tax' => (float)$order->tax,
-                'discount' => (float)$order->discount,
-                'total' => (float)$order->total,
-                'shipping_address_json' => $order->shipping_address_json,
-                'tracking_number' => $order->tracking_number,
-                'packer_id' => $order->packer_id,
-                'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
-                'driver_id' => $order->driver_id,
-                'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
-                'items' => $order->items->map(function ($item) {
-                    $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
-                    $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->where('stock_qty', '>', 0)->orderBy('expiry_date', 'asc')->first();
-                    return [
-                        'id' => $item->id,
-                        'product_id' => $item->product_id,
-                        'qty' => $item->qty,
-                        'unit_price' => $effectiveUnitPrice,
-                        'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
-                        'assigned_batch' => $earliestBatch ? $earliestBatch->batch_code : 'AUTO-BATCH',
-                        'product' => $item->product ? [
-                            'id' => $item->product->id,
-                            'name' => $item->product->name,
-                            'slug' => $item->product->slug,
-                            'price' => $effectiveUnitPrice,
-                            'unit' => $item->product->unit,
-                            'images_json' => $item->product->images_json,
-                        ] : null,
-                    ];
-                })->values()->toArray(),
-                'created_at' => $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toISOString()) : null,
-                'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
-            ];
-        });
+        $orderData = [
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'user_id' => $order->user_id,
+            'customer_name' => $customerName,
+            'user' => $order->user ? [
+                'id' => $order->user->id,
+                'name' => $order->user->name,
+                'phone' => $order->user->phone,
+                'email' => $order->user->email,
+            ] : null,
+            'status' => $order->status,
+            'payment_status' => $order->payment_status,
+            'payment_method' => $order->payment_method,
+            'subtotal' => (float)$order->subtotal,
+            'shipping_cost' => (float)$order->shipping_cost,
+            'tax' => (float)$order->tax,
+            'discount' => (float)$order->discount,
+            'total' => (float)$order->total,
+            'shipping_address_json' => $order->shipping_address_json,
+            'tracking_number' => $order->tracking_number,
+            'packer_id' => $order->packer_id,
+            'packer_name' => $order->packer ? $order->packer->name : null,
+            'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
+            'driver_id' => $order->driver_id,
+            'driver_name' => $order->driver ? $order->driver->name : null,
+            'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
+            'items' => $order->items->map(function ($item) use ($order) {
+                $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
+                $log = \App\Models\InventoryLog::where('product_id', $item->product_id)
+                    ->where('reason', 'like', '%' . $order->order_number . '%')
+                    ->first();
 
-        if ($currentUser && method_exists($currentUser, 'hasRole')) {
-            if ($currentUser->hasRole('Warehouse Packer')) {
-                if ($orderData['packer_id'] !== null && $orderData['packer_id'] !== $currentUser->id) {
-                    abort(403, 'Unauthorized access to this order.');
+                $batchCode = null;
+                $zoneCode = null;
+
+                if ($log) {
+                    if (preg_match('/Zone\s+([A-Z0-9_-]+)/i', $log->reason, $mZone)) {
+                        $zoneCode = $mZone[1];
+                    }
+                    if (preg_match('/(LOT-[A-Z0-9_-]+|BATCH-[A-Z0-9_-]+)/i', $log->reason, $mBatch)) {
+                        $batchCode = $mBatch[1];
+                    }
                 }
-            } else if ($currentUser->hasRole('Logistics Driver')) {
-                if (in_array($orderData['status'], ['PENDING', 'CONFIRMED'])) {
-                    abort(403, 'Unauthorized access to this order.');
+
+                if (!$batchCode || in_array(strtolower($batchCode), ['deducted', 'auto'])) {
+                    $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->orderBy('expiry_date', 'asc')->first();
+                    if ($earliestBatch) {
+                        $batchCode = $earliestBatch->batch_code;
+                        $zoneCode = $zoneCode ?: $earliestBatch->warehouse_zone;
+                    }
                 }
-                if ($orderData['driver_id'] !== null && $orderData['driver_id'] !== $currentUser->id) {
-                    abort(403, 'Unauthorized access to this order.');
-                }
-                if ($orderData['driver_id'] === null && $orderData['status'] !== 'PACKED') {
-                    abort(403, 'Unauthorized access to this order.');
-                }
-            }
-        }
+
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'qty' => $item->qty,
+                    'unit_price' => $effectiveUnitPrice,
+                    'total_price' => (float)($item->total_price ?: ($effectiveUnitPrice * $item->qty)),
+                    'assigned_batch' => $batchCode ?: 'AUTO-BATCH',
+                    'warehouse_zone' => $zoneCode ?: 'ZONE-A',
+                    'product' => $item->product ? [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'slug' => $item->product->slug,
+                        'price' => $effectiveUnitPrice,
+                        'unit' => $item->product->unit,
+                        'images_json' => $item->product->images_json,
+                    ] : null,
+                ];
+            })->values()->toArray(),
+            'created_at' => $order->created_at ? (is_string($order->created_at) ? $order->created_at : $order->created_at->toISOString()) : null,
+            'updated_at' => $order->updated_at ? (is_string($order->updated_at) ? $order->updated_at : $order->updated_at->toISOString()) : null,
+        ];
 
         return response()->json($orderData);
     }
@@ -388,13 +420,15 @@ class OrderController extends Controller
                     }
                 } else {
                     if ($request->has('status')) {
-                        $order->status = strtoupper($request->status);
+                        $rawStatus = trim((string)$request->status);
+                        $statusUpper = strtoupper(str_replace(' ', '_', $rawStatus));
+                        $order->status = $statusUpper;
 
                         if (in_array($order->status, ['PROCESSING', 'PACKED', 'READY_FOR_PICKUP'])) {
                             if (!$order->packed_at) {
                                 $order->packed_at = now();
                             }
-                            if (!$order->packer_id && $currentUserId) {
+                            if ($currentUserId && !$order->packer_id) {
                                 $order->packer_id = $currentUserId;
                             }
                         }
@@ -403,39 +437,38 @@ class OrderController extends Controller
                             if (!$order->shipped_at) {
                                 $order->shipped_at = now();
                             }
-                            if (!$order->driver_id && $currentUserId) {
+                            if ($currentUserId && !$order->driver_id) {
                                 $order->driver_id = $currentUserId;
                             }
-                            if (!$order->tracking_number && $order->status === 'SHIPPED') {
+                            if (!$order->packer_id && $currentUserId) {
+                                $order->packer_id = $currentUserId;
+                            }
+                            if (!$order->tracking_number) {
                                 $order->tracking_number = 'TRACK-' . strtoupper(\Illuminate\Support\Str::random(8));
                             }
                         }
                         
                         if ($order->status === 'DELIVERED') {
-                            $order->delivered_at = now();
+                            if (!$order->delivered_at) {
+                                $order->delivered_at = now();
+                            }
                             $order->payment_status = 'PAID';
+                            if ($currentUserId && !$order->driver_id) {
+                                $order->driver_id = $currentUserId;
+                            }
+                            if (!$order->packer_id && $currentUserId) {
+                                $order->packer_id = $currentUserId;
+                            }
                         }
                     }
                 }
 
                 if ($request->has('packer_id') && $request->packer_id) {
                     $order->packer_id = $request->packer_id;
-                    if (in_array($order->status, ['PENDING', 'CONFIRMED'])) {
-                        $order->status = 'PROCESSING';
-                    }
-                    if (!$order->packed_at) {
-                        $order->packed_at = now();
-                    }
                 }
 
                 if ($request->has('driver_id') && $request->driver_id) {
                     $order->driver_id = $request->driver_id;
-                    if (in_array($order->status, ['PENDING', 'CONFIRMED', 'PROCESSING', 'PACKED'])) {
-                        $order->status = 'OUT_FOR_DELIVERY';
-                    }
-                    if (!$order->shipped_at) {
-                        $order->shipped_at = now();
-                    }
                 }
 
                 if ($order->isDirty('driver_id') && $order->driver_id) {
@@ -463,6 +496,7 @@ class OrderController extends Controller
             }
 
             $order = $response;
+            $order->load(['user', 'packer', 'driver']);
             Cache::forget("admin_order_{$id}");
             Cache::forget("admin_order_{$order->order_number}");
             $this->clearOrderCaches();
@@ -470,7 +504,12 @@ class OrderController extends Controller
             app(\App\Contracts\NotificationServiceInterface::class)->notifyOrderStatusUpdated($order);
 
             try {
-                $order->load(['user', 'packer', 'driver']);
+                broadcast(new \App\Events\OrderStatusUpdated($order));
+            } catch (\Exception $e) {
+                // Fail silently if broadcasting connection is uninitialized
+            }
+
+            try {
                 \Illuminate\Support\Facades\Http::post(env('N8N_ORDER_WEBHOOK_URL', 'http://localhost:5678/webhook/order-status'), [
                     'order_id' => $order->id,
                     'status' => $order->status,
@@ -483,7 +522,20 @@ class OrderController extends Controller
                 // Fail silently if webhook server is unreachable
             }
 
-            return response()->json(['message' => 'Order updated successfully', 'order' => $order]);
+            return response()->json([
+                'message' => 'Order updated successfully',
+                'order' => [
+                    'id' => $order->id,
+                    'status' => $order->status,
+                    'packer_id' => $order->packer_id,
+                    'packer_name' => $order->packer->name ?? null,
+                    'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
+                    'driver_id' => $order->driver_id,
+                    'driver_name' => $order->driver->name ?? null,
+                    'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
+                    'tracking_number' => $order->tracking_number,
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }

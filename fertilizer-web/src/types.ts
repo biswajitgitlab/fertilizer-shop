@@ -82,6 +82,8 @@ export interface Order {
   items: CartItem[];
   subtotal: number;
   shippingFee: number;
+  shippingCost?: number;
+  shipping_fee?: number;
   tax: number;
   discount: number;
   couponCode?: string;
@@ -91,9 +93,11 @@ export interface Order {
   status: 'Pending' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled' | 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'READY_FOR_PICKUP' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
   packerId?: string | number;
   packerName?: string;
+  packer?: { id: number | string; name: string; email?: string } | null;
   driverId?: string | number;
   driverName?: string;
   driverPhone?: string;
+  driver?: { id: number | string; name: string; phone?: string; email?: string } | null;
   packedAt?: string;
   shippedAt?: string;
   deliveredAt?: string;

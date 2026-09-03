@@ -127,8 +127,20 @@ class OrderController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $orders = Order::with(['items.product', 'payment'])
-            ->where('user_id', $user->id)
+        if (!$user) {
+            return response()->json([]);
+        }
+
+        $orders = Order::with(['items.product', 'payment', 'driver', 'packer'])
+            ->where(function($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if (!empty($user->phone)) {
+                    $q->orWhere('shipping_address_json->phone', $user->phone);
+                }
+                if (!empty($user->email)) {
+                    $q->orWhere('shipping_address_json->email', $user->email);
+                }
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -138,12 +150,24 @@ class OrderController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $order = Order::with(['items.product', 'payment', 'driver'])
-            ->where('user_id', $user->id)
+        $query = Order::with(['items.product', 'payment', 'driver', 'packer'])
             ->where(function($q) use ($id) {
                 $q->where('id', $id)->orWhere('order_number', $id);
-            })
-            ->firstOrFail();
+            });
+
+        if ($user) {
+            $query->where(function($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if (!empty($user->phone)) {
+                    $q->orWhere('shipping_address_json->phone', $user->phone);
+                }
+                if (!empty($user->email)) {
+                    $q->orWhere('shipping_address_json->email', $user->email);
+                }
+            });
+        }
+
+        $order = $query->firstOrFail();
 
         return response()->json($order);
     }
@@ -290,8 +314,14 @@ class OrderController extends Controller
                         ->orderBy('expiry_date', 'asc')
                         ->get();
 
+                    $deductedBatchCodes = [];
+                    $deductedZones = [];
+
                     foreach ($batches as $batch) {
                         if ($remainingToDeduct <= 0) break;
+
+                        $deductedBatchCodes[] = $batch->batch_code;
+                        $deductedZones[] = $batch->warehouse_zone;
 
                         if ($batch->stock_qty >= $remainingToDeduct) {
                             $batch->decrement('stock_qty', $remainingToDeduct);
@@ -302,12 +332,15 @@ class OrderController extends Controller
                         }
                     }
 
+                    $bCodeStr = !empty($deductedBatchCodes) ? implode(', ', $deductedBatchCodes) : 'AUTO-BATCH';
+                    $zCodeStr = !empty($deductedZones) ? $deductedZones[0] : 'ZONE-A';
+
                     // Create Inventory Audit Log
                     InventoryLog::create([
                         'product_id' => $product->id,
                         'type' => 'SALE',
                         'qty' => -$item['qty'],
-                        'reason' => "Order #{$createdOrder->order_number} placement (FEFO Batch Deducted)",
+                        'reason' => "Order #{$createdOrder->order_number} dispatch from Warehouse Zone {$zCodeStr} (Batch #{$bCodeStr})",
                         'admin_id' => $user->id
                     ]);
                 }

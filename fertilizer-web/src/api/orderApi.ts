@@ -1,38 +1,28 @@
 import { apiClient } from './axiosInstances';
-import { Order } from '../types';
 
 export const orderApi = {
   getOrders: async () => {
-    try {
-      const res = await apiClient.get('/orders');
-      const data = res.data;
-      let list: any[] = [];
-      if (data && Array.isArray(data.data)) {
-        list = data.data;
-      } else if (Array.isArray(data)) {
-        list = data;
-      }
-      return list;
-    } catch (e) {
-      console.warn("Failed to fetch customer orders from API:", e);
-      return [];
+    const res = await apiClient.get('/orders');
+    const data = res.data;
+    let list: any[] = [];
+    if (data && Array.isArray(data.data)) {
+      list = data.data;
+    } else if (Array.isArray(data)) {
+      list = data;
     }
+    return list;
   },
 
   getOrder: async (id: string) => {
-    try {
-      const res = await apiClient.get(`/orders/${id}`);
-      const data = res.data;
-      if (data && data.order) {
-        return {
-          ...data.order,
-          timeline: data.timeline
-        };
-      }
-      return data;
-    } catch (e) {
-      throw new Error("Order not found");
+    const res = await apiClient.get(`/orders/${id}`);
+    const data = res.data;
+    if (data && data.order) {
+      return {
+        ...data.order,
+        timeline: data.timeline
+      };
     }
+    return data;
   },
 
   createOrder: async (orderData: any) => {
@@ -69,50 +59,28 @@ export const orderApi = {
   },
 
   cancelOrder: async (id: string | number, reason?: string) => {
-    try {
-      const res = await apiClient.post(`/orders/${id}/cancel`, { reason });
-      return res.data;
-    } catch (e: any) {
-      const msg = e.response?.data?.message || 'Failed to cancel order';
-      throw new Error(msg);
-    }
+    const res = await apiClient.post(`/orders/${id}/cancel`, { reason });
+    return res.data;
   },
 
   completePayment: async (orderId: string | number, paymentData?: any) => {
-    try {
-      const res = await apiClient.post(`/orders/${orderId}/verify-payment`, paymentData || { gateway: 'ONLINE', transaction_id: `TXN-PAY-${Math.floor(10000000 + Math.random() * 90000000)}` });
-      return res.data;
-    } catch (e) {
-      console.error("Payment error:", e);
-      return { status: 'PAID' };
-    }
+    const res = await apiClient.post(`/orders/${orderId}/verify-payment`, paymentData || {});
+    return res.data;
   },
 
   markPaymentFailed: async (orderId: string | number, payload?: any) => {
-    try {
-      const res = await apiClient.post(`/orders/${orderId}/payment-failed`, payload || {});
-      return res.data;
-    } catch (e) {
-      return { status: 'FAILED' };
-    }
+    const res = await apiClient.post(`/orders/${orderId}/payment-failed`, payload || {});
+    return res.data;
   },
 
   switchToCod: async (orderId: string | number) => {
-    try {
-      const res = await apiClient.post(`/orders/${orderId}/switch-cod`);
-      return res.data;
-    } catch (e) {
-      return { payment_method: 'COD', payment_status: 'PENDING', status: 'CONFIRMED' };
-    }
+    const res = await apiClient.post(`/orders/${orderId}/switch-cod`);
+    return res.data;
   },
 
   verifyPayment: async (orderId: string | number, paymentData?: any) => {
-    try {
-      const res = await apiClient.post(`/orders/${orderId}/verify-payment`, paymentData || {});
-      return res.data;
-    } catch (e) {
-      return { status: 'PAID' };
-    }
+    const res = await apiClient.post(`/orders/${orderId}/verify-payment`, paymentData || {});
+    return res.data;
   },
 
   createRazorpayOrder: async (amountInPaise: number, currency = 'INR', receipt?: string) => {
@@ -137,4 +105,3 @@ export const orderApi = {
   getOrderById: async (id: string) => orderApi.getOrder(id),
   getMyOrders: async () => orderApi.getOrders()
 };
-

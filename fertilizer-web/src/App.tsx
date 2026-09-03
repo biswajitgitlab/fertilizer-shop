@@ -129,6 +129,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
+import { GlobalPreloader } from './components/common/GlobalPreloader';
 import { useCartStore } from './store/cartStore';
 
 export function App() {
@@ -141,6 +142,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <GlobalPreloader />
         <ScrollToTop />
         <Toaster
           position="top-right"
