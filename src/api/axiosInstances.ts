@@ -3,16 +3,17 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api';
+const baseURL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://fertilizer-shop-i6ca.onrender.com/api';
 
 export const apiClient = axios.create({
   baseURL,
-  withCredentials: true,
+  withCredentials: false,
   timeout: 15000,
 });
 
 export const publicApi = axios.create({
   baseURL,
+  withCredentials: false,
   timeout: 15000,
 });
 
