@@ -159,16 +159,30 @@ class OrderController extends Controller
         }
 
         $billingAddress = $request->input('billing_address') ?? $request->input('billingAddress') ?? $shippingAddress;
-        $user = auth()->user() ?? \App\Models\User::first();
+        $user = auth('sanctum')->user() ?? auth()->user();
         if (!$user) {
-            $user = \App\Models\User::create([
-                'name' => $shippingAddress['name'] ?? 'Farmer Customer',
-                'email' => 'customer_' . time() . '@krishiconnect.com',
-                'phone' => $shippingAddress['phone'] ?? '9876543210',
-                'password' => bcrypt('Password@123'),
-                'role' => 'customer',
-                'is_verified' => true
-            ]);
+            $phone = preg_replace('/\s+/', '', trim($shippingAddress['phone'] ?? ''));
+            $email = strtolower(trim($shippingAddress['email'] ?? ''));
+
+            if (!empty($phone)) {
+                $user = \App\Models\User::where('phone', $phone)->first();
+            }
+            if (!$user && !empty($email)) {
+                $user = \App\Models\User::where('email', $email)->first();
+            }
+            if (!$user) {
+                $user = \App\Models\User::first();
+            }
+            if (!$user) {
+                $user = \App\Models\User::create([
+                    'name' => $shippingAddress['name'] ?? 'Farmer Customer',
+                    'email' => !empty($email) ? $email : ('customer_' . time() . '@krishiconnect.com'),
+                    'phone' => !empty($phone) ? $phone : '9876543210',
+                    'password' => bcrypt('Password@123'),
+                    'role' => 'customer',
+                    'is_verified' => true
+                ]);
+            }
         }
 
         $cart = Cart::where('user_id', $user->id)->first();
