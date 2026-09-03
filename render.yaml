@@ -30,3 +30,19 @@ services:
         value: ""
       - key: MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
         value: "false"
+      - key: REDIS_CLIENT
+        value: predis
+      - key: REDIS_URL
+        value: rediss://default:gQAAAAAAAZbJAAIgcDFlYzRmNzQ0ZTM2M2U0OTdmOGFiMjlhZTI4OTAyNTg3Yg@stirring-mackerel-104137.upstash.io:6379
+      - key: REDIS_HOST
+        value: stirring-mackerel-104137.upstash.io
+      - key: REDIS_PASSWORD
+        value: gQAAAAAAAZbJAAIgcDFlYzRmNzQ0ZTM2M2U0OTdmOGFiMjlhZTI4OTAyNTg3Yg
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_SCHEME
+        value: tls
+      - key: REDIS_DB
+        value: "0"
+      - key: REDIS_CACHE_DB
+        value: "0"
