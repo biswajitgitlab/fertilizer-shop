@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/recently-viewed', [ProductController::class, 'clearRecentlyViewed']);
 
     // Order Routes
+    Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store']);
     Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index']);
     Route::get('/orders/{id}', [App\Http\Controllers\OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [App\Http\Controllers\OrderController::class, 'cancel']);
@@ -79,9 +80,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
     Route::post('/verify-payment', [\App\Http\Controllers\RazorpayController::class, 'verifyPayment']);
 });
-
-// Order Placement Route (Supports both Sanctum token auth & guest/demo checkout)
-Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store']);
 
 // Razorpay Direct Public Routes (also accessible without bearer token if needed)
 Route::post('/create-order', [\App\Http\Controllers\RazorpayController::class, 'createOrder']);
