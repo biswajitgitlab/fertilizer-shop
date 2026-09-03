@@ -61,13 +61,9 @@ class CouponController extends Controller
         };
 
         try {
-            $result = Cache::store('redis')->remember($cacheKey, 300, $fetchData);
+            $result = Cache::remember($cacheKey, 300, $fetchData);
         } catch (\Throwable $e) {
-            try {
-                $result = Cache::remember($cacheKey, 300, $fetchData);
-            } catch (\Throwable $e2) {
-                $result = $fetchData();
-            }
+            $result = $fetchData();
         }
 
         if (!$request->has('page') && !$request->has('search') && !$request->has('per_page')) {

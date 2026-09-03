@@ -60,13 +60,9 @@ class BatchController extends Controller
         };
 
         try {
-            $result = \Illuminate\Support\Facades\Cache::store('redis')->remember($cacheKey, 300, $fetchData);
+            $result = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, $fetchData);
         } catch (\Throwable $e) {
-            try {
-                $result = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, $fetchData);
-            } catch (\Throwable $e2) {
-                $result = $fetchData();
-            }
+            $result = $fetchData();
         }
 
         // If simple array requested without page param, return data for legacy callers

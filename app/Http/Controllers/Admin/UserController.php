@@ -30,9 +30,9 @@ class UserController extends Controller
         $cacheKey = "users:p{$page}:pp{$perPage}:r{$role}:st{$status}:s{$search}";
 
         try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
             $cacheStore = Cache::store();
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store('file');
         }
 
         $result = $cacheStore->remember($cacheKey, 120, function () use ($page, $perPage, $search, $role, $status) {

@@ -33,9 +33,9 @@ class WarehouseZoneController extends Controller
         $cacheKey = "zones:p{$page}:pp{$perPage}:s{$search}";
 
         try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
             $cacheStore = Cache::store();
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store('file');
         }
 
         $result = $cacheStore->remember($cacheKey, 300, function () use ($page, $perPage, $search) {

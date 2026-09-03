@@ -27,12 +27,12 @@ class OrderController extends Controller
         $cacheKey = "orders:u{$currentUserId}:r{$currentRoles}:p{$page}:pp{$perPage}:st{$status}:ps{$paymentStatus}:s{$search}:pk{$packerId}:dr{$driverId}:atm{$assignedToMe}";
 
         try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
             $cacheStore = Cache::store();
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store('file');
         }
 
-        $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $status, $paymentStatus, $search, $packerId, $driverId, $assignedToMe, $currentUser) {
+        $result = $cacheStore->remember($cacheKey, 60, function () use ($page, $perPage, $status, $paymentStatus, $search, $packerId, $driverId, $assignedToMe, $currentUser) {
             $query = Order::with(['user', 'packer', 'driver', 'items.product', 'payment']);
 
             // 1. Role-Based Scoping & Assigned-To Filtering
@@ -101,7 +101,16 @@ class OrderController extends Controller
                 ->take($perPage)
                 ->get();
 
-            $formattedItems = $items->map(function ($order) {
+            $productIds = $items->pluck('items.*.product_id')->flatten()->unique()->filter()->toArray();
+            $batchesByProduct = !empty($productIds)
+                ? \App\Models\ProductBatch::whereIn('product_id', $productIds)
+                    ->where('stock_qty', '>', 0)
+                    ->orderBy('expiry_date', 'asc')
+                    ->get()
+                    ->groupBy('product_id')
+                : collect();
+
+            $formattedItems = $items->map(function ($order) use ($batchesByProduct) {
                 $customerName = (is_array($order->shipping_address_json) && !empty($order->shipping_address_json['name'])) ? $order->shipping_address_json['name'] : ($order->user ? $order->user->name : 'Valued Customer');
                 return [
                     'id' => $order->id,
@@ -128,9 +137,9 @@ class OrderController extends Controller
                     'packer' => $order->packer ? ['id' => $order->packer->id, 'name' => $order->packer->name] : null,
                     'driver_id' => $order->driver_id,
                     'driver' => $order->driver ? ['id' => $order->driver->id, 'name' => $order->driver->name] : null,
-                    'items' => $order->items->map(function ($item) {
+                    'items' => $order->items->map(function ($item) use ($batchesByProduct) {
                         $effectiveUnitPrice = (float)($item->unit_price ?: ($item->product->price ?? 0));
-                        $earliestBatch = \App\Models\ProductBatch::where('product_id', $item->product_id)->where('stock_qty', '>', 0)->orderBy('expiry_date', 'asc')->first();
+                        $earliestBatch = $batchesByProduct->get($item->product_id)?->first();
                         return [
                             'id' => $item->id,
                             'product_id' => $item->product_id,

@@ -19,9 +19,9 @@ class InventoryController extends Controller
         $cacheKey = "inventory:p{$page}:pp{$perPage}:s{$search}";
 
         try {
-            $cacheStore = Cache::store('redis');
-        } catch (\Throwable $e) {
             $cacheStore = Cache::store();
+        } catch (\Throwable $e) {
+            $cacheStore = Cache::store('file');
         }
 
         $result = $cacheStore->remember($cacheKey, 180, function () use ($page, $perPage, $search) {

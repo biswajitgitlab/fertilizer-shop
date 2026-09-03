@@ -38,9 +38,9 @@ class ReportController extends Controller
     private function rememberInRedis(string $key, int $ttlSeconds, callable $callback)
     {
         try {
-            return Cache::store('redis')->remember($key, $ttlSeconds, $callback);
-        } catch (\Throwable $e) {
             return Cache::remember($key, $ttlSeconds, $callback);
+        } catch (\Throwable $e) {
+            return $callback();
         }
     }
 
