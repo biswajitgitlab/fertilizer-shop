@@ -5,8 +5,6 @@ set -e
 echo "==> Running Laravel Migrations..."
 php artisan migrate --force
 
-echo "==> Running Database Seeders..."
-php artisan db:seed --force || echo "Seeding completed or skipped."
 
 # Execute main process (CMD)
 exec "$@"
