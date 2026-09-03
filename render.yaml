@@ -26,5 +26,7 @@ services:
         sync: false
       - key: MYSQL_ATTR_SSL_CA
         value: ""
+      - key: DB_URL
+        value: ""
       - key: MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
         value: "false"
