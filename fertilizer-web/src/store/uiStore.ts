@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { settingsApi } from '../api/settingsApi';
 
 interface UIState {
   sidebarOpen: boolean;
@@ -72,6 +73,8 @@ export const useUIStore = create<UIState>((set) => ({
       const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
       localStorage.setItem('theme', nextTheme);
       applyTheme(nextTheme);
+      // Sync to DB asynchronously (non-blocking)
+      settingsApi.save({ theme_mode: nextTheme }).catch(() => {});
       return { theme: nextTheme };
     });
   },
@@ -79,6 +82,8 @@ export const useUIStore = create<UIState>((set) => ({
   setTheme: (theme) => {
     localStorage.setItem('theme', theme);
     applyTheme(theme);
+    // Sync to DB asynchronously (non-blocking)
+    settingsApi.save({ theme_mode: theme }).catch(() => {});
     set({ theme });
   },
 

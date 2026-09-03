@@ -115,8 +115,8 @@ export const Navbar: React.FC = () => {
     <>
       <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shadow-xs transition-colors duration-300">
       {/* Top Banner */}
-      <div className="bg-emerald-900 dark:bg-slate-950 text-emerald-100 text-xs py-1.5 px-3 sm:px-6 lg:px-12 border-b border-emerald-800/40 dark:border-slate-800">
-        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto flex justify-between items-center gap-2">
+      <div className="bg-emerald-900 dark:bg-slate-950 text-emerald-100 text-xs py-1.5 border-b border-emerald-800/40 dark:border-slate-800">
+        <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10 flex justify-between items-center gap-2">
           <div className="flex items-center gap-1.5 truncate">
             <AnimatedShield className="w-4 h-4 text-emerald-400 shrink-0" />
             <span className="font-medium text-[11px] sm:text-xs truncate">
@@ -149,7 +149,7 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Main Navbar */}
-      <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-12">
+      <div className="max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           
           {/* Logo */}

@@ -60,6 +60,8 @@ import { AdminSettings } from './pages/admin/AdminSettings';
 import { Unauthorized, Forbidden, Unprocessable, NotFound } from './pages/errors';
 
 import { useSiteSettingsStore } from './store/siteSettingsStore';
+import { useUIStore } from './store/uiStore';
+import { settingsApi } from './api/settingsApi';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -88,7 +90,20 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   React.useEffect(() => {
     useSiteSettingsStore.getState().applyThemeToDOM(location.pathname);
-  }, [location.pathname]);
+    // Load all settings (branding + theme) from DB on every app mount
+    useSiteSettingsStore.getState().loadFromDB().then(async () => {
+      try {
+        // Sync theme_mode from DB (dark/light cross-device sync)
+        const data = await settingsApi.getPublic();
+        if (data.theme_mode) {
+          useUIStore.getState().setTheme(data.theme_mode);
+        }
+      } catch {
+        // fallback: localStorage already applied
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isAdminRoute) {
     return <>{children}</>;
@@ -105,20 +120,13 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <>
-      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-emerald-950 text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-24 md:pb-0 transition-colors duration-300 overflow-x-clip">
-        {/* Global Fresh & Deep Leaf Decorative Glow Blobs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-400/25 dark:bg-emerald-600/15 rounded-full blur-3xl pointer-events-none glow-blob" />
-        <div className="absolute top-1/3 -right-20 w-96 h-96 bg-emerald-300/30 dark:bg-emerald-800/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-3s' }} />
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-emerald-200/35 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none glow-blob" style={{ animationDelay: '-5s' }} />
-        
-        {/* High Quality Authentic Fern Frond Leaves Background Overlay */}
-        <div 
-          className="fixed inset-0 bg-cover bg-center opacity-[0.05] dark:opacity-[0.12] mix-blend-overlay pointer-events-none z-0"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=1920')` }}
-        />
+      <div className="relative min-h-screen bg-gradient-to-b from-emerald-50 via-green-50/90 to-emerald-100/70 dark:from-emerald-950 dark:via-emerald-900/90 dark:to-emerald-950 text-slate-900 dark:text-emerald-50 flex flex-col font-sans pb-24 md:pb-0 transition-colors duration-300 overflow-x-hidden">
+        {/* Static Ambient Glow Blobs — no animation on mobile to prevent scroll jank */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-400/20 dark:bg-emerald-600/10 rounded-full blur-3xl pointer-events-none hidden sm:block" />
+        <div className="absolute top-1/3 -right-20 w-96 h-96 bg-emerald-300/20 dark:bg-emerald-800/15 rounded-full blur-3xl pointer-events-none hidden sm:block" />
 
         <Navbar />
-        <main className="flex-1 relative z-10">{children}</main>
+        <main className="flex-1 relative z-10 will-change-auto">{children}</main>
         <Footer />
         <CartDrawer />
         <FloatingCartBanner />

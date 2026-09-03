@@ -133,7 +133,7 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Touch-Friendly Horizontal Scroll Crop Selector Grid */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin scrollbar-thumb-emerald-500/30 scrollbar-track-transparent">
+          <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 snap-x scrollbar-thin scrollbar-thumb-emerald-500/30 scrollbar-track-transparent" style={{ WebkitOverflowScrolling: 'touch' }}>
             {[
               { name: "Paddy (Rice)", query: "Rice", img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=300&auto=format&fit=crop&q=80", color: "from-emerald-500/10 to-teal-500/10 border-emerald-300 dark:border-emerald-500/30" },
               { name: "Wheat", query: "Wheat", img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&auto=format&fit=crop&q=80", color: "from-amber-500/10 to-yellow-500/10 border-amber-300 dark:border-amber-500/30" },
@@ -144,20 +144,20 @@ export const Home: React.FC = () => {
               { name: "Chilli", query: "Chilli", img: "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=300&auto=format&fit=crop&q=80", color: "from-red-600/10 to-rose-600/10 border-red-300 dark:border-red-600/30" },
               { name: "Maize (Corn)", query: "Maize", img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=300&auto=format&fit=crop&q=80", color: "from-yellow-500/10 to-amber-500/10 border-yellow-300 dark:border-yellow-500/30" },
             ].map((crop, idx) => (
-              <motion.button
+              <button
                 key={idx}
-                whileTap={{ scale: 0.96 }}
+                type="button"
                 onClick={() => navigate(`/products?search=${encodeURIComponent(crop.query)}`)}
-                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-md active:scale-95`}
+                className={`snap-start shrink-0 flex items-center gap-3 bg-gradient-to-r ${crop.color} border backdrop-blur-xl p-2.5 pr-6 rounded-2xl cursor-pointer shadow-md active:scale-95 hover:scale-[1.02] transition-transform duration-150`}
               >
                 <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-white/20">
-                  <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" />
+                  <img src={crop.img} alt={crop.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="text-left">
                   <span className="text-xs font-black text-slate-900 dark:text-white block leading-snug whitespace-nowrap">{crop.name}</span>
                   <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold whitespace-nowrap">View Recommended</span>
                 </div>
-              </motion.button>
+              </button>
             ))}
             <div className="w-6 shrink-0" aria-hidden="true" />
           </div>

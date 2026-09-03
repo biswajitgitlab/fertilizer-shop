@@ -119,6 +119,9 @@ Route::middleware('throttle:chat')->group(function () {
 });
 Route::get('/chat/history/{token}', [\App\Http\Controllers\API\ChatController::class, 'history']);
 
+// Public Site Settings (for storefront boot — no auth required)
+Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'publicIndex']);
+
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featured']);
@@ -227,4 +230,7 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::get('/notifications', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAsRead']);
     Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead']);
+
+    // Site Settings Management (DB-backed)
+    Route::put('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
 });

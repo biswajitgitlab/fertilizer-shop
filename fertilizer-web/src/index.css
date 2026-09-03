@@ -44,6 +44,16 @@
 @layer base {
   :root {
     color-scheme: light;
+    /* Smooth scroll for entire page — hardware accelerated */
+    scroll-behavior: smooth;
+  }
+
+  html {
+    /* Force GPU-composited scroll on iOS/Android */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent text size adjustment on rotation */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html.dark {
@@ -54,11 +64,29 @@
     background-color: var(--color-emerald-50, #f0fdf4);
     color: var(--color-emerald-900, #064e3b);
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* Improve font rendering speed */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+    /* Prevent horizontal overflow scroll */
+    overflow-x: hidden;
   }
 
   html.dark body {
     background-color: var(--color-emerald-950, #022c22);
     color: var(--color-emerald-50, #ecfdf5);
+  }
+
+  /* Horizontal scroll containers — iOS momentum scrolling */
+  .overflow-x-auto, [class*="overflow-x-auto"] {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  /* GPU-composited images — prevent paint on scroll */
+  img {
+    content-visibility: auto;
   }
 }
 
@@ -114,15 +142,16 @@
   }
 }
 
+/* GPU-composited blob animation — translate3d forces compositor thread */
 @keyframes blob-bounce {
   0% {
-    transform: translate(0px, 0px) scale(1);
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   }
   50% {
-    transform: translate(25px, -25px) scale(1.1);
+    transform: translate3d(18px, -18px, 0) scale3d(1.06, 1.06, 1);
   }
   100% {
-    transform: translate(-15px, 20px) scale(0.95);
+    transform: translate3d(-10px, 14px, 0) scale3d(0.97, 0.97, 1);
   }
 }
 
@@ -268,3 +297,34 @@ div[role="status"] > div:first-child {
   animation: laser-scan 2.2s ease-in-out infinite;
 }
 
+/* ── GPU Layer Hints ── */
+.glow-blob {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.animate-float-slow,
+.animate-pulse-ring,
+.animate-radar-spin,
+.animate-shimmer-pass,
+.animate-laser-scan {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ── Reduced Motion: kill all infinite animations ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Section content containment for scroll performance ── */
+section {
+  contain: layout style;
+}

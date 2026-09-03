@@ -18,31 +18,19 @@ export const AnimatedLeaf: React.FC<AnimatedIconProps> = ({ className = "w-6 h-6
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, willChange: 'transform' }}
       animate={{
-        rotate: [0, 8, -6, 4, 0],
-        scale: [1, 1.08, 0.98, 1.04, 1],
+        rotate: [0, 6, -4, 3, 0],
+        scale: [1, 1.05, 0.99, 1.03, 1],
       }}
       transition={{
-        duration: 4,
+        duration: 6,
         repeat: Infinity,
         ease: "easeInOut",
       }}
     >
-      <motion.path
-        d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"
-        animate={{
-          pathLength: [0.9, 1, 0.9],
-        }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.path
-        d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"
-        animate={{
-          strokeDashoffset: [0, 2, 0],
-        }}
-        transition={{ duration: 2.5, repeat: Infinity }}
-      />
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
     </motion.svg>
   );
 };
@@ -138,26 +126,13 @@ export const AnimatedSparkles: React.FC<AnimatedIconProps> = ({ className = "w-6
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, willChange: 'transform' }}
+      animate={{ rotate: [0, 180, 360] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
     >
-      <motion.path
-        d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"
-        animate={{
-          scale: [0.92, 1.1, 0.92],
-          rotate: [0, 90, 180, 270, 360],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.path
-        d="M5 3v4M3 5h4"
-        animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.path
-        d="M19 17v4M17 19h4"
-        animate={{ scale: [1.2, 0.8, 1.2], opacity: [1, 0.5, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-      />
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4M3 5h4" />
+      <path d="M19 17v4M17 19h4" />
     </motion.svg>
   );
 };
@@ -200,24 +175,14 @@ export const AnimatedTruck: React.FC<AnimatedIconProps> = ({ className = "w-6 h-
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
-      style={{ width: size, height: size }}
-      animate={{
-        y: [0, -1.5, 0],
-      }}
-      transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
+      style={{ width: size, height: size, willChange: 'transform' }}
+      animate={{ y: [0, -2, 0] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
     >
       <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
       <path d="M15 18h2a1 1 0 0 0 1-1v-4.343a1 1 0 0 0-.293-.707l-2.707-2.707A1 1 0 0 0 14.293 9H14" />
-      <motion.circle
-        cx="7" cy="18" r="2"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.circle
-        cx="19" cy="18" r="2"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-      />
+      <circle cx="7" cy="18" r="2" />
+      <circle cx="19" cy="18" r="2" />
     </motion.svg>
   );
 };
