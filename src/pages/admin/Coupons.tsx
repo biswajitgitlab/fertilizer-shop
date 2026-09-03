@@ -98,13 +98,7 @@ export const Coupons: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      await apiClient.delete(`/admin/coupons/${id}`);
-      toast.success(`Deleted coupon successfully`);
-      fetchCoupons();
-    } catch (err) {
-      toast.error("Failed to delete coupon");
-    }
+    toast.error("Coupon deletion feature is currently disabled.");
   };
 
   return (

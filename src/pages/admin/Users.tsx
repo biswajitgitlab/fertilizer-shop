@@ -256,16 +256,7 @@ export const UsersPage: React.FC = () => {
   };
 
   const handleDeleteUser = async (user: StaffRecord) => {
-    if (!window.confirm(`Are you sure you want to revoke and delete staff account for "${user.name}"?`)) return;
-
-    try {
-      await adminApi.deleteUser(user.id);
-      toast.success(`Staff account for ${user.name} deleted.`);
-      fetchUsers();
-    } catch (e: any) {
-      const msg = e?.response?.data?.message || "Failed to delete staff account.";
-      toast.error(msg);
-    }
+    toast.error(`Staff user deletion feature is currently disabled. Unable to delete ${user.name}.`);
   };
 
   const demoAccounts = [

@@ -110,14 +110,7 @@ export const WarehouseZones: React.FC = () => {
   };
 
   const handleDelete = async (id: number, code: string) => {
-    if (!window.confirm(`Are you sure you want to delete zone ${code}?`)) return;
-    try {
-      await api.delete(`/admin/warehouse-zones/${id}`);
-      toast.success(`Zone ${code} deleted!`);
-      fetchZones();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to delete zone');
-    }
+    toast.error(`Warehouse zone deletion feature is currently disabled. Unable to delete zone ${code}.`);
   };
 
   return (

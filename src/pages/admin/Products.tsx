@@ -86,15 +86,7 @@ export const Products: React.FC = () => {
   }, [page, perPage, debouncedSearch]);
 
   const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      try {
-        await adminApi.deleteProduct(id);
-        toast.success(`Deleted ${name}`);
-        fetchProducts();
-      } catch (e) {
-        toast.error("Failed to delete product.");
-      }
-    }
+    toast.error(`Deletion feature is currently disabled. Unable to delete ${name}.`);
   };
 
   return (

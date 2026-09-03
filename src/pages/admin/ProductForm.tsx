@@ -98,14 +98,7 @@ export const ProductForm: React.FC = () => {
   };
 
   const handleRemoveImage = (index: number) => {
-    if (formData.images.length <= 1) {
-      toast.error("Product must have at least 1 image.");
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+    toast.error("Image asset deletion feature is currently disabled.");
   };
 
   const handleSelectPresetImage = (url: string) => {

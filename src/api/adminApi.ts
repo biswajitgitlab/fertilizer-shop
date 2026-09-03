@@ -517,13 +517,8 @@ export const adminApi = {
     }
   },
 
-  deleteProduct: async (id: string) => {
-    try {
-      const res = await apiClient.delete(`/admin/products/${id}`);
-      return res.data;
-    } catch (e) {
-      return { success: true };
-    }
+  deleteProduct: async (_id: string) => {
+    return { success: false, message: "Product deletion is disabled in the application." };
   },
 
   getOrders: async (params?: any) => {
@@ -931,9 +926,8 @@ export const adminApi = {
     const res = await apiClient.put(`/admin/users/${id}`, userData);
     return res.data;
   },
-  deleteUser: async (id: number | string) => {
-    const res = await apiClient.delete(`/admin/users/${id}`);
-    return res.data;
+  deleteUser: async (_id: number | string) => {
+    return { success: false, message: "User account deletion is disabled in the application." };
   },
 
   getNotifications: async () => {
