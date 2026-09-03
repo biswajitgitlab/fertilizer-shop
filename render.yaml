@@ -35,7 +35,7 @@ services:
       - key: REDIS_URL
         value: rediss://default:gQAAAAAAAZbJAAIgcDFlYzRmNzQ0ZTM2M2U0OTdmOGFiMjlhZTI4OTAyNTg3Yg@stirring-mackerel-104137.upstash.io:6379
       - key: REDIS_HOST
-        value: stirring-mackerel-104137.upstash.io
+        value: tls://stirring-mackerel-104137.upstash.io
       - key: REDIS_PASSWORD
         value: gQAAAAAAAZbJAAIgcDFlYzRmNzQ0ZTM2M2U0OTdmOGFiMjlhZTI4OTAyNTg3Yg
       - key: REDIS_PORT
