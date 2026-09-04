@@ -14,6 +14,7 @@ import { IdleTimer } from './components/common/IdleTimer';
 
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 
+
 // Customer Pages
 import { Home } from './pages/Home';
 import { Products } from './pages/Products';
@@ -131,6 +132,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <CartDrawer />
         <FloatingCartBanner />
         <ChatWidget />
+
       </div>
       <MobileBottomNav />
     </>

@@ -232,5 +232,6 @@ Route::middleware(['auth:sanctum', 'staff'])->prefix('admin')->group(function ()
     Route::post('/notifications/read-all', [\App\Http\Controllers\Admin\AdminNotificationController::class, 'markAllAsRead']);
 
     // Site Settings Management (DB-backed)
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'publicIndex']);
     Route::put('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
 });

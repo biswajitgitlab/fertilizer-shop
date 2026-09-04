@@ -84,9 +84,9 @@
     overscroll-behavior-x: contain;
   }
 
-  /* GPU-composited images — prevent paint on scroll */
+  /* Smooth image transitions without rendering skip artifacts */
   img {
-    content-visibility: auto;
+    transition: opacity 0.2s ease-in-out;
   }
 }
 
@@ -297,6 +297,25 @@ div[role="status"] > div:first-child {
   animation: laser-scan 2.2s ease-in-out infinite;
 }
 
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover,
+.group:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
 /* ── GPU Layer Hints ── */
 .glow-blob {
   will-change: transform;
@@ -324,7 +343,3 @@ div[role="status"] > div:first-child {
   }
 }
 
-/* ── Section content containment for scroll performance ── */
-section {
-  contain: layout style;
-}

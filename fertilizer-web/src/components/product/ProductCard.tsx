@@ -90,7 +90,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, trendingRankL
         {/* Top Image Container */}
         <Link
           to={`/products/${product.slug}`}
-          className="relative block aspect-square overflow-hidden bg-emerald-950/10"
+          className="relative block aspect-square overflow-hidden bg-emerald-50/60 dark:bg-slate-800/60"
         >
           <img
             src={imgSrc}

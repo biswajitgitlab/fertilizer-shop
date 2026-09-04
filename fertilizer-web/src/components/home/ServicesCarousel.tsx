@@ -192,7 +192,7 @@ export const ServicesCarousel: React.FC<{ isAuthenticated?: boolean }> = ({ isAu
             className="snap-start shrink-0 w-[calc(100%-1rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl rounded-3xl border border-slate-200/80 dark:border-white/10 overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-400 transition-all duration-300 shadow-xl flex flex-col justify-between"
           >
             {/* Top Visual Thumbnail */}
-            <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+            <div className="relative aspect-[16/10] overflow-hidden bg-emerald-50 dark:bg-slate-800/80">
               <img
                 src={item.imageUrl}
                 alt={item.title}
